@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchDecks } from '../lib/supabase';
 import DeckCard from '../components/DeckCard';
+import { Analytics } from "@vercel/analytics/next";
 
 export default function Home() {
     const [decks, setDecks] = useState([]);

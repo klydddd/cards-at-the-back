@@ -20,10 +20,13 @@ export default function Practice() {
     const [learnedIds, setLearnedIds] = useState(new Set());
     const [swipeOffset, setSwipeOffset] = useState(0);
     const [swipeAction, setSwipeAction] = useState(null); // 'learning' | 'learned' | null
+    const [finished, setFinished] = useState(false);
 
     const flipCardRef = useRef(null);
+    const swipeAreaRef = useRef(null);
     const touchStartX = useRef(null);
     const touchStartY = useRef(null);
+    const isHorizontalSwipe = useRef(null);
 
     useEffect(() => {
         Promise.all([fetchDeck(id), fetchCards(id)])
@@ -57,6 +60,8 @@ export default function Practice() {
         setLearnedIds(new Set(newLearned));
         if (current < cards.length - 1) {
             setTimeout(() => goTo(current + 1), 300);
+        } else {
+            setTimeout(() => setFinished(true), 300);
         }
     }, [cards, current, id, goTo]);
 
@@ -66,6 +71,8 @@ export default function Practice() {
         setLearnedIds(new Set(newLearned));
         if (current < cards.length - 1) {
             setTimeout(() => goTo(current + 1), 300);
+        } else {
+            setTimeout(() => setFinished(true), 300);
         }
     }, [cards, current, id, goTo]);
 
@@ -73,12 +80,19 @@ export default function Practice() {
         const shuffledCards = [...cards].sort(() => Math.random() - 0.5);
         setCards(shuffledCards);
         setShuffled(true);
+        setFinished(false);
+        goTo(0);
+    };
+
+    const restartPractice = () => {
+        setFinished(false);
         goTo(0);
     };
 
     // Keyboard navigation
     useEffect(() => {
         const handleKey = (e) => {
+            if (finished) return;
             if (e.key === ' ' || e.key === 'Spacebar') {
                 e.preventDefault();
                 flipCardRef.current?.toggle();
@@ -94,40 +108,61 @@ export default function Practice() {
         };
         window.addEventListener('keydown', handleKey);
         return () => window.removeEventListener('keydown', handleKey);
-    }, [handleMarkLearned, handleMarkLearning]);
+    }, [handleMarkLearned, handleMarkLearning, finished]);
 
-    // Touch swipe handlers
-    const handleTouchStart = (e) => {
-        touchStartX.current = e.touches[0].clientX;
-        touchStartY.current = e.touches[0].clientY;
-    };
+    // Touch swipe — attached via addEventListener with { passive: false } to allow preventDefault
+    useEffect(() => {
+        const el = swipeAreaRef.current;
+        if (!el) return;
 
-    const handleTouchMove = (e) => {
-        if (touchStartX.current === null) return;
-        const deltaX = e.touches[0].clientX - touchStartX.current;
-        const deltaY = e.touches[0].clientY - touchStartY.current;
+        const onTouchStart = (e) => {
+            touchStartX.current = e.touches[0].clientX;
+            touchStartY.current = e.touches[0].clientY;
+            isHorizontalSwipe.current = null;
+        };
 
-        // Only track horizontal swipe
-        if (Math.abs(deltaX) > Math.abs(deltaY)) {
-            e.preventDefault();
-            setSwipeOffset(deltaX);
-            if (deltaX < -50) setSwipeAction('learning');
-            else if (deltaX > 50) setSwipeAction('learned');
-            else setSwipeAction(null);
-        }
-    };
+        const onTouchMove = (e) => {
+            if (touchStartX.current === null) return;
+            const deltaX = e.touches[0].clientX - touchStartX.current;
+            const deltaY = e.touches[0].clientY - touchStartY.current;
 
-    const handleTouchEnd = () => {
-        if (swipeAction === 'learning') {
-            handleMarkLearning();
-        } else if (swipeAction === 'learned') {
-            handleMarkLearned();
-        }
-        setSwipeOffset(0);
-        setSwipeAction(null);
-        touchStartX.current = null;
-        touchStartY.current = null;
-    };
+            // Determine swipe direction on first significant movement
+            if (isHorizontalSwipe.current === null && (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10)) {
+                isHorizontalSwipe.current = Math.abs(deltaX) > Math.abs(deltaY);
+            }
+
+            if (isHorizontalSwipe.current) {
+                e.preventDefault();
+                setSwipeOffset(deltaX);
+                if (deltaX < -50) setSwipeAction('learning');
+                else if (deltaX > 50) setSwipeAction('learned');
+                else setSwipeAction(null);
+            }
+        };
+
+        const onTouchEnd = () => {
+            if (swipeAction === 'learning') {
+                handleMarkLearning();
+            } else if (swipeAction === 'learned') {
+                handleMarkLearned();
+            }
+            setSwipeOffset(0);
+            setSwipeAction(null);
+            touchStartX.current = null;
+            touchStartY.current = null;
+            isHorizontalSwipe.current = null;
+        };
+
+        el.addEventListener('touchstart', onTouchStart, { passive: true });
+        el.addEventListener('touchmove', onTouchMove, { passive: false });
+        el.addEventListener('touchend', onTouchEnd, { passive: true });
+
+        return () => {
+            el.removeEventListener('touchstart', onTouchStart);
+            el.removeEventListener('touchmove', onTouchMove);
+            el.removeEventListener('touchend', onTouchEnd);
+        };
+    }, [swipeAction, handleMarkLearned, handleMarkLearning]);
 
     if (loading)
         return (
@@ -170,6 +205,60 @@ export default function Practice() {
             </div>
         );
 
+    // Finished screen — reached the last card
+    if (finished) {
+        const learnedCount = cards.filter(c => learnedIds.has(c.id)).length;
+        const notLearnedCount = cards.length - learnedCount;
+
+        return (
+            <div className="page">
+                <div className="container text-center" style={{ maxWidth: '520px' }}>
+                    <SparklesIcon size={36} style={{ marginBottom: '16px', opacity: 0.6 }} />
+                    <h2 className="mb-sm">Practice Complete!</h2>
+                    <p className="mb-lg">
+                        You went through all {cards.length} cards.
+                    </p>
+
+                    <div className="flex-center gap-md mb-lg" style={{ flexWrap: 'wrap' }}>
+                        <div className="card" style={{ padding: '16px 24px', textAlign: 'center', flex: '1 1 120px' }}>
+                            <p className="text-sm text-muted light" style={{ marginBottom: '4px' }}>Learned</p>
+                            <p style={{ fontSize: '1.5rem', fontWeight: 800, color: '#10b981' }}>{learnedCount}</p>
+                        </div>
+                        <div className="card" style={{ padding: '16px 24px', textAlign: 'center', flex: '1 1 120px' }}>
+                            <p className="text-sm text-muted light" style={{ marginBottom: '4px' }}>Still Learning</p>
+                            <p style={{ fontSize: '1.5rem', fontWeight: 800, color: '#f59e0b' }}>{notLearnedCount}</p>
+                        </div>
+                    </div>
+
+                    <div className="flex" style={{ flexDirection: 'column', gap: '10px' }}>
+                        <button className="btn btn-primary btn-lg" style={{ width: '100%' }} onClick={restartPractice}>
+                            Practice Again
+                        </button>
+                        {notLearnedCount > 0 && (
+                            <Link
+                                to={`/deck/${id}/practice?filter=not-learned`}
+                                className="btn btn-secondary btn-lg"
+                                style={{ width: '100%', borderColor: '#f59e0b', color: '#d97706' }}
+                                onClick={() => {
+                                    setFinished(false);
+                                    setLoading(true);
+                                }}
+                            >
+                                Practice Not Learned ({notLearnedCount})
+                            </Link>
+                        )}
+                        <Link to={`/deck/${id}`} className="btn btn-secondary btn-lg" style={{ width: '100%' }}>
+                            Back to Deck
+                        </Link>
+                        <Link to="/" className="btn btn-ghost" style={{ width: '100%' }}>
+                            Browse Other Decks
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     const card = cards[current];
     const isLearned = learnedIds.has(card.id);
 
@@ -202,6 +291,7 @@ export default function Practice() {
 
                 {/* Flip Card with swipe */}
                 <div
+                    ref={swipeAreaRef}
                     className="mb-md"
                     style={{
                         position: 'relative',
@@ -209,14 +299,10 @@ export default function Practice() {
                         transition: swipeOffset === 0 ? 'transform 0.3s ease' : 'none',
                         opacity: swipeOffset === 0 ? 1 : Math.max(0.7, 1 - Math.abs(swipeOffset) / 600),
                     }}
-                    onTouchStart={handleTouchStart}
-                    onTouchMove={handleTouchMove}
-                    onTouchEnd={handleTouchEnd}
                 >
                     {/* Swipe hint label */}
                     {swipeAction && (
                         <div
-                            className="swipe-hint"
                             style={{
                                 position: 'absolute',
                                 top: '50%',

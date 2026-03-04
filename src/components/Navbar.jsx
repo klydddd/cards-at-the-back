@@ -1,0 +1,44 @@
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { getInitialTheme, toggleTheme, setTheme } from '../lib/theme';
+
+export default function Navbar() {
+    const [theme, setCurrentTheme] = useState(getInitialTheme());
+
+    useEffect(() => {
+        setTheme(theme);
+    }, [theme]);
+
+    const handleToggle = () => {
+        const newTheme = toggleTheme();
+        setCurrentTheme(newTheme);
+    };
+
+    return (
+        <nav className="navbar">
+            <div className="container navbar-inner">
+                <Link to="/" className="navbar-brand">
+                    cards at the back
+                </Link>
+                <div className="navbar-links">
+                    <button
+                        type="button"
+                        className="btn btn-ghost"
+                        onClick={handleToggle}
+                        title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+                        style={{ padding: '8px', borderRadius: '50%', fontSize: '1.2rem', lineHeight: 1 }}
+                    >
+                        {theme === 'light' ? '🌙' : '☀️'}
+                    </button>
+                    <div style={{ width: '1px', height: '20px', background: 'var(--gray-200)', margin: '0 8px' }}></div>
+                    <Link to="/create" className="btn btn-ghost btn-sm">
+                        Create
+                    </Link>
+                    <Link to="/ai-parse" className="btn btn-primary btn-sm">
+                        AI Parse
+                    </Link>
+                </div>
+            </div>
+        </nav>
+    );
+}

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { parseMarkdownToCards } from '../lib/gemini';
 import { extractTextFromPDF } from '../lib/pdfParser';
 import { createDeck, createCards } from '../lib/supabase';
+import { FileTextIcon } from '../components/Icons';
 
 export default function AIParse() {
     const navigate = useNavigate();
@@ -137,7 +138,7 @@ export default function AIParse() {
                             id="file-drop-zone"
                         >
                             <div style={{ marginBottom: '8px' }}>
-                                <span style={{ fontSize: '2rem' }}>📄</span>
+                                <FileTextIcon size={32} style={{ opacity: 0.5 }} />
                             </div>
                             <p>
                                 <strong>Drop your file here</strong> or click to browse

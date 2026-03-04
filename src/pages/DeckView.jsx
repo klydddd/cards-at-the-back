@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchDeck, fetchCards } from '../lib/supabase';
 import { getLearnedCardIds } from '../lib/tracking';
+import { WandIcon } from '../components/Icons';
 
 export default function DeckView() {
     const { id } = useParams();
@@ -77,7 +78,7 @@ export default function DeckView() {
                         </Link>
                     )}
                     <Link to={`/deck/${id}/quiz`} className="btn btn-secondary btn-lg" style={{ background: '#f3e8ff', color: '#6b21a8', borderColor: '#d8b4fe' }}>
-                        🪄 AI Quiz
+                        <WandIcon size={16} /> AI Quiz
                     </Link>
                 </div>
 

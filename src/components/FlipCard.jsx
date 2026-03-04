@@ -1,7 +1,13 @@
-import { useState } from 'react';
+import { useState, useImperativeHandle, forwardRef } from 'react';
 
-export default function FlipCard({ front, back }) {
+const FlipCard = forwardRef(function FlipCard({ front, back }, ref) {
     const [flipped, setFlipped] = useState(false);
+
+    useImperativeHandle(ref, () => ({
+        toggle() {
+            setFlipped((f) => !f);
+        },
+    }));
 
     return (
         <div
@@ -23,4 +29,6 @@ export default function FlipCard({ front, back }) {
             </div>
         </div>
     );
-}
+});
+
+export default FlipCard;

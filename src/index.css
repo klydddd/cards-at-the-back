@@ -439,6 +439,10 @@ p {
   z-index: 100;
 }
 
+[data-theme="dark"] .navbar {
+  background: rgba(17, 17, 17, 0.85);
+}
+
 .navbar-inner {
   display: flex;
   align-items: center;

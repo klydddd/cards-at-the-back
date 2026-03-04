@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getInitialTheme, toggleTheme, setTheme } from '../lib/theme';
+import { MoonIcon, SunIcon } from './Icons';
 
 export default function Navbar() {
     const [theme, setCurrentTheme] = useState(getInitialTheme());
@@ -26,9 +27,9 @@ export default function Navbar() {
                         className="btn btn-ghost"
                         onClick={handleToggle}
                         title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-                        style={{ padding: '8px', borderRadius: '50%', fontSize: '1.2rem', lineHeight: 1 }}
+                        style={{ padding: '8px', borderRadius: '50%', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     >
-                        {theme === 'light' ? '🌙' : '☀️'}
+                        {theme === 'light' ? <MoonIcon size={18} /> : <SunIcon size={18} />}
                     </button>
                     <div style={{ width: '1px', height: '20px', background: 'var(--gray-200)', margin: '0 8px' }}></div>
                     <Link to="/create" className="btn btn-ghost btn-sm">

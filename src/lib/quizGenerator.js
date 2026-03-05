@@ -8,18 +8,30 @@ if (isConfigured) {
     genAI = new GoogleGenerativeAI(apiKey);
 }
 
-export async function generateQuizFromCards(cards, questionTypes) {
+/**
+ * @param {Array} cards - flashcard objects with front/back
+ * @param {Object} questionTypeCounts - e.g. { multiple_choice: 3, true_false: 2 }
+ */
+export async function generateQuizFromCards(cards, questionTypeCounts) {
     if (!genAI) {
         throw new Error('Gemini API key is not configured. Please add your key to the .env file.');
     }
 
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-    // Prompt engineering for specific formats
-    const prompt = `You are a quiz generator. I will provide you with a list of flashcards (front=description, back=term).
-Generate exactly 5-10 questions in total, based ONLY on the provided flashcards.
+    // Build per-type instruction
+    const typeInstructions = Object.entries(questionTypeCounts)
+        .filter(([, count]) => count > 0)
+        .map(([type, count]) => `- ${type}: exactly ${count} question(s)`)
+        .join('\n');
 
-The user wants the following question types included: ${questionTypes.join(', ')}. Try to distribute the questions among these requested types.
+    const totalCount = Object.values(questionTypeCounts).reduce((sum, n) => sum + n, 0);
+
+    const prompt = `You are a quiz generator. I will provide you with a list of flashcards (front=description, back=term).
+Generate exactly ${totalCount} questions in total, based ONLY on the provided flashcards.
+
+Generate the following number of questions per type:
+${typeInstructions}
 
 Respond ONLY with a valid JSON array of question objects. 
 Do not include code fences or markdown formatting. Just the raw JSON.

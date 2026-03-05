@@ -13,7 +13,8 @@ export function isSupabaseReady() {
   return !!supabase;
 }
 
-// Deck operations
+// ─── Deck operations ───
+
 export async function fetchDecks() {
   if (!supabase) return [];
 
@@ -77,4 +78,74 @@ export async function createCards(deckId, cards) {
 
   const { error } = await supabase.from('cards').insert(rows);
   if (error) throw error;
+}
+
+// ─── Quiz operations ───
+
+export async function saveQuiz(deckId, creatorName, questions, questionTypes) {
+  if (!supabase) throw new Error('Supabase is not configured.');
+
+  const { data, error } = await supabase
+    .from('quizzes')
+    .insert({
+      deck_id: deckId,
+      creator_name: creatorName || 'Anonymous',
+      questions,
+      question_types: questionTypes,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function updateQuizResults(quizId, answers, score) {
+  if (!supabase) throw new Error('Supabase is not configured.');
+
+  const { error } = await supabase
+    .from('quizzes')
+    .update({ answers, score })
+    .eq('id', quizId);
+
+  if (error) throw error;
+}
+
+export async function fetchQuizzesByDeck(deckId) {
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from('quizzes')
+    .select('*')
+    .eq('deck_id', deckId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchQuiz(quizId) {
+  if (!supabase) throw new Error('Supabase is not configured.');
+
+  const { data, error } = await supabase
+    .from('quizzes')
+    .select('*')
+    .eq('id', quizId)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchAllQuizzes(limit = 20) {
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from('quizzes')
+    .select('*, decks(title)')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return data;
 }

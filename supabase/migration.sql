@@ -9,6 +9,7 @@ create table if not exists decks (
   id uuid primary key default uuid_generate_v4(),
   title text not null,
   description text default '',
+  subject text not null default '',
   creator_name text not null default 'Anonymous',
   created_at timestamptz default now()
 );

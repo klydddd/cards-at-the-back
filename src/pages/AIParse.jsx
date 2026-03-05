@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { parseMarkdownToCards } from '../lib/gemini';
 import { extractTextFromPDF } from '../lib/pdfParser';
+import { extractTextFromDOCX, extractTextFromPPTX } from '../lib/docParser';
 import { createDeck, createCards } from '../lib/supabase';
 import { FileTextIcon } from '../components/Icons';
 
@@ -23,14 +24,14 @@ export default function AIParse() {
     const [description, setDescription] = useState('');
     const [creatorName, setCreatorName] = useState('');
 
-    const acceptedTypes = ['.md', '.pdf'];
+    const acceptedTypes = ['.md', '.pdf', '.docx', '.pptx', '.ppt'];
 
     const handleFile = async (selectedFile) => {
         if (!selectedFile) return;
 
         const ext = '.' + selectedFile.name.split('.').pop().toLowerCase();
         if (!acceptedTypes.includes(ext)) {
-            setError('Only .md and .pdf files are accepted.');
+            setError('Only .md, .pdf, .docx, and .pptx files are accepted.');
             return;
         }
 
@@ -41,6 +42,10 @@ export default function AIParse() {
             let textContent;
             if (ext === '.pdf') {
                 textContent = await extractTextFromPDF(selectedFile);
+            } else if (ext === '.docx') {
+                textContent = await extractTextFromDOCX(selectedFile);
+            } else if (ext === '.pptx' || ext === '.ppt') {
+                textContent = await extractTextFromPPTX(selectedFile);
             } else {
                 textContent = await selectedFile.text();
             }
@@ -72,7 +77,7 @@ export default function AIParse() {
             setStep('preview');
             // Auto-set title from filename
             if (!title && file) {
-                const name = file.name.replace(/\.(md|pdf)$/i, '').replace(/[-_]/g, ' ');
+                const name = file.name.replace(/\.(md|pdf|docx|pptx|ppt)$/i, '').replace(/[-_]/g, ' ');
                 setTitle(name);
             }
         } catch (err) {
@@ -144,7 +149,7 @@ export default function AIParse() {
                                 <strong>Drop your file here</strong> or click to browse
                             </p>
                             <p className="text-sm" style={{ marginTop: '4px' }}>
-                                Accepts .md and .pdf files
+                                Accepts .md, .pdf, .docx, and .pptx files
                             </p>
                             {file && <p className="file-name">{file.name}</p>}
                         </div>
@@ -152,7 +157,7 @@ export default function AIParse() {
                         <input
                             ref={fileInputRef}
                             type="file"
-                            accept=".md,.pdf"
+                            accept=".md,.pdf,.docx,.pptx,.ppt"
                             style={{ display: 'none' }}
                             onChange={(e) => handleFile(e.target.files[0])}
                             id="file-input"

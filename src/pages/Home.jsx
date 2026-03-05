@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { fetchDecks, fetchAllQuizzes } from '../lib/supabase';
 import DeckCard from '../components/DeckCard';
 import { WandIcon } from '../components/Icons';
+import { Analytics } from "@vercel/analytics/react";
 
 export default function Home() {
     const [decks, setDecks] = useState([]);

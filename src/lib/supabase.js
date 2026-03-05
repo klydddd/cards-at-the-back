@@ -53,12 +53,12 @@ export async function fetchCards(deckId) {
   return data;
 }
 
-export async function createDeck(title, description, creatorName) {
+export async function createDeck(title, description, creatorName, subject = '') {
   if (!supabase) throw new Error('Supabase is not configured. Please add your credentials to the .env file.');
 
   const { data, error } = await supabase
     .from('decks')
-    .insert({ title, description, creator_name: creatorName })
+    .insert({ title, description, creator_name: creatorName, subject: subject || '' })
     .select()
     .single();
 

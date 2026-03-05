@@ -9,6 +9,7 @@ export default function CreateDeck() {
     const navigate = useNavigate();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    const [subject, setSubject] = useState('');
     const [creatorName, setCreatorName] = useState('');
     const [cards, setCards] = useState([emptyCard(), emptyCard(), emptyCard()]);
     const [saving, setSaving] = useState(false);
@@ -36,7 +37,7 @@ export default function CreateDeck() {
 
         setSaving(true);
         try {
-            const deck = await createDeck(title.trim(), description.trim(), creatorName.trim() || 'Anonymous');
+            const deck = await createDeck(title.trim(), description.trim(), creatorName.trim() || 'Anonymous', subject.trim());
             await createCards(deck.id, validCards);
             navigate(`/deck/${deck.id}`);
         } catch (err) {
@@ -73,6 +74,17 @@ export default function CreateDeck() {
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             id="deck-description"
+                        />
+                    </div>
+
+                    <div className="field">
+                        <label className="label">Subject</label>
+                        <input
+                            className="input"
+                            placeholder="e.g. OPS1, Biology, History"
+                            value={subject}
+                            onChange={(e) => setSubject(e.target.value)}
+                            id="deck-subject"
                         />
                     </div>
 

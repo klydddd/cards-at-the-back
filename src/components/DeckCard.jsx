@@ -11,8 +11,11 @@ export default function DeckCard({ deck }) {
                     {deck.description}
                 </p>
             )}
-            <div className="flex gap-sm" style={{ alignItems: 'center' }}>
+            <div className="flex gap-sm" style={{ alignItems: 'center', flexWrap: 'wrap' }}>
                 <span className="badge">{cardCount} cards</span>
+                {deck.subject && (
+                    <span className="badge" style={{ background: '#ede9fe', color: '#6b21a8' }}>{deck.subject}</span>
+                )}
                 <span className="text-sm text-muted light">by {deck.creator_name}</span>
             </div>
         </Link>

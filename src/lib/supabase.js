@@ -82,7 +82,7 @@ export async function createCards(deckId, cards) {
 
 // ─── Quiz operations ───
 
-export async function saveQuiz(deckId, creatorName, questions, questionTypes) {
+export async function saveQuiz(deckId, creatorName, questions, questionTypes, subject = '') {
   if (!supabase) throw new Error('Supabase is not configured.');
 
   const { data, error } = await supabase
@@ -92,6 +92,7 @@ export async function saveQuiz(deckId, creatorName, questions, questionTypes) {
       creator_name: creatorName || 'Anonymous',
       questions,
       question_types: questionTypes,
+      subject: subject || '',
     })
     .select()
     .single();

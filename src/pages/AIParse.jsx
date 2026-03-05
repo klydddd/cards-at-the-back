@@ -22,6 +22,7 @@ export default function AIParse() {
     // Deck meta
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    const [subject, setSubject] = useState('');
     const [creatorName, setCreatorName] = useState('');
 
     const acceptedTypes = ['.md', '.pdf', '.docx', '.pptx', '.ppt'];
@@ -109,7 +110,7 @@ export default function AIParse() {
         setError(null);
 
         try {
-            const deck = await createDeck(title.trim(), description.trim(), creatorName.trim() || 'Anonymous');
+            const deck = await createDeck(title.trim(), description.trim(), creatorName.trim() || 'Anonymous', subject.trim());
             await createCards(deck.id, cards);
             navigate(`/deck/${deck.id}`);
         } catch (err) {
@@ -270,6 +271,16 @@ export default function AIParse() {
                                     placeholder="A brief description..."
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="field">
+                                <label className="label">Subject</label>
+                                <input
+                                    className="input"
+                                    placeholder="e.g. OPS1, Biology, History"
+                                    value={subject}
+                                    onChange={(e) => setSubject(e.target.value)}
                                 />
                             </div>
 

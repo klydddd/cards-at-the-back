@@ -97,7 +97,7 @@ export default function Quiz() {
             setFeedback(null);
 
             try {
-                const saved = await saveQuiz(id, creatorName.trim() || 'Anonymous', qs, activeTypes);
+                const saved = await saveQuiz(id, creatorName.trim() || 'Anonymous', qs, activeTypes, deck?.subject || '');
                 setQuizId(saved.id);
             } catch (saveErr) {
                 console.error('Failed to save quiz:', saveErr);

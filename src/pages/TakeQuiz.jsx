@@ -78,7 +78,8 @@ export default function TakeQuiz() {
                     quiz.deck_id,
                     creatorName.trim() || 'Anonymous',
                     questions,
-                    quiz.question_types
+                    quiz.question_types,
+                    quiz.subject || deck?.subject || ''
                 );
                 setNewQuizId(saved.id);
                 await updateQuizResults(saved.id, finalAnswers, score);

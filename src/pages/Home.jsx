@@ -1,18 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchDecks, fetchAllQuizzes } from '../lib/supabase';
 import DeckCard from '../components/DeckCard';
 import { WandIcon } from '../components/Icons';
-import { Analytics } from "@vercel/analytics/react";
 
 export default function Home() {
     const [decks, setDecks] = useState([]);
     const [quizzes, setQuizzes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [activeSubject, setActiveSubject] = useState('All');
+    const [quizSubject, setQuizSubject] = useState('All');
+    const [quizType, setQuizType] = useState('All');
 
     useEffect(() => {
-        Promise.all([fetchDecks(), fetchAllQuizzes(12)])
+        Promise.all([fetchDecks(), fetchAllQuizzes(20)])
             .then(([d, q]) => {
                 setDecks(d);
                 setQuizzes(q);
@@ -21,9 +23,74 @@ export default function Home() {
             .finally(() => setLoading(false));
     }, []);
 
+    // Unique subjects from decks
+    const subjects = useMemo(() => {
+        const set = new Set();
+        decks.forEach(d => {
+            if (d.subject && d.subject.trim()) set.add(d.subject.trim());
+        });
+        return ['All', ...Array.from(set).sort()];
+    }, [decks]);
+
+    // Unique subjects from quizzes
+    const quizSubjects = useMemo(() => {
+        const set = new Set();
+        quizzes.forEach(q => {
+            if (q.subject && q.subject.trim()) set.add(q.subject.trim());
+        });
+        return ['All', ...Array.from(set).sort()];
+    }, [quizzes]);
+
+    const quizTypes = useMemo(() => {
+        const set = new Set();
+        quizzes.forEach(q => {
+            q.question_types?.forEach(t => set.add(t));
+        });
+        return ['All', ...Array.from(set).sort()];
+    }, [quizzes]);
+
+    const filteredDecks = useMemo(() => {
+        if (activeSubject === 'All') return decks;
+        return decks.filter(d => d.subject && d.subject.trim() === activeSubject);
+    }, [decks, activeSubject]);
+
+    const filteredQuizzes = useMemo(() => {
+        let filtered = quizzes;
+        if (quizSubject !== 'All') {
+            filtered = filtered.filter(q => q.subject && q.subject.trim() === quizSubject);
+        }
+        if (quizType !== 'All') {
+            filtered = filtered.filter(q => q.question_types?.includes(quizType));
+        }
+        return filtered;
+    }, [quizzes, quizSubject, quizType]);
+
     const formatDate = (dateStr) => {
         const d = new Date(dateStr);
         return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    };
+
+    const renderFilterTabs = (items, active, setActive) => {
+        if (items.length <= 1) return null;
+        return (
+            <div className="flex gap-sm mb-md" style={{ flexWrap: 'wrap' }}>
+                {items.map(s => (
+                    <button
+                        key={s}
+                        className={`btn btn-sm ${active === s ? 'btn-primary' : 'btn-ghost'}`}
+                        onClick={() => setActive(s)}
+                        style={{
+                            borderRadius: '100px',
+                            padding: '6px 16px',
+                            fontSize: '0.82rem',
+                            ...(active !== s ? { border: '1.5px solid var(--gray-200)' } : {}),
+                        }}
+                    >
+                        {s}
+                    </button>
+                ))}
+            </div>
+        );
     };
 
     return (
@@ -50,6 +117,7 @@ export default function Home() {
                 {/* Deck List */}
                 <div style={{ marginTop: '48px' }}>
                     <h2 className="mb-md">Public Decks</h2>
+                    {renderFilterTabs(subjects, activeSubject, setActiveSubject)}
 
                     {loading && (
                         <div className="loading-center">
@@ -59,19 +127,31 @@ export default function Home() {
 
                     {error && <div className="error-box">{error}</div>}
 
-                    {!loading && !error && decks.length === 0 && (
+                    {!loading && !error && filteredDecks.length === 0 && (
                         <div className="empty-state">
-                            <h2>No decks yet</h2>
-                            <p>Be the first to create a deck and share it with the world.</p>
-                            <Link to="/create" className="btn btn-primary">
-                                Create your first deck
-                            </Link>
+                            {activeSubject === 'All' ? (
+                                <>
+                                    <h2>No decks yet</h2>
+                                    <p>Be the first to create a deck and share it with the world.</p>
+                                    <Link to="/create" className="btn btn-primary">
+                                        Create your first deck
+                                    </Link>
+                                </>
+                            ) : (
+                                <>
+                                    <h2>No decks in "{activeSubject}"</h2>
+                                    <p>No decks match this subject filter.</p>
+                                    <button className="btn btn-secondary" onClick={() => setActiveSubject('All')}>
+                                        Show All
+                                    </button>
+                                </>
+                            )}
                         </div>
                     )}
 
-                    {!loading && !error && decks.length > 0 && (
+                    {!loading && !error && filteredDecks.length > 0 && (
                         <div className="deck-grid">
-                            {decks.map((deck) => (
+                            {filteredDecks.map((deck) => (
                                 <DeckCard key={deck.id} deck={deck} />
                             ))}
                         </div>
@@ -81,11 +161,15 @@ export default function Home() {
                 {/* Public Quizzes */}
                 {!loading && quizzes.length > 0 && (
                     <div style={{ marginTop: '56px' }}>
-                        <div className="flex-between mb-md">
-                            <h2>Public Quizzes</h2>
-                        </div>
+                        <h2 className="mb-md">Public Quizzes</h2>
+                        {renderFilterTabs(quizSubjects, quizSubject, setQuizSubject)}
+                        {renderFilterTabs(
+                            quizTypes.map(t => t === 'All' ? 'All' : t.replace(/_/g, ' ')),
+                            quizType === 'All' ? 'All' : quizType.replace(/_/g, ' '),
+                            (label) => setQuizType(label === 'All' ? 'All' : quizTypes.find(t => t.replace(/_/g, ' ') === label) || label)
+                        )}
                         <div className="deck-grid">
-                            {quizzes.map((quiz) => (
+                            {filteredQuizzes.map((quiz) => (
                                 <Link
                                     key={quiz.id}
                                     to={`/take/${quiz.id}`}
@@ -100,6 +184,9 @@ export default function Home() {
                                     </div>
                                     <div className="flex gap-sm mb-sm" style={{ flexWrap: 'wrap' }}>
                                         <span className="badge">{quiz.questions?.length || 0} questions</span>
+                                        {quiz.subject && (
+                                            <span className="badge" style={{ background: '#ede9fe', color: '#6b21a8' }}>{quiz.subject}</span>
+                                        )}
                                         {quiz.question_types?.map(t => (
                                             <span key={t} className="badge" style={{ fontSize: '0.68rem' }}>
                                                 {t.replace('_', ' ')}

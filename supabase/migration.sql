@@ -31,6 +31,7 @@ create table if not exists quizzes (
   id uuid primary key default uuid_generate_v4(),
   deck_id uuid not null references decks(id) on delete cascade,
   creator_name text not null default 'Anonymous',
+  subject text not null default '',
   questions jsonb not null,
   answers jsonb default null,
   score int default null,

@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import CreateDeck from './pages/CreateDeck';
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/take/:quizId" element={<TakeQuiz />} />
         <Route path="/ai-parse" element={<AIParse />} />
       </Routes>
+      <Analytics />
     </BrowserRouter>
   );
 }

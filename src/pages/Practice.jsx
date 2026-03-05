@@ -5,6 +5,15 @@ import FlipCard from '../components/FlipCard';
 import { getLearnedCardIds, markCardAsLearned, markCardAsLearning } from '../lib/tracking';
 import { ShuffleIcon, SparklesIcon, CheckIcon, XIcon } from '../components/Icons';
 
+const CHECK_IN_INTERVAL = 15;
+const REVIEW_INSERT_COUNT = 3; // how many review cards to slip in after check-in
+
+const FEELINGS = [
+    { emoji: '😊', label: 'Great', color: '#10b981' },
+    { emoji: '😐', label: 'Okay', color: '#f59e0b' },
+    { emoji: '😵‍💫', label: 'Struggling', color: '#ef4444' },
+];
+
 export default function Practice() {
     const { id } = useParams();
     const [searchParams] = useSearchParams();
@@ -19,8 +28,15 @@ export default function Practice() {
     const [flipKey, setFlipKey] = useState(0);
     const [learnedIds, setLearnedIds] = useState(new Set());
     const [swipeOffset, setSwipeOffset] = useState(0);
-    const [swipeAction, setSwipeAction] = useState(null); // 'learning' | 'learned' | null
+    const [swipeAction, setSwipeAction] = useState(null);
     const [finished, setFinished] = useState(false);
+
+    // Check-in state
+    const [showCheckIn, setShowCheckIn] = useState(false);
+    const [cardsSeenSinceCheckIn, setCardsSeenSinceCheckIn] = useState(0);
+    const [checkInCount, setCheckInCount] = useState(0);
+    const [lastFeeling, setLastFeeling] = useState(null);
+    const reviewInsertedRef = useRef(new Set()); // track which check-in rounds already inserted reviews
 
     const flipCardRef = useRef(null);
     const swipeAreaRef = useRef(null);
@@ -54,45 +70,99 @@ export default function Practice() {
         []
     );
 
+    const advanceCard = useCallback(() => {
+        const nextSeen = cardsSeenSinceCheckIn + 1;
+        setCardsSeenSinceCheckIn(nextSeen);
+
+        if (current < cards.length - 1) {
+            // Check if we've hit 15 cards since last check-in
+            if (nextSeen >= CHECK_IN_INTERVAL) {
+                setTimeout(() => setShowCheckIn(true), 300);
+            } else {
+                setTimeout(() => goTo(current + 1), 300);
+            }
+        } else {
+            setTimeout(() => setFinished(true), 300);
+        }
+    }, [cards.length, current, cardsSeenSinceCheckIn, goTo]);
+
     const handleMarkLearned = useCallback(() => {
-        if (cards.length === 0) return;
+        if (cards.length === 0 || showCheckIn) return;
         const newLearned = markCardAsLearned(id, cards[current].id);
         setLearnedIds(new Set(newLearned));
-        if (current < cards.length - 1) {
-            setTimeout(() => goTo(current + 1), 300);
-        } else {
-            setTimeout(() => setFinished(true), 300);
-        }
-    }, [cards, current, id, goTo]);
+        advanceCard();
+    }, [cards, current, id, advanceCard, showCheckIn]);
 
     const handleMarkLearning = useCallback(() => {
-        if (cards.length === 0) return;
+        if (cards.length === 0 || showCheckIn) return;
         const newLearned = markCardAsLearning(id, cards[current].id);
         setLearnedIds(new Set(newLearned));
-        if (current < cards.length - 1) {
-            setTimeout(() => goTo(current + 1), 300);
-        } else {
-            setTimeout(() => setFinished(true), 300);
+        advanceCard();
+    }, [cards, current, id, advanceCard, showCheckIn]);
+
+    const handleCheckInContinue = (feeling) => {
+        setLastFeeling(feeling);
+        const round = checkInCount;
+        setCheckInCount(round + 1);
+        setCardsSeenSinceCheckIn(0);
+        setShowCheckIn(false);
+
+        // Slip in review cards from earlier if we haven't already for this round
+        if (!reviewInsertedRef.current.has(round)) {
+            reviewInsertedRef.current.add(round);
+
+            // Grab cards from the previous batch (the 15 we just went through)
+            const batchStart = Math.max(0, current + 1 - CHECK_IN_INTERVAL);
+            const previousBatch = cards.slice(batchStart, current + 1);
+
+            if (previousBatch.length > 0) {
+                // Pick a few random review cards
+                const shuffledBatch = [...previousBatch].sort(() => Math.random() - 0.5);
+                const reviewCards = shuffledBatch.slice(0, Math.min(REVIEW_INSERT_COUNT, shuffledBatch.length));
+
+                // Mark them as review cards (for display)
+                const taggedReview = reviewCards.map(c => ({ ...c, _isReview: true }));
+
+                // Insert after the current position
+                const insertPos = current + 1;
+                const newCards = [
+                    ...cards.slice(0, insertPos),
+                    ...taggedReview,
+                    ...cards.slice(insertPos),
+                ];
+                setCards(newCards);
+            }
         }
-    }, [cards, current, id, goTo]);
+
+        // Move to the next card
+        goTo(current + 1);
+    };
 
     const shuffle = () => {
         const shuffledCards = [...cards].sort(() => Math.random() - 0.5);
         setCards(shuffledCards);
         setShuffled(true);
         setFinished(false);
+        setCardsSeenSinceCheckIn(0);
+        setCheckInCount(0);
+        setShowCheckIn(false);
+        reviewInsertedRef.current = new Set();
         goTo(0);
     };
 
     const restartPractice = () => {
         setFinished(false);
+        setCardsSeenSinceCheckIn(0);
+        setCheckInCount(0);
+        setShowCheckIn(false);
+        reviewInsertedRef.current = new Set();
         goTo(0);
     };
 
     // Keyboard navigation
     useEffect(() => {
         const handleKey = (e) => {
-            if (finished) return;
+            if (finished || showCheckIn) return;
             if (e.key === ' ' || e.key === 'Spacebar') {
                 e.preventDefault();
                 flipCardRef.current?.toggle();
@@ -108,9 +178,9 @@ export default function Practice() {
         };
         window.addEventListener('keydown', handleKey);
         return () => window.removeEventListener('keydown', handleKey);
-    }, [handleMarkLearned, handleMarkLearning, finished]);
+    }, [handleMarkLearned, handleMarkLearning, finished, showCheckIn]);
 
-    // Touch swipe — attached via addEventListener with { passive: false } to allow preventDefault
+    // Touch swipe
     useEffect(() => {
         const el = swipeAreaRef.current;
         if (!el) return;
@@ -126,7 +196,6 @@ export default function Practice() {
             const deltaX = e.touches[0].clientX - touchStartX.current;
             const deltaY = e.touches[0].clientY - touchStartY.current;
 
-            // Determine swipe direction on first significant movement
             if (isHorizontalSwipe.current === null && (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10)) {
                 isHorizontalSwipe.current = Math.abs(deltaX) > Math.abs(deltaY);
             }
@@ -205,7 +274,39 @@ export default function Practice() {
             </div>
         );
 
-    // Finished screen — reached the last card
+    // ── Check-in screen ──
+    if (showCheckIn) {
+        return (
+            <div className="page">
+                <div className="container text-center" style={{ maxWidth: '480px' }}>
+                    <div style={{ fontSize: '2.5rem', marginBottom: '16px' }}>🧠</div>
+                    <h2 className="mb-sm">Quick Check-In</h2>
+                    <p className="text-muted mb-lg">
+                        You've gone through {CHECK_IN_INTERVAL} cards. How are you feeling?
+                    </p>
+
+                    <div className="flex" style={{ flexDirection: 'column', gap: '10px' }}>
+                        {FEELINGS.map(f => (
+                            <button
+                                key={f.label}
+                                className="btn btn-secondary btn-lg"
+                                style={{ width: '100%', justifyContent: 'center', gap: '10px' }}
+                                onClick={() => handleCheckInContinue(f.label)}
+                            >
+                                <span style={{ fontSize: '1.3rem' }}>{f.emoji}</span> {f.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    <p className="text-sm text-muted mt-lg" style={{ opacity: 0.5 }}>
+                        We'll slip in a few review cards from earlier to help you remember.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
+    // ── Finished screen ──
     if (finished) {
         const learnedCount = cards.filter(c => learnedIds.has(c.id)).length;
         const notLearnedCount = cards.length - learnedCount;
@@ -261,6 +362,7 @@ export default function Practice() {
 
     const card = cards[current];
     const isLearned = learnedIds.has(card.id);
+    const isReviewCard = card._isReview;
 
     return (
         <div className="page">
@@ -285,6 +387,11 @@ export default function Practice() {
                     {isReplayMode && (
                         <span className="badge mt-sm" style={{ background: '#fef3c7', color: '#92400e' }}>
                             Replay not-learned mode
+                        </span>
+                    )}
+                    {isReviewCard && (
+                        <span className="badge mt-sm" style={{ background: '#ede9fe', color: '#6b21a8' }}>
+                            Review Card
                         </span>
                     )}
                 </div>

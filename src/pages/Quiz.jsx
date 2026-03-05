@@ -65,14 +65,19 @@ export default function Quiz() {
             .finally(() => setLoading(false));
     }, [id]);
 
+    const TOTAL_LIMIT = 50;
     const totalQuestions = Object.values(typeCounts).reduce((sum, n) => sum + n, 0);
+    const remaining = TOTAL_LIMIT - totalQuestions;
     const activeTypes = Object.entries(typeCounts).filter(([, count]) => count > 0).map(([type]) => type);
 
     const updateCount = (typeId, delta) => {
-        setTypeCounts(prev => ({
-            ...prev,
-            [typeId]: Math.max(0, Math.min(10, prev[typeId] + delta)),
-        }));
+        setTypeCounts(prev => {
+            const newVal = prev[typeId] + delta;
+            if (newVal < 0) return prev;
+            const otherTotal = Object.entries(prev).reduce((sum, [k, v]) => k === typeId ? sum : sum + v, 0);
+            if (otherTotal + newVal > TOTAL_LIMIT) return prev;
+            return { ...prev, [typeId]: newVal };
+        });
     };
 
     const startGenerating = async () => {
@@ -199,7 +204,7 @@ export default function Quiz() {
                                             type="button"
                                             className="btn btn-ghost btn-sm"
                                             onClick={() => updateCount(type.id, 1)}
-                                            disabled={typeCounts[type.id] >= 10}
+                                            disabled={typeCounts[type.id] >= 50 || totalQuestions >= TOTAL_LIMIT}
                                             style={{ width: '36px', height: '36px', padding: 0, borderRadius: '50%', border: '1.5px solid var(--gray-200)', fontWeight: 700, fontSize: '1.1rem' }}
                                         >
                                             +
@@ -211,6 +216,7 @@ export default function Quiz() {
                         <div style={{ marginTop: '16px', padding: '12px 16px', background: 'var(--gray-100)', borderRadius: 'var(--radius-md)' }}>
                             <span className="text-sm text-muted">Total questions: </span>
                             <span className="bold">{totalQuestions}</span>
+                            <span className="text-sm text-muted" style={{ marginLeft: '8px' }}>/ {TOTAL_LIMIT} max ({remaining} remaining)</span>
                         </div>
                     </div>
 

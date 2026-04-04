@@ -174,7 +174,7 @@ export default function MCQuiz() {
                     <div className="card text-center mb-lg" style={{ padding: '32px' }}>
                         <p className="text-sm text-muted" style={{ marginBottom: '4px' }}>Your Score</p>
                         <p style={{ fontSize: '3rem', fontWeight: 800, lineHeight: 1.1 }}>
-                            {score}<span style={{ fontSize: '1.5rem', fontWeight: 400, color: 'var(--gray-400)' }}>/{questions.length}</span>
+                            {score}<span style={{ fontSize: '1.5rem', fontWeight: 400, color: 'var(--text-faint)' }}>/{questions.length}</span>
                         </p>
                         <p className="text-sm text-muted mt-sm">
                             {score === questions.length ? 'Perfect!' : score >= questions.length * 0.7 ? 'Great job!' : 'Keep practicing!'}
@@ -186,12 +186,12 @@ export default function MCQuiz() {
                             const userAnswer = answers[i];
                             const isCorrect = checkAnswer(q, userAnswer);
                             return (
-                                <div key={i} className="card" style={{ padding: '16px 20px', borderLeftWidth: isCorrect ? 1.5 : 4, borderLeftColor: isCorrect ? '#10b981' : '#f59e0b' }}>
+                                <div key={i} className="card" style={{ padding: '16px 20px', borderLeftWidth: isCorrect ? 1.5 : 4, borderLeftColor: isCorrect ? 'var(--success)' : 'var(--warning)' }}>
                                     <p className="text-sm text-muted light mb-sm">{q.question}</p>
                                     <div className="flex gap-md">
                                         <div>
                                             <span className="text-sm text-muted">You: </span>
-                                            <span style={{ fontWeight: isCorrect ? 700 : 400, color: isCorrect ? '#059669' : '#991b1b' }}>
+                                            <span style={{ fontWeight: isCorrect ? 700 : 400, color: isCorrect ? 'var(--success-dark)' : 'var(--error-dark)' }}>
                                                 {typeof userAnswer === 'boolean' ? (userAnswer ? 'True' : 'False') : (userAnswer || 'Skipped')}
                                             </span>
                                         </div>
@@ -238,13 +238,13 @@ export default function MCQuiz() {
                     <span className="text-sm bold">{currentQ + 1} / {questions.length}</span>
                 </div>
 
-                <div className="mb-md" style={{ height: '3px', background: 'var(--gray-200)', borderRadius: '100px' }}>
-                    <div style={{ height: '100%', width: `${((currentQ + 1) / questions.length) * 100}%`, background: 'var(--black)', borderRadius: '100px', transition: 'width 0.3s ease' }}></div>
+                <div className="mb-md" style={{ height: '3px', background: 'var(--border)', borderRadius: '100px' }}>
+                    <div style={{ height: '100%', width: `${((currentQ + 1) / questions.length) * 100}%`, background: 'var(--primary)', borderRadius: '100px', transition: 'width 0.3s ease' }}></div>
                 </div>
 
                 <div className="flex-between mb-lg">
                     <span className="text-sm text-muted">{deck.title}</span>
-                    <span className="text-sm bold" style={{ color: '#059669' }}>{score} correct</span>
+                    <span className="text-sm bold" style={{ color: 'var(--success-dark)' }}>{score} correct</span>
                 </div>
 
                 <div className="card" style={{ padding: '32px' }}>
@@ -261,9 +261,9 @@ export default function MCQuiz() {
                                     let style = { justifyContent: 'flex-start', textAlign: 'left', padding: '16px', fontWeight: 500 };
                                     if (feedback) {
                                         if (opt === q.answer) {
-                                            style = { ...style, background: '#ecfdf5', borderColor: '#10b981', color: '#059669', fontWeight: 700 };
+                                            style = { ...style, background: 'var(--success-light)', borderColor: 'var(--success)', color: 'var(--success-dark)', fontWeight: 700 };
                                         } else if (opt === feedback.userAnswer && !feedback.isCorrect) {
-                                            style = { ...style, background: '#fef2f2', borderColor: '#ef4444', color: '#991b1b' };
+                                            style = { ...style, background: 'var(--error-light)', borderColor: 'var(--error)', color: 'var(--error-dark)' };
                                         } else {
                                             style = { ...style, opacity: 0.35 };
                                         }
@@ -284,9 +284,9 @@ export default function MCQuiz() {
                                     let btnStyle = { flex: 1, padding: '24px' };
                                     if (feedback) {
                                         if (val === q.answer) {
-                                            btnStyle = { ...btnStyle, background: '#ecfdf5', borderColor: '#10b981', color: '#059669', fontWeight: 700 };
+                                            btnStyle = { ...btnStyle, background: 'var(--success-light)', borderColor: 'var(--success)', color: 'var(--success-dark)', fontWeight: 700 };
                                         } else if (val === feedback.userAnswer && !feedback.isCorrect) {
-                                            btnStyle = { ...btnStyle, background: '#fef2f2', borderColor: '#ef4444', color: '#991b1b' };
+                                            btnStyle = { ...btnStyle, background: 'var(--error-light)', borderColor: 'var(--error)', color: 'var(--error-dark)' };
                                         } else {
                                             btnStyle = { ...btnStyle, opacity: 0.35 };
                                         }
@@ -328,18 +328,18 @@ export default function MCQuiz() {
                             marginTop: '20px',
                             padding: '16px 20px',
                             borderRadius: 'var(--radius-md)',
-                            background: feedback.isCorrect ? '#ecfdf5' : '#fef2f2',
-                            border: `1.5px solid ${feedback.isCorrect ? '#a7f3d0' : '#fecaca'}`,
+                            background: feedback.isCorrect ? 'var(--success-light)' : 'var(--error-light)',
+                            border: `1.5px solid ${feedback.isCorrect ? 'var(--success-border)' : 'var(--error-border)'}`,
                         }}>
                             <div className="flex gap-sm" style={{ alignItems: 'center', marginBottom: feedback.isCorrect ? 0 : '8px' }}>
                                 <div style={{
                                     width: 28, height: 28, borderRadius: '50%',
-                                    background: feedback.isCorrect ? '#10b981' : '#ef4444',
+                                    background: feedback.isCorrect ? 'var(--success)' : 'var(--error)',
                                     color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 }}>
                                     {feedback.isCorrect ? <CheckIcon size={14} /> : <XIcon size={14} />}
                                 </div>
-                                <span style={{ fontWeight: 700, color: feedback.isCorrect ? '#059669' : '#991b1b' }}>
+                                <span style={{ fontWeight: 700, color: feedback.isCorrect ? 'var(--success-dark)' : 'var(--error-dark)' }}>
                                     {feedback.isCorrect ? 'Correct!' : 'Incorrect'}
                                 </span>
                             </div>

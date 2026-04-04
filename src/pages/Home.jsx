@@ -83,7 +83,7 @@ export default function Home() {
                             borderRadius: '100px',
                             padding: '6px 16px',
                             fontSize: '0.82rem',
-                            ...(active !== s ? { border: '1.5px solid var(--gray-200)' } : {}),
+                            ...(active !== s ? { border: '1.5px solid var(--border)' } : {}),
                         }}
                     >
                         {s}
@@ -185,7 +185,7 @@ export default function Home() {
                                     <div className="flex gap-sm mb-sm" style={{ flexWrap: 'wrap' }}>
                                         <span className="badge">{quiz.questions?.length || 0} questions</span>
                                         {quiz.subject && (
-                                            <span className="badge" style={{ background: '#ede9fe', color: '#6b21a8' }}>{quiz.subject}</span>
+                                            <span className="badge badge-purple">{quiz.subject}</span>
                                         )}
                                         {quiz.question_types?.map(t => (
                                             <span key={t} className="badge" style={{ fontSize: '0.68rem' }}>

@@ -175,7 +175,7 @@ export default function AIParse() {
                                             fontFamily: 'var(--font)',
                                             fontSize: '0.82rem',
                                             whiteSpace: 'pre-wrap',
-                                            color: 'var(--gray-600)',
+                                            color: 'var(--text-secondary)',
                                             fontWeight: 300,
                                         }}
                                     >

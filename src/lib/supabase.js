@@ -150,3 +150,65 @@ export async function fetchAllQuizzes(limit = 20) {
   if (error) throw error;
   return data;
 }
+
+// ─── SRS Card Progress operations ───
+
+export async function fetchCardProgress(deckId) {
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from('card_progress')
+    .select('*')
+    .eq('deck_id', deckId);
+
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchSingleCardProgress(cardId) {
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from('card_progress')
+    .select('*')
+    .eq('card_id', cardId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function upsertCardProgress(progress) {
+  if (!supabase) throw new Error('Supabase is not configured.');
+
+  const { data, error } = await supabase
+    .from('card_progress')
+    .upsert(
+      {
+        card_id: progress.card_id,
+        deck_id: progress.deck_id,
+        ease_factor: progress.ease_factor,
+        interval: progress.interval,
+        repetitions: progress.repetitions,
+        due_date: progress.due_date,
+        last_reviewed: progress.last_reviewed,
+      },
+      { onConflict: 'card_id' }
+    )
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function resetDeckSRS(deckId) {
+  if (!supabase) return;
+
+  const { error } = await supabase
+    .from('card_progress')
+    .delete()
+    .eq('deck_id', deckId);
+
+  if (error) throw error;
+}

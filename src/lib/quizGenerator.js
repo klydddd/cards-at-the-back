@@ -17,7 +17,7 @@ export async function generateQuizFromCards(cards, questionTypeCounts) {
         throw new Error('Gemini API key is not configured. Please add your key to the .env file.');
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite-preview' });
 
     // Build per-type instruction
     const typeInstructions = Object.entries(questionTypeCounts)

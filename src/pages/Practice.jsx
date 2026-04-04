@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { fetchDeck, fetchCards } from '../lib/supabase';
 import FlipCard from '../components/FlipCard';
-import { getLearnedCardIds, markCardAsLearned, markCardAsLearning } from '../lib/tracking';
+import { getLearnedCardIds, markCardAsLearned, markCardAsLearning, rateCard, loadSRSProgress } from '../lib/tracking';
+import { Rating, formatInterval, previewIntervals } from '../lib/srs';
 import { ShuffleIcon, SparklesIcon, CheckIcon, XIcon } from '../components/Icons';
 
 const CHECK_IN_INTERVAL = 15;
@@ -30,6 +31,7 @@ export default function Practice() {
     const [swipeOffset, setSwipeOffset] = useState(0);
     const [swipeAction, setSwipeAction] = useState(null);
     const [finished, setFinished] = useState(false);
+    const [srsProgress, setSrsProgress] = useState({});
 
     // Check-in state
     const [showCheckIn, setShowCheckIn] = useState(false);
@@ -45,11 +47,15 @@ export default function Practice() {
     const isHorizontalSwipe = useRef(null);
 
     useEffect(() => {
-        Promise.all([fetchDeck(id), fetchCards(id)])
-            .then(([d, c]) => {
+        async function load() {
+            try {
+                const [d, c] = await Promise.all([fetchDeck(id), fetchCards(id)]);
                 setDeck(d);
                 const learned = getLearnedCardIds(id);
                 setLearnedIds(learned);
+
+                const progress = await loadSRSProgress(id);
+                setSrsProgress(progress);
 
                 if (isReplayMode) {
                     const unlearned = c.filter(card => !learned.has(card.id));
@@ -57,9 +63,13 @@ export default function Practice() {
                 } else {
                     setCards(c);
                 }
-            })
-            .catch((err) => setError(err.message))
-            .finally(() => setLoading(false));
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+        load();
     }, [id, isReplayMode]);
 
     const goTo = useCallback(
@@ -90,6 +100,10 @@ export default function Practice() {
         if (cards.length === 0 || showCheckIn) return;
         const newLearned = markCardAsLearned(id, cards[current].id);
         setLearnedIds(new Set(newLearned));
+        // Also record SRS rating (Good) in background
+        rateCard(id, cards[current].id, Rating.GOOD).then(updated => {
+            setSrsProgress(prev => ({ ...prev, [cards[current].id]: updated }));
+        });
         advanceCard();
     }, [cards, current, id, advanceCard, showCheckIn]);
 
@@ -97,6 +111,26 @@ export default function Practice() {
         if (cards.length === 0 || showCheckIn) return;
         const newLearned = markCardAsLearning(id, cards[current].id);
         setLearnedIds(new Set(newLearned));
+        // Also record SRS rating (Again) in background
+        rateCard(id, cards[current].id, Rating.AGAIN).then(updated => {
+            setSrsProgress(prev => ({ ...prev, [cards[current].id]: updated }));
+        });
+        advanceCard();
+    }, [cards, current, id, advanceCard, showCheckIn]);
+
+    const handleSRSRate = useCallback((rating) => {
+        if (cards.length === 0 || showCheckIn) return;
+        const cardId = cards[current].id;
+        if (rating >= Rating.GOOD) {
+            const newLearned = markCardAsLearned(id, cardId);
+            setLearnedIds(new Set(newLearned));
+        } else {
+            const newLearned = markCardAsLearning(id, cardId);
+            setLearnedIds(new Set(newLearned));
+        }
+        rateCard(id, cardId, rating).then(updated => {
+            setSrsProgress(prev => ({ ...prev, [cardId]: updated }));
+        });
         advanceCard();
     }, [cards, current, id, advanceCard, showCheckIn]);
 
@@ -175,10 +209,15 @@ export default function Practice() {
                 e.preventDefault();
                 handleMarkLearned();
             }
+            // SRS rating shortcuts
+            if (e.key === '1') handleSRSRate(Rating.AGAIN);
+            if (e.key === '2') handleSRSRate(Rating.HARD);
+            if (e.key === '3') handleSRSRate(Rating.GOOD);
+            if (e.key === '4') handleSRSRate(Rating.EASY);
         };
         window.addEventListener('keydown', handleKey);
         return () => window.removeEventListener('keydown', handleKey);
-    }, [handleMarkLearned, handleMarkLearning, finished, showCheckIn]);
+    }, [handleMarkLearned, handleMarkLearning, handleSRSRate, finished, showCheckIn]);
 
     // Touch swipe
     useEffect(() => {
@@ -323,11 +362,11 @@ export default function Practice() {
                     <div className="flex-center gap-md mb-lg" style={{ flexWrap: 'wrap' }}>
                         <div className="card" style={{ padding: '16px 24px', textAlign: 'center', flex: '1 1 120px' }}>
                             <p className="text-sm text-muted light" style={{ marginBottom: '4px' }}>Learned</p>
-                            <p style={{ fontSize: '1.5rem', fontWeight: 800, color: '#10b981' }}>{learnedCount}</p>
+                            <p style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--success)' }}>{learnedCount}</p>
                         </div>
                         <div className="card" style={{ padding: '16px 24px', textAlign: 'center', flex: '1 1 120px' }}>
                             <p className="text-sm text-muted light" style={{ marginBottom: '4px' }}>Still Learning</p>
-                            <p style={{ fontSize: '1.5rem', fontWeight: 800, color: '#f59e0b' }}>{notLearnedCount}</p>
+                            <p style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--warning)' }}>{notLearnedCount}</p>
                         </div>
                     </div>
 
@@ -339,7 +378,7 @@ export default function Practice() {
                             <Link
                                 to={`/deck/${id}/practice?filter=not-learned`}
                                 className="btn btn-secondary btn-lg"
-                                style={{ width: '100%', borderColor: '#f59e0b', color: '#d97706' }}
+                                style={{ width: '100%', borderColor: 'var(--warning-border)', color: 'var(--warning-dark)' }}
                                 onClick={() => {
                                     setFinished(false);
                                     setLoading(true);
@@ -363,6 +402,7 @@ export default function Practice() {
     const card = cards[current];
     const isLearned = learnedIds.has(card.id);
     const isReviewCard = card._isReview;
+    const cardProgress = srsProgress[card.id] || { ease_factor: 2.5, interval: 0, repetitions: 0 };
 
     return (
         <div className="page">
@@ -385,12 +425,12 @@ export default function Practice() {
                         Card {current + 1} of {cards.length} — click or press space to flip
                     </p>
                     {isReplayMode && (
-                        <span className="badge mt-sm" style={{ background: '#fef3c7', color: '#92400e' }}>
+                        <span className="badge badge-warning mt-sm">
                             Replay not-learned mode
                         </span>
                     )}
                     {isReviewCard && (
-                        <span className="badge mt-sm" style={{ background: '#ede9fe', color: '#6b21a8' }}>
+                        <span className="badge badge-purple mt-sm">
                             Review Card
                         </span>
                     )}
@@ -416,7 +456,7 @@ export default function Practice() {
                                 left: '50%',
                                 transform: 'translate(-50%, -50%)',
                                 zIndex: 10,
-                                background: swipeAction === 'learned' ? '#10b981' : '#f59e0b',
+                                background: swipeAction === 'learned' ? 'var(--success)' : 'var(--warning)',
                                 color: '#fff',
                                 padding: '8px 20px',
                                 borderRadius: '100px',
@@ -431,53 +471,60 @@ export default function Practice() {
                     )}
                     <FlipCard key={flipKey} ref={flipCardRef} front={card.front} back={card.back} />
                     {isLearned && (
-                        <div style={{ position: 'absolute', top: -12, right: -12, background: '#10b981', color: '#fff', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-sm)' }}>
+                        <div style={{ position: 'absolute', top: -12, right: -12, background: 'var(--success)', color: '#fff', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-sm)' }}>
                             <CheckIcon size={16} />
                         </div>
                     )}
                 </div>
 
-                {/* Tracking Actions */}
+                {/* SRS Rating Buttons */}
+                <div className="srs-rating-row mb-sm">
+                    <button className="srs-btn srs-again" onClick={() => handleSRSRate(Rating.AGAIN)}>
+                        <span className="srs-btn-label">Again</span>
+                        <span className="srs-btn-interval">{formatInterval(previewIntervals(cardProgress)[Rating.AGAIN])}</span>
+                    </button>
+                    <button className="srs-btn srs-hard" onClick={() => handleSRSRate(Rating.HARD)}>
+                        <span className="srs-btn-label">Hard</span>
+                        <span className="srs-btn-interval">{formatInterval(previewIntervals(cardProgress)[Rating.HARD])}</span>
+                    </button>
+                    <button className="srs-btn srs-good" onClick={() => handleSRSRate(Rating.GOOD)}>
+                        <span className="srs-btn-label">Good</span>
+                        <span className="srs-btn-interval">{formatInterval(previewIntervals(cardProgress)[Rating.GOOD])}</span>
+                    </button>
+                    <button className="srs-btn srs-easy" onClick={() => handleSRSRate(Rating.EASY)}>
+                        <span className="srs-btn-label">Easy</span>
+                        <span className="srs-btn-interval">{formatInterval(previewIntervals(cardProgress)[Rating.EASY])}</span>
+                    </button>
+                </div>
+
+                {/* Quick actions row */}
                 <div className="flex-center gap-sm mb-lg">
                     <button
-                        className="btn btn-secondary"
+                        className="btn btn-ghost btn-sm"
                         onClick={handleMarkLearning}
-                        style={{ borderColor: !isLearned ? '#f59e0b' : '', color: !isLearned ? '#d97706' : '' }}
+                        style={{ color: !isLearned ? 'var(--warning-dark)' : '' }}
                     >
-                        <XIcon size={14} /> Still Learning <span className="text-muted text-sm ml-sm" style={{ opacity: 0.5 }}>←</span>
+                        <XIcon size={14} /> Still Learning <span className="text-muted text-sm" style={{ opacity: 0.5 }}>←</span>
                     </button>
                     <button
-                        className="btn btn-secondary"
+                        className="btn btn-ghost btn-sm"
                         onClick={handleMarkLearned}
-                        style={{ borderColor: isLearned ? '#10b981' : '', color: isLearned ? '#059669' : '', backgroundColor: isLearned ? '#ecfdf5' : '' }}
+                        style={{ color: isLearned ? 'var(--success-dark)' : '' }}
                     >
-                        <CheckIcon size={14} /> Know It <span className="text-muted text-sm ml-sm" style={{ opacity: 0.5 }}>→</span>
+                        <CheckIcon size={14} /> Know It <span className="text-muted text-sm" style={{ opacity: 0.5 }}>→</span>
                     </button>
                 </div>
 
                 {/* Keyboard hint */}
                 <p className="text-center text-sm text-muted mb-lg" style={{ opacity: 0.5 }}>
-                    Space = flip · ← = still learning · → = know it
+                    Space = flip · 1-4 = rate · ← = learning · → = know it
                 </p>
 
                 {/* Progress bar */}
-                <div
-                    style={{
-                        marginTop: '12px',
-                        height: '3px',
-                        background: 'var(--gray-200)',
-                        borderRadius: '100px',
-                        overflow: 'hidden',
-                    }}
-                >
+                <div className="progress-bar-track" style={{ marginTop: '12px' }}>
                     <div
-                        style={{
-                            height: '100%',
-                            width: `${((current + 1) / cards.length) * 100}%`,
-                            background: 'var(--black)',
-                            borderRadius: '100px',
-                            transition: 'width 0.3s ease',
-                        }}
+                        className="progress-bar-fill"
+                        style={{ width: `${((current + 1) / cards.length) * 100}%` }}
                     ></div>
                 </div>
             </div>

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchDeck, fetchCards, fetchQuizzesByDeck } from '../lib/supabase';
-import { getLearnedCardIds } from '../lib/tracking';
+import { getLearnedCardIds, loadSRSProgress, getDueCount } from '../lib/tracking';
+import { formatInterval } from '../lib/srs';
 import { WandIcon } from '../components/Icons';
 
 export default function DeckView() {
@@ -10,12 +11,15 @@ export default function DeckView() {
     const [cards, setCards] = useState([]);
     const [learnedCount, setLearnedCount] = useState(0);
     const [quizzes, setQuizzes] = useState([]);
+    const [dueCount, setDueCount] = useState(0);
+    const [srsProgress, setSrsProgress] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        Promise.all([fetchDeck(id), fetchCards(id), fetchQuizzesByDeck(id)])
-            .then(([d, c, q]) => {
+        async function load() {
+            try {
+                const [d, c, q] = await Promise.all([fetchDeck(id), fetchCards(id), fetchQuizzesByDeck(id)]);
                 setDeck(d);
                 setCards(c);
                 setQuizzes(q);
@@ -23,9 +27,17 @@ export default function DeckView() {
                 const learned = getLearnedCardIds(id);
                 const count = c.filter(card => learned.has(card.id)).length;
                 setLearnedCount(count);
-            })
-            .catch((err) => setError(err.message))
-            .finally(() => setLoading(false));
+
+                const progress = await loadSRSProgress(id);
+                setSrsProgress(progress);
+                setDueCount(getDueCount(progress, c));
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+        load();
     }, [id]);
 
     if (loading)
@@ -66,8 +78,13 @@ export default function DeckView() {
                     <div className="flex gap-sm mt-sm" style={{ alignItems: 'center', flexWrap: 'wrap' }}>
                         <span className="badge">{cards.length} cards</span>
                         {cards.length > 0 && (
-                            <span className="badge" style={{ background: 'var(--gray-800)', color: 'var(--white)' }}>
+                            <span className="badge badge-success">
                                 {learnedCount} learned · {notLearnedCount} learning
+                            </span>
+                        )}
+                        {dueCount > 0 && (
+                            <span className="badge badge-warning">
+                                {dueCount} due for review
                             </span>
                         )}
                         <span className="text-sm text-muted light" style={{ marginLeft: '4px' }}>by {deck.creator_name}</span>
@@ -76,7 +93,12 @@ export default function DeckView() {
 
                 {/* Actions */}
                 <div className="mb-lg flex gap-md" style={{ flexWrap: 'wrap' }}>
-                    <Link to={`/deck/${id}/practice`} className="btn btn-primary btn-lg">
+                    {dueCount > 0 && (
+                        <Link to={`/deck/${id}/review`} className="btn btn-primary btn-lg" style={{ background: 'var(--purple)', color: 'var(--surface)', borderColor: 'var(--purple)' }}>
+                            Review Due Cards ({dueCount})
+                        </Link>
+                    )}
+                    <Link to={`/deck/${id}/practice`} className={`btn ${dueCount > 0 ? 'btn-secondary' : 'btn-primary'} btn-lg`}>
                         Practice All
                     </Link>
                     {notLearnedCount > 0 && notLearnedCount < cards.length && (
@@ -84,7 +106,7 @@ export default function DeckView() {
                             Practice Not Learned ({notLearnedCount})
                         </Link>
                     )}
-                    <Link to={`/deck/${id}/quiz`} className="btn btn-secondary btn-lg" style={{ background: '#f3e8ff', color: '#6b21a8', borderColor: '#d8b4fe' }}>
+                    <Link to={`/deck/${id}/quiz`} className="btn btn-secondary btn-lg" style={{ background: 'var(--purple-light)', color: 'var(--purple-dark)', borderColor: 'var(--purple-border)' }}>
                         <WandIcon size={16} /> AI Quiz
                     </Link>
                     {cards.length >= 4 && (
@@ -99,28 +121,28 @@ export default function DeckView() {
                 <div className="flex" style={{ flexDirection: 'column', gap: '8px' }}>
                     {cards.map((card) => {
                         const isLearned = getLearnedCardIds(id).has(card.id);
+                        const progress = srsProgress[card.id];
+                        const isDueNow = !progress || new Date(progress.due_date) <= new Date();
                         return (
-                            <div key={card.id} className="card" style={{ padding: '16px 20px', borderLeft: isLearned ? '4px solid #10b981' : '1.5px solid var(--gray-200)' }}>
+                            <div key={card.id} className="card" style={{ padding: '16px 20px', borderLeft: isLearned ? `4px solid var(--success)` : isDueNow && progress ? `4px solid var(--warning)` : '1.5px solid var(--border)' }}>
                                 <div className="flex-between gap-md">
                                     <div style={{ flex: 1 }}>
                                         <p className="text-sm text-muted light" style={{ marginBottom: '2px' }}>
                                             Description
                                         </p>
-                                        <p style={{ color: 'var(--gray-700)', fontWeight: 300 }}>{card.front}</p>
+                                        <p style={{ color: 'var(--text-secondary)', fontWeight: 300 }}>{card.front}</p>
                                     </div>
-                                    <div
-                                        style={{
-                                            width: '1px',
-                                            background: 'var(--gray-200)',
-                                            alignSelf: 'stretch',
-                                            margin: '0 8px',
-                                        }}
-                                    ></div>
+                                    <div className="divider" style={{ margin: '0 8px' }}></div>
                                     <div style={{ flex: 0, minWidth: '120px' }}>
                                         <p className="text-sm text-muted light" style={{ marginBottom: '2px' }}>
                                             Term
                                         </p>
                                         <p style={{ fontWeight: 700 }}>{card.back}</p>
+                                        {progress && (
+                                            <p className="text-sm light" style={{ marginTop: '4px', color: isDueNow ? 'var(--warning-dark)' : 'var(--text-faint)', fontSize: '0.7rem' }}>
+                                                {isDueNow ? 'Due now' : `Next: ${formatInterval(progress.interval)}`}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -155,11 +177,11 @@ export default function DeckView() {
                                         </div>
                                         <div style={{ textAlign: 'right' }}>
                                             {quiz.score !== null ? (
-                                                <p style={{ fontWeight: 800, fontSize: '1.1rem', color: '#059669' }}>
+                                                <p style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--success)' }}>
                                                     {quiz.score}/{quiz.questions?.length || 0}
                                                 </p>
                                             ) : (
-                                                <span className="badge" style={{ background: '#fef3c7', color: '#92400e' }}>
+                                                <span className="badge badge-warning">
                                                     Not taken
                                                 </span>
                                             )}

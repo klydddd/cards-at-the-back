@@ -168,16 +168,16 @@ export default function TakeQuiz() {
                             if (exactMatch) score++;
 
                             return (
-                                <div key={i} className="card" style={{ borderLeftWidth: exactMatch ? 1.5 : 4, borderLeftColor: exactMatch ? 'var(--gray-200)' : '#f59e0b' }}>
+                                <div key={i} className="card" style={{ borderLeftWidth: exactMatch ? 1.5 : 4, borderLeftColor: exactMatch ? 'var(--border)' : 'var(--warning)' }}>
                                     <div className="text-sm light text-muted mb-sm" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>{q.type.replace('_', ' ')}</div>
                                     {q.scenario && <p className="mb-sm light" style={{ fontStyle: 'italic' }}>{q.scenario}</p>}
                                     <p className="bold mb-md" style={{ fontSize: '1.1rem' }}>{q.question}</p>
                                     <div className="flex gap-md mb-sm" style={{ flexWrap: 'wrap' }}>
-                                        <div style={{ flex: 1, background: 'var(--gray-100)', padding: '12px', borderRadius: '8px' }}>
+                                        <div style={{ flex: 1, background: 'var(--bg)', padding: '12px', borderRadius: '8px' }}>
                                             <span className="text-sm text-muted block mb-sm">Your Answer:</span>
                                             <p>{Array.isArray(userAnswer) ? userAnswer.join(', ') : (userAnswer !== undefined && userAnswer !== '' ? String(userAnswer) : 'Skipped')}</p>
                                         </div>
-                                        <div style={{ flex: 1, background: exactMatch ? '#ecfdf5' : '#fef3c7', padding: '12px', borderRadius: '8px' }}>
+                                        <div style={{ flex: 1, background: exactMatch ? 'var(--success-light)' : 'var(--warning-light)', padding: '12px', borderRadius: '8px' }}>
                                             <span className="text-sm text-muted block mb-sm">Correct Answer:</span>
                                             <p className="bold">{Array.isArray(q.answer) ? q.answer.join(', ') : String(q.answer)}</p>
                                         </div>
@@ -218,8 +218,8 @@ export default function TakeQuiz() {
                     <span className="text-sm bold">Question {currentQ + 1} of {questions.length}</span>
                 </div>
 
-                <div className="mb-lg" style={{ height: '3px', background: 'var(--gray-200)', borderRadius: '100px' }}>
-                    <div style={{ height: '100%', width: `${((currentQ + 1) / questions.length) * 100}%`, background: 'var(--black)', borderRadius: '100px', transition: 'width 0.3s ease' }}></div>
+                <div className="mb-lg" style={{ height: '3px', background: 'var(--border)', borderRadius: '100px' }}>
+                    <div style={{ height: '100%', width: `${((currentQ + 1) / questions.length) * 100}%`, background: 'var(--primary)', borderRadius: '100px', transition: 'width 0.3s ease' }}></div>
                 </div>
 
                 <div className="card mb-lg" style={{ padding: '32px' }}>
@@ -227,7 +227,7 @@ export default function TakeQuiz() {
                         {q.type.replace('_', ' ')}
                     </div>
 
-                    {q.scenario && <p className="mb-md light" style={{ fontSize: '1.05rem', fontStyle: 'italic', paddingLeft: '12px', borderLeft: '2px solid var(--gray-300)' }}>{q.scenario}</p>}
+                    {q.scenario && <p className="mb-md light" style={{ fontSize: '1.05rem', fontStyle: 'italic', paddingLeft: '12px', borderLeft: '2px solid var(--border-hover)' }}>{q.scenario}</p>}
 
                     <h2 className="mb-lg" style={{ fontSize: '1.4rem' }}>{q.question}</h2>
 
@@ -238,9 +238,9 @@ export default function TakeQuiz() {
                                     let optStyle = { justifyContent: 'flex-start', textAlign: 'left', padding: '16px', fontWeight: 400 };
                                     if (feedback) {
                                         if (opt === q.answer) {
-                                            optStyle = { ...optStyle, background: '#ecfdf5', borderColor: '#10b981', color: '#059669', fontWeight: 600 };
+                                            optStyle = { ...optStyle, background: 'var(--success-light)', borderColor: 'var(--success)', color: 'var(--success-dark)', fontWeight: 600 };
                                         } else if (opt === feedback.userAnswer && !feedback.isCorrect) {
-                                            optStyle = { ...optStyle, background: '#fef2f2', borderColor: '#ef4444', color: '#991b1b' };
+                                            optStyle = { ...optStyle, background: 'var(--error-light)', borderColor: 'var(--error)', color: 'var(--error-dark)' };
                                         } else {
                                             optStyle = { ...optStyle, opacity: 0.4 };
                                         }
@@ -260,9 +260,9 @@ export default function TakeQuiz() {
                                     let btnStyle = { flex: 1, padding: '24px' };
                                     if (feedback) {
                                         if (val === q.answer) {
-                                            btnStyle = { ...btnStyle, background: '#ecfdf5', borderColor: '#10b981', color: '#059669', fontWeight: 700 };
+                                            btnStyle = { ...btnStyle, background: 'var(--success-light)', borderColor: 'var(--success)', color: 'var(--success-dark)', fontWeight: 700 };
                                         } else if (val === feedback.userAnswer && !feedback.isCorrect) {
-                                            btnStyle = { ...btnStyle, background: '#fef2f2', borderColor: '#ef4444', color: '#991b1b' };
+                                            btnStyle = { ...btnStyle, background: 'var(--error-light)', borderColor: 'var(--error)', color: 'var(--error-dark)' };
                                         } else {
                                             btnStyle = { ...btnStyle, opacity: 0.4 };
                                         }
@@ -309,18 +309,18 @@ export default function TakeQuiz() {
                             marginTop: '24px',
                             padding: '16px 20px',
                             borderRadius: 'var(--radius-md)',
-                            background: feedback.isCorrect ? '#ecfdf5' : '#fef2f2',
-                            border: `1.5px solid ${feedback.isCorrect ? '#a7f3d0' : '#fecaca'}`,
+                            background: feedback.isCorrect ? 'var(--success-light)' : 'var(--error-light)',
+                            border: `1.5px solid ${feedback.isCorrect ? 'var(--success-border)' : 'var(--error-border)'}`,
                         }}>
                             <div className="flex gap-sm" style={{ alignItems: 'center', marginBottom: '8px' }}>
                                 <div style={{
                                     width: 28, height: 28, borderRadius: '50%',
-                                    background: feedback.isCorrect ? '#10b981' : '#ef4444',
+                                    background: feedback.isCorrect ? 'var(--success)' : 'var(--error)',
                                     color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 }}>
                                     {feedback.isCorrect ? <CheckIcon size={14} /> : <XIcon size={14} />}
                                 </div>
-                                <span style={{ fontWeight: 700, color: feedback.isCorrect ? '#059669' : '#991b1b' }}>
+                                <span style={{ fontWeight: 700, color: feedback.isCorrect ? 'var(--success-dark)' : 'var(--error-dark)' }}>
                                     {feedback.isCorrect ? 'Correct!' : 'Incorrect'}
                                 </span>
                             </div>

@@ -17,7 +17,7 @@ export async function parseMarkdownToCards(markdownContent) {
         throw new Error('Gemini API key is not configured. Please add your key to the .env file.');
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite-preview' });
 
     const prompt = `You are a flashcard generator. Analyze the following content and extract the most important terms, concepts, and key information. Create flashcards where:
 - The "front" is the DESCRIPTION or DEFINITION of the concept

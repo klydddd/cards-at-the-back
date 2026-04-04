@@ -10,6 +10,7 @@ import Quiz from './pages/Quiz';
 import QuizReview from './pages/QuizReview';
 import TakeQuiz from './pages/TakeQuiz';
 import MCQuiz from './pages/MCQuiz';
+import Review from './pages/Review';
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
         <Route path="/deck/:id/quiz" element={<Quiz />} />
         <Route path="/deck/:id/quiz/:quizId" element={<QuizReview />} />
         <Route path="/deck/:id/quick-quiz" element={<MCQuiz />} />
+        <Route path="/deck/:id/review" element={<Review />} />
         <Route path="/take/:quizId" element={<TakeQuiz />} />
         <Route path="/ai-parse" element={<AIParse />} />
       </Routes>

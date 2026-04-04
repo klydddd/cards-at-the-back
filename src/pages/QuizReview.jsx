@@ -61,12 +61,12 @@ export default function QuizReview() {
                     <div className="flex gap-sm mt-sm" style={{ flexWrap: 'wrap' }}>
                         <span className="badge">{questions.length} questions</span>
                         {quiz.question_types.map(t => (
-                            <span key={t} className="badge" style={{ background: 'var(--gray-100)' }}>
+                            <span key={t} className="badge" style={{ background: 'var(--bg)' }}>
                                 {t.replace('_', ' ')}
                             </span>
                         ))}
                         {quiz.score !== null && (
-                            <span className="badge" style={{ background: '#ecfdf5', color: '#059669' }}>
+                            <span className="badge" style={{ background: 'var(--success-light)', color: 'var(--success-dark)' }}>
                                 Score: {quiz.score}/{questions.length}
                             </span>
                         )}
@@ -90,7 +90,7 @@ export default function QuizReview() {
                         return (
                             <div key={i} className="card" style={{
                                 borderLeftWidth: hasAnswers ? (exactMatch ? 1.5 : 4) : 1.5,
-                                borderLeftColor: hasAnswers ? (exactMatch ? 'var(--gray-200)' : '#f59e0b') : 'var(--gray-200)',
+                                borderLeftColor: hasAnswers ? (exactMatch ? 'var(--border)' : 'var(--warning)') : 'var(--border)',
                             }}>
                                 <div className="text-sm light text-muted mb-sm" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                     {q.type.replace('_', ' ')}
@@ -105,7 +105,7 @@ export default function QuizReview() {
                                                 padding: '8px 12px',
                                                 borderRadius: '8px',
                                                 fontSize: '0.9rem',
-                                                background: opt === q.answer ? '#ecfdf5' : (hasAnswers && opt === userAnswer && !exactMatch) ? '#fef3c7' : 'var(--gray-100)',
+                                                background: opt === q.answer ? 'var(--success-light)' : (hasAnswers && opt === userAnswer && !exactMatch) ? 'var(--warning-light)' : 'var(--bg)',
                                                 fontWeight: opt === q.answer ? 700 : 400,
                                             }}>
                                                 {opt}
@@ -116,11 +116,11 @@ export default function QuizReview() {
 
                                 {hasAnswers && (
                                     <div className="flex gap-md" style={{ flexWrap: 'wrap' }}>
-                                        <div style={{ flex: 1, background: 'var(--gray-100)', padding: '12px', borderRadius: '8px' }}>
+                                        <div style={{ flex: 1, background: 'var(--bg)', padding: '12px', borderRadius: '8px' }}>
                                             <span className="text-sm text-muted block mb-sm">Answer Given:</span>
                                             <p>{Array.isArray(userAnswer) ? userAnswer.join(', ') : (hasThisAnswer ? String(userAnswer) : 'Skipped')}</p>
                                         </div>
-                                        <div style={{ flex: 1, background: exactMatch ? '#ecfdf5' : '#fef3c7', padding: '12px', borderRadius: '8px' }}>
+                                        <div style={{ flex: 1, background: exactMatch ? 'var(--success-light)' : 'var(--warning-light)', padding: '12px', borderRadius: '8px' }}>
                                             <span className="text-sm text-muted block mb-sm">Correct Answer:</span>
                                             <p className="bold">{Array.isArray(q.answer) ? q.answer.join(', ') : String(q.answer)}</p>
                                         </div>
@@ -128,7 +128,7 @@ export default function QuizReview() {
                                 )}
 
                                 {!hasAnswers && (
-                                    <div style={{ background: '#ecfdf5', padding: '12px', borderRadius: '8px' }}>
+                                    <div style={{ background: 'var(--success-light)', padding: '12px', borderRadius: '8px' }}>
                                         <span className="text-sm text-muted block mb-sm">Answer:</span>
                                         <p className="bold">{Array.isArray(q.answer) ? q.answer.join(', ') : String(q.answer)}</p>
                                     </div>

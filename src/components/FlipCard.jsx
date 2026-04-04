@@ -15,6 +15,7 @@ const FlipCard = forwardRef(function FlipCard({ front, back }, ref) {
             onClick={() => setFlipped(!flipped)}
             role="button"
             tabIndex={0}
+            aria-label={flipped ? `Card back: ${back}` : `Card front: ${front}. Press space to flip.`}
             onKeyDown={(e) => e.key === ' ' && setFlipped(!flipped)}
         >
             <div className={`flip-card-inner ${flipped ? 'flipped' : ''}`}>

@@ -19,19 +19,20 @@ export default function Navbar() {
         <nav className="navbar">
             <div className="container navbar-inner">
                 <Link to="/" className="navbar-brand">
-                    cards at the back
+                    cards at <span className="brand-accent">the back</span>
                 </Link>
                 <div className="navbar-links">
                     <button
                         type="button"
                         className="btn btn-ghost"
                         onClick={handleToggle}
+                        aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
                         title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-                        style={{ padding: '8px', borderRadius: '50%', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        style={{ padding: '8px', borderRadius: '50%', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '44px', minHeight: '44px' }}
                     >
                         {theme === 'light' ? <MoonIcon size={18} /> : <SunIcon size={18} />}
                     </button>
-                    <div style={{ width: '1px', height: '20px', background: 'var(--gray-200)', margin: '0 8px' }}></div>
+                    <div style={{ width: '1px', height: '20px', background: 'var(--border)', margin: '0 6px' }}></div>
                     <Link to="/create" className="btn btn-ghost btn-sm">
                         Create
                     </Link>

@@ -3,6 +3,12 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const apiKey = process.env.GEMINI_API_KEY;
 
+const MODELS = [
+    'gemini-3.1-flash-lite-preview',
+    'gemini-2.5-flash',
+    'gemma-3-27b-it',
+];
+
 export async function POST(request: NextRequest) {
     if (!apiKey || apiKey === 'your_gemini_api_key') {
         return NextResponse.json(
@@ -19,7 +25,6 @@ export async function POST(request: NextRequest) {
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemma-3-27b-it' });
 
         const typeInstructions = Object.entries(questionTypeCounts)
             .filter(([, count]) => (count as number) > 0)
@@ -57,19 +62,37 @@ Use the following schema for the objects in the array based on their "type":
 Flashcards Data:
 ${JSON.stringify(cards, null, 2)}`;
 
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text().trim();
+        let lastError: any = null;
 
-        let cleaned = text;
-        if (cleaned.startsWith('```')) {
-            cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+        for (const modelName of MODELS) {
+            try {
+                console.log(`[quiz] Trying model: ${modelName}`);
+                const model = genAI.getGenerativeModel({ model: modelName });
+                const result = await model.generateContent(prompt);
+                const response = await result.response;
+                const text = response.text().trim();
+
+                let cleaned = text;
+                if (cleaned.startsWith('```')) {
+                    cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+                }
+
+                const questions = JSON.parse(cleaned);
+                if (!Array.isArray(questions)) throw new Error('Response is not an array');
+
+                console.log(`[quiz] Success with model: ${modelName} (${questions.length} questions)`);
+                return NextResponse.json({ questions });
+            } catch (err: any) {
+                console.warn(`[quiz] Model ${modelName} failed:`, err.message);
+                lastError = err;
+            }
         }
 
-        const questions = JSON.parse(cleaned);
-        if (!Array.isArray(questions)) throw new Error('Response is not an array');
-
-        return NextResponse.json({ questions });
+        // All models failed
+        return NextResponse.json(
+            { error: lastError?.message || 'All AI models failed. Please try again.' },
+            { status: 500 }
+        );
     } catch (e: any) {
         console.error('Gemini quiz error:', e);
         return NextResponse.json(

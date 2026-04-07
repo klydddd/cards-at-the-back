@@ -3,6 +3,12 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const apiKey = process.env.GEMINI_API_KEY;
 
+const MODELS = [
+    'gemini-3.1-flash-lite-preview',
+    'gemini-2.5-flash',
+    'gemma-3-27b-it',
+];
+
 export async function POST(request: NextRequest) {
     if (!apiKey || apiKey === 'your_gemini_api_key') {
         return NextResponse.json(
@@ -18,7 +24,6 @@ export async function POST(request: NextRequest) {
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemma-3-27b-it' });
 
         const prompt = `You are a flashcard generator. Analyze the following content and extract the most important terms, concepts, and key information. Create flashcards where:
 - The "front" is the DESCRIPTION or DEFINITION of the concept
@@ -32,24 +37,42 @@ Example output format:
 Content to analyze:
 ${content}`;
 
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text().trim();
+        let lastError: any = null;
 
-        let cleaned = text;
-        if (cleaned.startsWith('```')) {
-            cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+        for (const modelName of MODELS) {
+            try {
+                console.log(`[parse] Trying model: ${modelName}`);
+                const model = genAI.getGenerativeModel({ model: modelName });
+                const result = await model.generateContent(prompt);
+                const response = await result.response;
+                const text = response.text().trim();
+
+                let cleaned = text;
+                if (cleaned.startsWith('```')) {
+                    cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+                }
+
+                const cards = JSON.parse(cleaned);
+                if (!Array.isArray(cards)) throw new Error('Response is not an array');
+
+                const sanitized = cards.map((c: any) => ({
+                    front: c.front || '',
+                    back: c.back || '',
+                }));
+
+                console.log(`[parse] Success with model: ${modelName} (${sanitized.length} cards)`);
+                return NextResponse.json({ cards: sanitized });
+            } catch (err: any) {
+                console.warn(`[parse] Model ${modelName} failed:`, err.message);
+                lastError = err;
+            }
         }
 
-        const cards = JSON.parse(cleaned);
-        if (!Array.isArray(cards)) throw new Error('Response is not an array');
-
-        const sanitized = cards.map((c: any) => ({
-            front: c.front || '',
-            back: c.back || '',
-        }));
-
-        return NextResponse.json({ cards: sanitized });
+        // All models failed
+        return NextResponse.json(
+            { error: lastError?.message || 'All AI models failed. Please try again.' },
+            { status: 500 }
+        );
     } catch (e: any) {
         console.error('Gemini parse error:', e);
         return NextResponse.json(

@@ -12,22 +12,22 @@ import { SparklesIcon } from '@/components/Icons';
 export default function Review() {
     const { id } = useParams();
 
-    const [deck, setDeck] = useState(null);
-    const [dueCards, setDueCards] = useState([]);
-    const [progressMap, setProgressMap] = useState({});
+    const [deck, setDeck] = useState<any>(null);
+    const [dueCards, setDueCards] = useState<any[]>([]);
+    const [progressMap, setProgressMap] = useState<Record<string, any>>({});
     const [current, setCurrent] = useState(0);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
     const [flipKey, setFlipKey] = useState(0);
     const [finished, setFinished] = useState(false);
     const [sessionStats, setSessionStats] = useState({ again: 0, good: 0 });
 
     const [swipeOffset, setSwipeOffset] = useState(0);
-    const [swipeAction, setSwipeAction] = useState(null);
+    const [swipeAction, setSwipeAction] = useState<string | null>(null);
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
     const [isAnimatingIn, setIsAnimatingIn] = useState(false);
 
-    const flipCardRef = useRef(null);
+    const flipCardRef = useRef<any>(null);
 
     useEffect(() => {
         async function load() {

@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+const apiKey = process.env.GEMINI_API_KEY;
 const isConfigured = apiKey && apiKey !== 'your_gemini_api_key';
 
 let genAI = null;
@@ -17,7 +17,7 @@ export async function generateQuizFromCards(cards, questionTypeCounts) {
         throw new Error('Gemini API key is not configured. Please add your key to the .env file.');
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite-preview' });
+    const model = genAI.getGenerativeModel({ model: 'gemma-3-27b-it' });
 
     // Build per-type instruction
     const typeInstructions = Object.entries(questionTypeCounts)

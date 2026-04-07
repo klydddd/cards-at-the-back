@@ -1,6 +1,8 @@
+"use client";
+
 import { useState, useImperativeHandle, forwardRef } from 'react';
 
-const FlipCard = forwardRef(function FlipCard({ front, back }, ref) {
+const FlipCard = forwardRef(function FlipCard({ front, back }: { front: string, back: string }, ref: any) {
     const [flipped, setFlipped] = useState(false);
 
     useImperativeHandle(ref, () => ({

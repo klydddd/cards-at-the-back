@@ -1,12 +1,14 @@
+"use client";
+
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { createDeck, createCards } from '../lib/supabase';
-import CardForm from '../components/CardForm';
+import { useRouter } from 'next/navigation';
+import { createDeck, createCards } from '@/lib/supabase';
+import CardForm from '@/components/CardForm';
 
 const emptyCard = () => ({ front: '', back: '' });
 
 export default function CreateDeck() {
-    const navigate = useNavigate();
+    const router = useRouter();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [subject, setSubject] = useState('');
@@ -39,7 +41,7 @@ export default function CreateDeck() {
         try {
             const deck = await createDeck(title.trim(), description.trim(), creatorName.trim() || 'Anonymous', subject.trim());
             await createCards(deck.id, validCards);
-            navigate(`/deck/${deck.id}`);
+            router.push(`/deck/${deck.id}`);
         } catch (err) {
             setError(err.message);
             setSaving(false);

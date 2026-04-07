@@ -1,8 +1,10 @@
+"use client";
+
 import { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { fetchDecks, fetchAllQuizzes } from '../lib/supabase';
-import DeckCard from '../components/DeckCard';
-import { WandIcon } from '../components/Icons';
+import Link from 'next/link';
+import { fetchDecks, fetchAllQuizzes } from '@/lib/supabase';
+import DeckCard from '@/components/DeckCard';
+import { WandIcon } from '@/components/Icons';
 
 export default function Home() {
     const [decks, setDecks] = useState([]);
@@ -105,10 +107,10 @@ export default function Home() {
                         Create, share, and practice flashcards. Upload a file and let AI do the rest.
                     </p>
                     <div className="flex-center gap-sm mt-md">
-                        <Link to="/create" className="btn btn-primary btn-lg">
+                        <Link href="/create" className="btn btn-primary btn-lg">
                             Create Deck
                         </Link>
-                        <Link to="/ai-parse" className="btn btn-secondary btn-lg">
+                        <Link href="/ai-parse" className="btn btn-secondary btn-lg">
                             AI Parse
                         </Link>
                     </div>
@@ -133,7 +135,7 @@ export default function Home() {
                                 <>
                                     <h2>No decks yet</h2>
                                     <p>Be the first to create a deck and share it with the world.</p>
-                                    <Link to="/create" className="btn btn-primary">
+                                    <Link href="/create" className="btn btn-primary">
                                         Create your first deck
                                     </Link>
                                 </>
@@ -172,7 +174,7 @@ export default function Home() {
                             {filteredQuizzes.map((quiz) => (
                                 <Link
                                     key={quiz.id}
-                                    to={`/take/${quiz.id}`}
+                                    href={`/take/${quiz.id}`}
                                     className="card card-clickable"
                                     style={{ padding: '20px' }}
                                 >

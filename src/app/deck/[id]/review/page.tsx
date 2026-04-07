@@ -1,10 +1,13 @@
+"use client";
+
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { fetchDeck, fetchCards } from '../lib/supabase';
-import FlipCard from '../components/FlipCard';
-import { loadSRSProgress, rateCard, getDueCardsList } from '../lib/tracking';
-import { Rating, formatInterval, previewIntervals } from '../lib/srs';
-import { SparklesIcon } from '../components/Icons';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { fetchDeck, fetchCards } from '@/lib/supabase';
+import FlipCard from '@/components/FlipCard';
+import { loadSRSProgress, rateCard, getDueCardsList } from '@/lib/tracking';
+import { Rating, formatInterval, previewIntervals } from '@/lib/srs';
+import { SparklesIcon } from '@/components/Icons';
 
 export default function Review() {
     const { id } = useParams();
@@ -17,7 +20,12 @@ export default function Review() {
     const [error, setError] = useState(null);
     const [flipKey, setFlipKey] = useState(0);
     const [finished, setFinished] = useState(false);
-    const [sessionStats, setSessionStats] = useState({ again: 0, hard: 0, good: 0, easy: 0 });
+    const [sessionStats, setSessionStats] = useState({ again: 0, good: 0 });
+
+    const [swipeOffset, setSwipeOffset] = useState(0);
+    const [swipeAction, setSwipeAction] = useState(null);
+    const [isAnimatingOut, setIsAnimatingOut] = useState(false);
+    const [isAnimatingIn, setIsAnimatingIn] = useState(false);
 
     const flipCardRef = useRef(null);
 
@@ -42,8 +50,17 @@ export default function Review() {
     const handleRate = useCallback(async (rating) => {
         if (dueCards.length === 0 || finished) return;
 
+        setIsAnimatingOut(true);
+        if (rating === Rating.AGAIN) {
+            setSwipeAction('learning');
+            setSwipeOffset(-500);
+        } else {
+            setSwipeAction('learned');
+            setSwipeOffset(500);
+        }
+
         const card = dueCards[current];
-        const statKey = ['again', 'hard', 'good', 'easy'][rating];
+        const statKey = rating === Rating.AGAIN ? 'again' : 'good';
         setSessionStats(prev => ({ ...prev, [statKey]: prev[statKey] + 1 }));
 
         const updated = await rateCard(id, card.id, rating);
@@ -56,11 +73,16 @@ export default function Review() {
 
         if (current < dueCards.length - 1 || rating === Rating.AGAIN) {
             setTimeout(() => {
+                setSwipeOffset(0);
+                setSwipeAction(null);
+                setIsAnimatingOut(false);
+                setIsAnimatingIn(true);
                 setCurrent(prev => prev + 1);
                 setFlipKey(k => k + 1);
-            }, 200);
+                setTimeout(() => setIsAnimatingIn(false), 50);
+            }, 300);
         } else {
-            setTimeout(() => setFinished(true), 200);
+            setTimeout(() => setFinished(true), 300);
         }
     }, [dueCards, current, finished, id]);
 
@@ -72,10 +94,8 @@ export default function Review() {
                 e.preventDefault();
                 flipCardRef.current?.toggle();
             }
-            if (e.key === '1') handleRate(Rating.AGAIN);
-            if (e.key === '2') handleRate(Rating.HARD);
-            if (e.key === '3') handleRate(Rating.GOOD);
-            if (e.key === '4') handleRate(Rating.EASY);
+            if (e.key === 'ArrowLeft') handleRate(Rating.AGAIN);
+            if (e.key === 'ArrowRight') handleRate(Rating.GOOD);
         };
         window.addEventListener('keydown', handleKey);
         return () => window.removeEventListener('keydown', handleKey);
@@ -106,7 +126,7 @@ export default function Review() {
                     <SparklesIcon size={32} style={{ marginBottom: '12px', opacity: 0.5 }} />
                     <h2 className="mb-md">No cards due!</h2>
                     <p className="mb-lg">All caught up. Come back later when cards are due for review.</p>
-                    <Link to={`/deck/${id}`} className="btn btn-primary">
+                    <Link href={`/deck/${id}`} className="btn btn-primary">
                         Back to Deck
                     </Link>
                 </div>
@@ -115,7 +135,7 @@ export default function Review() {
 
     // Finished screen
     if (finished) {
-        const total = sessionStats.again + sessionStats.hard + sessionStats.good + sessionStats.easy;
+        const total = sessionStats.again + sessionStats.good;
         return (
             <div className="page">
                 <div className="container text-center" style={{ maxWidth: '520px' }}>
@@ -123,30 +143,22 @@ export default function Review() {
                     <h2 className="mb-sm">Review Complete!</h2>
                     <p className="mb-lg">You reviewed {total} cards this session.</p>
 
-                    <div className="srs-stats-grid mb-lg">
-                        <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
-                            <p className="text-sm text-muted light" style={{ marginBottom: '4px' }}>Again</p>
-                            <p style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--error)' }}>{sessionStats.again}</p>
+                    <div className="flex-center gap-md mb-lg" style={{ flexWrap: 'wrap' }}>
+                        <div className="card" style={{ padding: '16px 24px', textAlign: 'center', flex: '1 1 120px' }}>
+                            <p className="text-sm text-muted light" style={{ marginBottom: '4px' }}>Still Learning</p>
+                            <p style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--warning)' }}>{sessionStats.again}</p>
                         </div>
-                        <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
-                            <p className="text-sm text-muted light" style={{ marginBottom: '4px' }}>Hard</p>
-                            <p style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--warning)' }}>{sessionStats.hard}</p>
-                        </div>
-                        <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
-                            <p className="text-sm text-muted light" style={{ marginBottom: '4px' }}>Good</p>
+                        <div className="card" style={{ padding: '16px 24px', textAlign: 'center', flex: '1 1 120px' }}>
+                            <p className="text-sm text-muted light" style={{ marginBottom: '4px' }}>Known</p>
                             <p style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--success)' }}>{sessionStats.good}</p>
-                        </div>
-                        <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
-                            <p className="text-sm text-muted light" style={{ marginBottom: '4px' }}>Easy</p>
-                            <p style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)' }}>{sessionStats.easy}</p>
                         </div>
                     </div>
 
                     <div className="flex" style={{ flexDirection: 'column', gap: '10px' }}>
-                        <Link to={`/deck/${id}`} className="btn btn-primary btn-lg" style={{ width: '100%' }}>
+                        <Link href={`/deck/${id}`} className="btn btn-primary btn-lg" style={{ width: '100%' }}>
                             Back to Deck
                         </Link>
-                        <Link to={`/deck/${id}/practice`} className="btn btn-secondary btn-lg" style={{ width: '100%' }}>
+                        <Link href={`/deck/${id}/practice`} className="btn btn-secondary btn-lg" style={{ width: '100%' }}>
                             Practice All Cards
                         </Link>
                     </div>
@@ -157,15 +169,33 @@ export default function Review() {
 
     const card = dueCards[current];
     const cardProgress = progressMap[card.id] || { ease_factor: 2.5, interval: 0, repetitions: 0 };
-    const intervals = previewIntervals(cardProgress);
     const remaining = dueCards.length - current;
+
+    // Calculate animation styles
+    let transformStyle = `translateX(${swipeOffset * 0.4}px) rotate(${swipeOffset * 0.02}deg)`;
+    let transitionStyle = 'none';
+    let opacityStyle = 1;
+
+    if (isAnimatingOut) {
+        // Animating completely off screen and fading out over 0.25s
+        transitionStyle = 'transform 0.25s ease-out, opacity 0.25s ease-out';
+        opacityStyle = 0;
+    } else if (isAnimatingIn) {
+        // Just mounted new card, start invisible and centered but not transitioned
+        transitionStyle = 'none';
+        opacityStyle = 0;
+    } else if (swipeOffset === 0) {
+        // Sitting centered after fade-in, apply fade-in transition
+        transitionStyle = 'opacity 0.25s ease-in';
+        opacityStyle = 1;
+    }
 
     return (
         <div className="page">
             <div className="container" style={{ maxWidth: '640px' }}>
                 {/* Header */}
                 <div className="flex-between mb-lg">
-                    <Link to={`/deck/${id}`} className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px' }}>
+                    <Link href={`/deck/${id}`} className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px' }}>
                         ← Back
                     </Link>
                     <span className="badge">{remaining} remaining</span>
@@ -178,34 +208,61 @@ export default function Review() {
                     </p>
                 </div>
 
-                {/* Flip Card */}
-                <div className="mb-md">
+                {/* Flip Card with swipe animation */}
+                <div
+                    className="mb-md"
+                    style={{
+                        position: 'relative',
+                        transform: transformStyle,
+                        transition: transitionStyle,
+                        opacity: opacityStyle,
+                    }}
+                >
+                    {swipeAction && (
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                zIndex: 10,
+                                background: swipeAction === 'learned' ? 'var(--success)' : 'var(--warning)',
+                                color: '#fff',
+                                padding: '8px 20px',
+                                borderRadius: '100px',
+                                fontWeight: 700,
+                                fontSize: '0.85rem',
+                                pointerEvents: 'none',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                            }}
+                        >
+                            {swipeAction === 'learned' ? 'Know It →' : '← Still Learning'}
+                        </div>
+                    )}
                     <FlipCard key={flipKey} ref={flipCardRef} front={card.front} back={card.back} />
                 </div>
 
-                {/* SRS Rating Buttons */}
-                <div className="srs-rating-row mb-md">
-                    <button className="srs-btn srs-again" onClick={() => handleRate(Rating.AGAIN)}>
-                        <span className="srs-btn-label">Again</span>
-                        <span className="srs-btn-interval">{formatInterval(intervals[Rating.AGAIN])}</span>
+                {/* Main Action Buttons */}
+                <div className="flex-center gap-md mb-lg">
+                    <button
+                        className="btn btn-secondary btn-lg"
+                        onClick={() => handleRate(Rating.AGAIN)}
+                        style={{ flex: 1, borderColor: 'var(--warning-border)', color: 'var(--warning-dark)' }}
+                    >
+                        Still Learning <span className="text-muted text-sm" style={{ opacity: 0.5, marginLeft: 8 }}>←</span>
                     </button>
-                    <button className="srs-btn srs-hard" onClick={() => handleRate(Rating.HARD)}>
-                        <span className="srs-btn-label">Hard</span>
-                        <span className="srs-btn-interval">{formatInterval(intervals[Rating.HARD])}</span>
-                    </button>
-                    <button className="srs-btn srs-good" onClick={() => handleRate(Rating.GOOD)}>
-                        <span className="srs-btn-label">Good</span>
-                        <span className="srs-btn-interval">{formatInterval(intervals[Rating.GOOD])}</span>
-                    </button>
-                    <button className="srs-btn srs-easy" onClick={() => handleRate(Rating.EASY)}>
-                        <span className="srs-btn-label">Easy</span>
-                        <span className="srs-btn-interval">{formatInterval(intervals[Rating.EASY])}</span>
+                    <button
+                        className="btn btn-primary btn-lg"
+                        onClick={() => handleRate(Rating.GOOD)}
+                        style={{ flex: 1, background: 'var(--success)', borderColor: 'var(--success)' }}
+                    >
+                        Know It <span className="text-muted text-sm" style={{ opacity: 0.5, marginLeft: 8 }}>→</span>
                     </button>
                 </div>
 
                 {/* Keyboard hint */}
                 <p className="text-center text-sm text-muted" style={{ opacity: 0.5 }}>
-                    Space = flip · 1 = Again · 2 = Hard · 3 = Good · 4 = Easy
+                    Space = flip · ← = learning · → = know it
                 </p>
 
                 {/* Progress bar */}

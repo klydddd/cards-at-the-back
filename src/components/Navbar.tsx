@@ -1,6 +1,8 @@
+"use client";
+
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { getInitialTheme, toggleTheme, setTheme } from '../lib/theme';
+import Link from 'next/link';
+import { getInitialTheme, toggleTheme, setTheme } from '@/lib/theme';
 import { MoonIcon, SunIcon } from './Icons';
 
 export default function Navbar() {
@@ -18,7 +20,7 @@ export default function Navbar() {
     return (
         <nav className="navbar">
             <div className="container navbar-inner">
-                <Link to="/" className="navbar-brand">
+                <Link href="/" className="navbar-brand">
                     cards at <span className="brand-accent">the back</span>
                 </Link>
                 <div className="navbar-links">
@@ -33,10 +35,10 @@ export default function Navbar() {
                         {theme === 'light' ? <MoonIcon size={18} /> : <SunIcon size={18} />}
                     </button>
                     <div style={{ width: '1px', height: '20px', background: 'var(--border)', margin: '0 6px' }}></div>
-                    <Link to="/create" className="btn btn-ghost btn-sm">
+                    <Link href="/create" className="btn btn-ghost btn-sm">
                         Create
                     </Link>
-                    <Link to="/ai-parse" className="btn btn-primary btn-sm">
+                    <Link href="/ai-parse" className="btn btn-primary btn-sm">
                         AI Parse
                     </Link>
                 </div>

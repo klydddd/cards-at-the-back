@@ -1,10 +1,12 @@
-import { Link } from 'react-router-dom';
+"use client";
 
-export default function DeckCard({ deck }) {
+import Link from 'next/link';
+
+export default function DeckCard({ deck }: { deck: any }) {
     const cardCount = deck.cards?.[0]?.count ?? 0;
 
     return (
-        <Link to={`/deck/${deck.id}`} className="card card-clickable" id={`deck-${deck.id}`}>
+        <Link href={`/deck/${deck.id}`} className="card card-clickable" id={`deck-${deck.id}`}>
             <h3 style={{ marginBottom: '6px' }}>{deck.title}</h3>
             {deck.description && (
                 <p className="text-sm" style={{ marginBottom: '12px', lineHeight: '1.4' }}>

@@ -27,7 +27,7 @@ Both Supabase and Gemini have graceful degradation — the app checks `isSupabas
 
 ## Architecture
 
-**Stack:** React 19 + Vite, React Router DOM, Supabase (auth + DB), Google Gemini (`gemini-2.5-flash`), Vercel Analytics.
+**Stack:** React 19 + Vite, React Router DOM, Supabase (auth + DB), Google Gemini (`gemma-3-27b-it`), Vercel Analytics.
 
 **Routing** is defined in `src/App.jsx`. All routes are public (no auth guard).
 

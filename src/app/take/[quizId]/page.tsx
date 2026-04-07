@@ -1,7 +1,10 @@
+"use client";
+
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { fetchQuiz, fetchDeck, saveQuiz, updateQuizResults } from '../lib/supabase';
-import { CheckIcon, XIcon } from '../components/Icons';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { fetchQuiz, fetchDeck, saveQuiz, updateQuizResults } from '@/lib/supabase';
+import { CheckIcon, XIcon } from '@/components/Icons';
 
 function checkAnswer(question, userAnswer) {
     if (userAnswer === undefined || userAnswer === '') return false;
@@ -104,7 +107,7 @@ export default function TakeQuiz() {
             <div className="page">
                 <div className="container">
                     <div className="error-box">{error}</div>
-                    <Link to="/" className="btn btn-secondary">Go Home</Link>
+                    <Link href="/" className="btn btn-secondary">Go Home</Link>
                 </div>
             </div>
         );
@@ -114,7 +117,7 @@ export default function TakeQuiz() {
         return (
             <div className="page">
                 <div className="container" style={{ maxWidth: '560px' }}>
-                    <Link to="/" className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px', marginBottom: '16px' }}>
+                    <Link href="/" className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px', marginBottom: '16px' }}>
                         ← Home
                     </Link>
                     <div className="card" style={{ padding: '32px', textAlign: 'center' }}>
@@ -193,10 +196,10 @@ export default function TakeQuiz() {
                     </div>
 
                     <div className="mt-md flex-center gap-md" style={{ flexWrap: 'wrap' }}>
-                        <Link to={`/deck/${quiz.deck_id}`} className="btn btn-secondary">
+                        <Link href={`/deck/${quiz.deck_id}`} className="btn btn-secondary">
                             View Deck
                         </Link>
-                        <Link to="/" className="btn btn-primary">
+                        <Link href="/" className="btn btn-primary">
                             Home
                         </Link>
                     </div>
@@ -212,7 +215,7 @@ export default function TakeQuiz() {
         <div className="page">
             <div className="container" style={{ maxWidth: '640px' }}>
                 <div className="mb-lg flex-between">
-                    <Link to="/" className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px' }}>
+                    <Link href="/" className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px' }}>
                         Quit
                     </Link>
                     <span className="text-sm bold">Question {currentQ + 1} of {questions.length}</span>

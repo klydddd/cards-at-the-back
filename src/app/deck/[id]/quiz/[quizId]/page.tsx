@@ -1,6 +1,9 @@
+"use client";
+
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { fetchQuiz, fetchDeck } from '../lib/supabase';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { fetchQuiz, fetchDeck } from '@/lib/supabase';
 
 export default function QuizReview() {
     const { id: deckId, quizId } = useParams();
@@ -33,7 +36,7 @@ export default function QuizReview() {
             <div className="page">
                 <div className="container">
                     <div className="error-box">{error}</div>
-                    <Link to={`/deck/${deckId}`} className="btn btn-secondary">Go Back</Link>
+                    <Link href={`/deck/${deckId}`} className="btn btn-secondary">Go Back</Link>
                 </div>
             </div>
         );
@@ -48,7 +51,7 @@ export default function QuizReview() {
         <div className="page">
             <div className="container" style={{ maxWidth: '720px' }}>
                 <div className="mb-md">
-                    <Link to={`/deck/${deckId}`} className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px' }}>
+                    <Link href={`/deck/${deckId}`} className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px' }}>
                         ← Back to Deck
                     </Link>
                 </div>
@@ -139,10 +142,10 @@ export default function QuizReview() {
                 </div>
 
                 <div className="mt-lg flex-center gap-md">
-                    <Link to={`/deck/${deckId}/quiz`} className="btn btn-secondary">
+                    <Link href={`/deck/${deckId}/quiz`} className="btn btn-secondary">
                         Take New Quiz
                     </Link>
-                    <Link to={`/deck/${deckId}`} className="btn btn-primary">
+                    <Link href={`/deck/${deckId}`} className="btn btn-primary">
                         Back to Deck
                     </Link>
                 </div>

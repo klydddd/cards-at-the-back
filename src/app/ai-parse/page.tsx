@@ -1,13 +1,15 @@
+"use client";
+
 import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { parseMarkdownToCards } from '../lib/gemini';
-import { extractTextFromPDF } from '../lib/pdfParser';
-import { extractTextFromDOCX, extractTextFromPPTX } from '../lib/docParser';
-import { createDeck, createCards } from '../lib/supabase';
-import { FileTextIcon } from '../components/Icons';
+import { useRouter } from 'next/navigation';
+import { parseMarkdownToCards } from '@/lib/gemini';
+import { extractTextFromPDF } from '@/lib/pdfParser';
+import { extractTextFromDOCX, extractTextFromPPTX } from '@/lib/docParser';
+import { createDeck, createCards } from '@/lib/supabase';
+import { FileTextIcon } from '@/components/Icons';
 
 export default function AIParse() {
-    const navigate = useNavigate();
+    const router = useRouter();
     const fileInputRef = useRef(null);
 
     const [file, setFile] = useState(null);
@@ -112,7 +114,7 @@ export default function AIParse() {
         try {
             const deck = await createDeck(title.trim(), description.trim(), creatorName.trim() || 'Anonymous', subject.trim());
             await createCards(deck.id, cards);
-            navigate(`/deck/${deck.id}`);
+            router.push(`/deck/${deck.id}`);
         } catch (err) {
             setError(err.message);
             setSaving(false);

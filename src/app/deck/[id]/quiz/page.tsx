@@ -1,8 +1,11 @@
+"use client";
+
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { fetchDeck, fetchCards, saveQuiz, updateQuizResults } from '../lib/supabase';
-import { generateQuizFromCards } from '../lib/quizGenerator';
-import { CheckIcon, XIcon } from '../components/Icons';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { fetchDeck, fetchCards, saveQuiz, updateQuizResults } from '@/lib/supabase';
+import { generateQuizFromCards } from '@/lib/quizGenerator';
+import { CheckIcon, XIcon } from '@/components/Icons';
 
 const QUESTION_TYPES = [
     { id: 'multiple_choice', label: 'Multiple Choice' },
@@ -161,7 +164,7 @@ export default function Quiz() {
             <div className="page">
                 <div className="container">
                     <div className="error-box">{error}</div>
-                    <Link to={`/deck/${id}`} className="btn btn-secondary">Go Back</Link>
+                    <Link href={`/deck/${id}`} className="btn btn-secondary">Go Back</Link>
                 </div>
             </div>
         );
@@ -172,7 +175,7 @@ export default function Quiz() {
             <div className="page">
                 <div className="container" style={{ maxWidth: '640px' }}>
                     <div className="mb-md">
-                        <Link to={`/deck/${id}`} className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px' }}>
+                        <Link href={`/deck/${id}`} className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px' }}>
                             ← Back to Deck
                         </Link>
                     </div>
@@ -300,7 +303,7 @@ export default function Quiz() {
                         <button className="btn btn-secondary" onClick={() => { setQuestions([]); setQuizId(null); }}>
                             New Quiz
                         </button>
-                        <Link to={`/deck/${id}`} className="btn btn-primary">
+                        <Link href={`/deck/${id}`} className="btn btn-primary">
                             Return to Deck
                         </Link>
                     </div>

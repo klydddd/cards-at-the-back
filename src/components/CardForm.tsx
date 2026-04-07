@@ -1,4 +1,6 @@
-export default function CardForm({ index, front, back, onChange, onRemove, canRemove }) {
+"use client";
+
+export default function CardForm({ index, front, back, onChange, onRemove, canRemove }: { index: number, front: string, back: string, onChange: (field: string, value: string) => void, onRemove: () => void, canRemove: boolean }) {
     return (
         <div className="card" style={{ position: 'relative' }}>
             <div className="flex-between mb-sm">

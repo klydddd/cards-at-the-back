@@ -1,8 +1,11 @@
+"use client";
+
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { fetchDeck, fetchCards } from '../lib/supabase';
-import { generateQuickQuiz } from '../lib/mcqGenerator';
-import { CheckIcon, XIcon } from '../components/Icons';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { fetchDeck, fetchCards } from '@/lib/supabase';
+import { generateQuickQuiz } from '@/lib/mcqGenerator';
+import { CheckIcon, XIcon } from '@/components/Icons';
 
 const QUIZ_TYPES = [
     { id: 'multiple_choice', label: 'Multiple Choice', minCards: 4 },
@@ -111,7 +114,7 @@ export default function MCQuiz() {
             <div className="page">
                 <div className="container">
                     <div className="error-box">{error}</div>
-                    <Link to={`/deck/${id}`} className="btn btn-secondary mt-md">Go Back</Link>
+                    <Link href={`/deck/${id}`} className="btn btn-secondary mt-md">Go Back</Link>
                 </div>
             </div>
         );
@@ -122,7 +125,7 @@ export default function MCQuiz() {
             <div className="page">
                 <div className="container" style={{ maxWidth: '520px' }}>
                     <div className="mb-md">
-                        <Link to={`/deck/${id}`} className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px' }}>
+                        <Link href={`/deck/${id}`} className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px' }}>
                             ← Back to Deck
                         </Link>
                     </div>
@@ -216,7 +219,7 @@ export default function MCQuiz() {
                         <button className="btn btn-secondary btn-lg" style={{ width: '100%' }} onClick={restart}>
                             Change Question Type
                         </button>
-                        <Link to={`/deck/${id}`} className="btn btn-ghost" style={{ width: '100%' }}>
+                        <Link href={`/deck/${id}`} className="btn btn-ghost" style={{ width: '100%' }}>
                             Back to Deck
                         </Link>
                     </div>

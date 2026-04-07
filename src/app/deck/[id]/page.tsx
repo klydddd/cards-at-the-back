@@ -1,9 +1,12 @@
+"use client";
+
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { fetchDeck, fetchCards, fetchQuizzesByDeck } from '../lib/supabase';
-import { getLearnedCardIds, loadSRSProgress, getDueCount } from '../lib/tracking';
-import { formatInterval } from '../lib/srs';
-import { WandIcon } from '../components/Icons';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { fetchDeck, fetchCards, fetchQuizzesByDeck } from '@/lib/supabase';
+import { getLearnedCardIds, loadSRSProgress, getDueCount } from '@/lib/tracking';
+import { formatInterval } from '@/lib/srs';
+import { WandIcon } from '@/components/Icons';
 
 export default function DeckView() {
     const { id } = useParams();
@@ -70,7 +73,7 @@ export default function DeckView() {
             <div className="container" style={{ maxWidth: '720px' }}>
                 {/* Header */}
                 <div className="mb-lg">
-                    <Link to="/" className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px', marginBottom: '12px' }}>
+                    <Link href="/" className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px', marginBottom: '12px' }}>
                         ← Back
                     </Link>
                     <h1>{deck.title}</h1>
@@ -94,23 +97,23 @@ export default function DeckView() {
                 {/* Actions */}
                 <div className="mb-lg flex gap-md" style={{ flexWrap: 'wrap' }}>
                     {dueCount > 0 && (
-                        <Link to={`/deck/${id}/review`} className="btn btn-primary btn-lg" style={{ background: 'var(--purple)', color: 'var(--surface)', borderColor: 'var(--purple)' }}>
+                        <Link href={`/deck/${id}/review`} className="btn btn-primary btn-lg" style={{ background: 'var(--purple)', color: 'var(--surface)', borderColor: 'var(--purple)' }}>
                             Review Due Cards ({dueCount})
                         </Link>
                     )}
-                    <Link to={`/deck/${id}/practice`} className={`btn ${dueCount > 0 ? 'btn-secondary' : 'btn-primary'} btn-lg`}>
+                    <Link href={`/deck/${id}/practice`} className={`btn ${dueCount > 0 ? 'btn-secondary' : 'btn-primary'} btn-lg`}>
                         Practice All
                     </Link>
                     {notLearnedCount > 0 && notLearnedCount < cards.length && (
-                        <Link to={`/deck/${id}/practice?filter=not-learned`} className="btn btn-secondary btn-lg">
+                        <Link href={`/deck/${id}/practice?filter=not-learned`} className="btn btn-secondary btn-lg">
                             Practice Not Learned ({notLearnedCount})
                         </Link>
                     )}
-                    <Link to={`/deck/${id}/quiz`} className="btn btn-secondary btn-lg" style={{ background: 'var(--purple-light)', color: 'var(--purple-dark)', borderColor: 'var(--purple-border)' }}>
+                    <Link href={`/deck/${id}/quiz`} className="btn btn-secondary btn-lg" style={{ background: 'var(--purple-light)', color: 'var(--purple-dark)', borderColor: 'var(--purple-border)' }}>
                         <WandIcon size={16} /> AI Quiz
                     </Link>
                     {cards.length >= 4 && (
-                        <Link to={`/deck/${id}/quick-quiz`} className="btn btn-secondary btn-lg">
+                        <Link href={`/deck/${id}/quick-quiz`} className="btn btn-secondary btn-lg">
                             Quick Quiz
                         </Link>
                     )}
@@ -158,7 +161,7 @@ export default function DeckView() {
                             {quizzes.map((quiz) => (
                                 <Link
                                     key={quiz.id}
-                                    to={`/deck/${id}/quiz/${quiz.id}`}
+                                    href={`/deck/${id}/quiz/${quiz.id}`}
                                     className="card card-clickable"
                                     style={{ padding: '16px 20px' }}
                                 >

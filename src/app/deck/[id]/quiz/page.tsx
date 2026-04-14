@@ -357,7 +357,7 @@ export default function Quiz() {
 
                                     return (
                                         <button
-                                            key={i}
+                                            key={`${currentQ}-${i}`}
                                             className="btn btn-secondary"
                                             style={optStyle}
                                             onClick={() => submitAnswer(opt)}
@@ -387,7 +387,7 @@ export default function Quiz() {
 
                                     return (
                                         <button
-                                            key={String(val)}
+                                            key={`${currentQ}-${String(val)}`}
                                             className="btn btn-secondary"
                                             style={btnStyle}
                                             onClick={() => submitAnswer(val)}

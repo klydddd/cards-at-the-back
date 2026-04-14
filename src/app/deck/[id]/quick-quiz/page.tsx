@@ -272,7 +272,7 @@ export default function MCQuiz() {
                                         }
                                     }
                                     return (
-                                        <button key={i} className="btn btn-secondary" style={style} onClick={() => submitAnswer(opt)} disabled={!!feedback}>
+                                        <button key={`${currentQ}-${i}`} className="btn btn-secondary" style={style} onClick={() => submitAnswer(opt)} disabled={!!feedback}>
                                             {opt}
                                         </button>
                                     );
@@ -295,7 +295,7 @@ export default function MCQuiz() {
                                         }
                                     }
                                     return (
-                                        <button key={String(val)} className="btn btn-secondary" style={btnStyle} onClick={() => submitAnswer(val)} disabled={!!feedback}>
+                                        <button key={`${currentQ}-${String(val)}`} className="btn btn-secondary" style={btnStyle} onClick={() => submitAnswer(val)} disabled={!!feedback}>
                                             {val ? 'True' : 'False'}
                                         </button>
                                     );

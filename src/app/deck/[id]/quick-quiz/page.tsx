@@ -6,34 +6,50 @@ import { useParams } from 'next/navigation';
 import { fetchDeck, fetchCards } from '@/lib/supabase';
 import { generateQuickQuiz } from '@/lib/mcqGenerator';
 import { CheckIcon, XIcon } from '@/components/Icons';
+import { Deck, Card } from '@/types';
+
+interface Question {
+    type: 'multiple_choice' | 'true_false' | 'identification';
+    question: string;
+    answer: string | boolean;
+    options?: string[];
+}
+
+interface QuizFeedback {
+    userAnswer: string | boolean;
+    isCorrect: boolean;
+}
 
 const QUIZ_TYPES = [
-    { id: 'multiple_choice', label: 'Multiple Choice', minCards: 4 },
-    { id: 'true_false', label: 'True or False', minCards: 2 },
-    { id: 'identification', label: 'Identification', minCards: 1 },
+    { id: 'multiple_choice' as const, label: 'Multiple Choice', minCards: 4 },
+    { id: 'true_false' as const, label: 'True or False', minCards: 2 },
+    { id: 'identification' as const, label: 'Identification', minCards: 1 },
 ];
 
 export default function MCQuiz() {
-    const { id } = useParams();
-    const [deck, setDeck] = useState(null);
-    const [cards, setCards] = useState([]);
+    const params = useParams();
+    const id = params.id as string;
+    const [deck, setDeck] = useState<Deck | null>(null);
+    const [cards, setCards] = useState<Card[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
 
     // Setup
-    const [selectedType, setSelectedType] = useState(null);
+    const [selectedType, setSelectedType] = useState<string | null>(null);
     const [started, setStarted] = useState(false);
 
     // Quiz state
-    const [questions, setQuestions] = useState([]);
+    const [questions, setQuestions] = useState<Question[]>([]);
     const [currentQ, setCurrentQ] = useState(0);
-    const [answers, setAnswers] = useState({});
+    const [answers, setAnswers] = useState<Record<number, string | boolean>>({});
     const [currentInput, setCurrentInput] = useState('');
-    const [feedback, setFeedback] = useState(null);
+    const [feedback, setFeedback] = useState<QuizFeedback | null>(null);
     const [showResults, setShowResults] = useState(false);
     const [score, setScore] = useState(0);
 
     useEffect(() => {
+        if (!id) return;
+        setLoading(true);
         Promise.all([fetchDeck(id), fetchCards(id)])
             .then(([d, c]) => {
                 setDeck(d);
@@ -43,9 +59,9 @@ export default function MCQuiz() {
             .finally(() => setLoading(false));
     }, [id]);
 
-    const startQuiz = (type) => {
+    const startQuiz = (type: 'multiple_choice' | 'true_false' | 'identification') => {
         try {
-            const qs = generateQuickQuiz(cards, type);
+            const qs = generateQuickQuiz(cards, type) as Question[];
             setQuestions(qs);
             setSelectedType(type);
             setCurrentQ(0);
@@ -55,7 +71,7 @@ export default function MCQuiz() {
             setShowResults(false);
             setScore(0);
             setStarted(true);
-        } catch (err) {
+        } catch (err: any) {
             setError(err.message);
         }
     };
@@ -67,11 +83,11 @@ export default function MCQuiz() {
     };
 
     const retryWithSameType = () => {
-        if (selectedType) startQuiz(selectedType);
+        if (selectedType) startQuiz(selectedType as any);
     };
 
-    const checkAnswer = (q, userAnswer) => {
-        if (userAnswer === undefined || userAnswer === '') return false;
+    const checkAnswer = (q: Question, userAnswer: string | boolean) => {
+        if (userAnswer === undefined || (typeof userAnswer === 'string' && userAnswer === '')) return false;
         if (typeof q.answer === 'string' && typeof userAnswer === 'string') {
             return userAnswer.toLowerCase().trim() === q.answer.toLowerCase().trim();
         }
@@ -79,7 +95,7 @@ export default function MCQuiz() {
         return false;
     };
 
-    const submitAnswer = (overrideAnswer = null) => {
+    const submitAnswer = (overrideAnswer: string | boolean | null = null) => {
         if (feedback) return;
         const finalAnswer = overrideAnswer !== null ? overrideAnswer : currentInput;
         const q = questions[currentQ];
@@ -131,7 +147,7 @@ export default function MCQuiz() {
                     </div>
 
                     <h1 className="mb-sm">Quick Quiz</h1>
-                    <p className="text-muted mb-lg">{deck.title} — {cards.length} cards</p>
+                    <p className="text-muted mb-lg">{deck?.title} — {cards.length} cards</p>
 
                     <h3 className="mb-md">Choose a question type</h3>
                     <div className="flex" style={{ flexDirection: 'column', gap: '10px' }}>
@@ -171,7 +187,7 @@ export default function MCQuiz() {
                 <div className="container" style={{ maxWidth: '640px' }}>
                     <div className="text-center mb-lg">
                         <h1 className="mb-sm">Quick Quiz Complete!</h1>
-                        <p className="text-muted">{deck.title}</p>
+                        <p className="text-muted">{deck?.title}</p>
                     </div>
 
                     <div className="card text-center mb-lg" style={{ padding: '32px' }}>
@@ -246,7 +262,7 @@ export default function MCQuiz() {
                 </div>
 
                 <div className="flex-between mb-lg">
-                    <span className="text-sm text-muted">{deck.title}</span>
+                    <span className="text-sm text-muted">{deck?.title}</span>
                     <span className="text-sm bold" style={{ color: 'var(--success-dark)' }}>{score} correct</span>
                 </div>
 
@@ -260,13 +276,13 @@ export default function MCQuiz() {
                         {/* Multiple Choice */}
                         {q.type === 'multiple_choice' && (
                             <div className="flex" style={{ flexDirection: 'column', gap: '8px' }}>
-                                {q.options.map((opt, i) => {
-                                    let style = { justifyContent: 'flex-start', textAlign: 'left', padding: '16px', fontWeight: 500 };
+                                {q.options?.map((opt, i) => {
+                                    let style: any = { justifyContent: 'flex-start', textAlign: 'left', padding: '16px', fontWeight: 500 };
                                     if (feedback) {
                                         if (opt === q.answer) {
-                                            style = { ...style, background: 'var(--success-light)', borderColor: 'var(--success)', color: 'var(--success-dark)', fontWeight: 700 };
+                                            style = { ...style, backgroundColor: 'var(--success-light)', borderColor: 'var(--success)', color: 'var(--success-dark)', fontWeight: 700 };
                                         } else if (opt === feedback.userAnswer && !feedback.isCorrect) {
-                                            style = { ...style, background: 'var(--error-light)', borderColor: 'var(--error)', color: 'var(--error-dark)' };
+                                            style = { ...style, backgroundColor: 'var(--error-light)', borderColor: 'var(--error)', color: 'var(--error-dark)' };
                                         } else {
                                             style = { ...style, opacity: 0.35 };
                                         }
@@ -284,12 +300,12 @@ export default function MCQuiz() {
                         {q.type === 'true_false' && (
                             <div className="flex gap-md">
                                 {[true, false].map(val => {
-                                    let btnStyle = { flex: 1, padding: '24px' };
+                                    let btnStyle: any = { flex: 1, padding: '24px' };
                                     if (feedback) {
                                         if (val === q.answer) {
-                                            btnStyle = { ...btnStyle, background: 'var(--success-light)', borderColor: 'var(--success)', color: 'var(--success-dark)', fontWeight: 700 };
+                                            btnStyle = { ...btnStyle, backgroundColor: 'var(--success-light)', borderColor: 'var(--success)', color: 'var(--success-dark)', fontWeight: 700 };
                                         } else if (val === feedback.userAnswer && !feedback.isCorrect) {
-                                            btnStyle = { ...btnStyle, background: 'var(--error-light)', borderColor: 'var(--error)', color: 'var(--error-dark)' };
+                                            btnStyle = { ...btnStyle, backgroundColor: 'var(--error-light)', borderColor: 'var(--error)', color: 'var(--error-dark)' };
                                         } else {
                                             btnStyle = { ...btnStyle, opacity: 0.35 };
                                         }

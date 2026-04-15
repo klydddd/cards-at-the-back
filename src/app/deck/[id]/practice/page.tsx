@@ -35,7 +35,7 @@ export default function Practice() {
     const [swipeAction, setSwipeAction] = useState(null);
     const [finished, setFinished] = useState(false);
     const [srsProgress, setSrsProgress] = useState({});
-    
+
     // Animation states
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
     const [isAnimatingIn, setIsAnimatingIn] = useState(false);
@@ -88,7 +88,7 @@ export default function Practice() {
             setIsAnimatingIn(true);
             setCurrent(index);
             setFlipKey((k) => k + 1);
-            
+
             // clear fade-in flag after mount
             setTimeout(() => {
                 setIsAnimatingIn(false);
@@ -118,7 +118,7 @@ export default function Practice() {
         setIsAnimatingOut(true);
         setSwipeAction('learned');
         setSwipeOffset(500); // swipe right
-        
+
         const newLearned = markCardAsLearned(id, cards[current].id);
         setLearnedIds(new Set(newLearned));
         // Also record SRS rating (Good) in background
@@ -133,7 +133,7 @@ export default function Practice() {
         setIsAnimatingOut(true);
         setSwipeAction('learning');
         setSwipeOffset(-500); // swipe left
-        
+
         const newLearned = markCardAsLearning(id, cards[current].id);
         setLearnedIds(new Set(newLearned));
         // Also record SRS rating (Again) in background
@@ -395,12 +395,12 @@ export default function Practice() {
     const card = cards[current];
     const isLearned = learnedIds.has(card.id);
     const isReviewCard = card._isReview;
-    
+
     // Calculate animation styles
     let transformStyle = `translateX(${swipeOffset * 0.4}px) rotate(${swipeOffset * 0.02}deg)`;
     let transitionStyle = 'none';
     let opacityStyle = 1;
-    
+
     if (isAnimatingOut) {
         // Animating completely off screen and fading out over 0.25s
         transitionStyle = 'transform 0.25s ease-out, opacity 0.25s ease-out';
@@ -506,9 +506,9 @@ export default function Practice() {
                     </button>
                 </div>
 
-                <p className="text-center text-sm text-muted mb-lg" style={{ opacity: 0.5 }}>
+                {/* <p className="text-center text-sm text-muted mb-lg" style={{ opacity: 0.5 }}>
                     Space = flip · ← = learning · → = know it
-                </p>
+                </p> */}
 
                 <div className="progress-bar-track" style={{ marginTop: '12px' }}>
                     <div

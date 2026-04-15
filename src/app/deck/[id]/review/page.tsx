@@ -261,9 +261,9 @@ export default function Review() {
                 </div>
 
                 {/* Keyboard hint */}
-                <p className="text-center text-sm text-muted" style={{ opacity: 0.5 }}>
+                {/* <p className="text-center text-sm text-muted" style={{ opacity: 0.5 }}>
                     Space = flip · ← = learning · → = know it
-                </p>
+                </p> */}
 
                 {/* Progress bar */}
                 <div className="progress-bar-track" style={{ marginTop: '24px' }}>

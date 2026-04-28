@@ -325,7 +325,7 @@ export default function TakeQuiz() {
                             <div className="flex" style={{ flexDirection: 'column', gap: '8px' }}>
                                 {question.options.map((option, index) => (
                                     <button
-                                        key={index}
+                                        key={`${currentQ}-${index}`}
                                         className="btn btn-secondary"
                                         style={{
                                             justifyContent: 'flex-start',
@@ -349,7 +349,7 @@ export default function TakeQuiz() {
                             <div className="flex gap-md">
                                 {[true, false].map((value) => (
                                     <button
-                                        key={String(value)}
+                                        key={`${currentQ}-${String(value)}`}
                                         className="btn btn-secondary"
                                         style={{
                                             flex: 1,

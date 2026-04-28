@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { fetchDeck, fetchCards, fetchQuizChallengesByDeck } from '@/lib/supabase';
 import { getLearnedCardIds, loadSRSProgress, getDueCount } from '@/lib/tracking';
 import { formatInterval } from '@/lib/srs';
@@ -20,6 +20,13 @@ export default function DeckView() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [copiedChallengeId, setCopiedChallengeId] = useState<string | null>(null);
+
+    // Admin delete state
+    const router = useRouter();
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [adminPassword, setAdminPassword] = useState('');
+    const [deleting, setDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
 
     useEffect(() => {
         async function load() {
@@ -77,6 +84,34 @@ export default function DeckView() {
         window.setTimeout(() => {
             setCopiedChallengeId((current) => current === quizId ? null : current);
         }, 2000);
+    };
+
+    const deleteDeck = async () => {
+        if (!adminPassword.trim()) {
+            setDeleteError('Password is required.');
+            return;
+        }
+
+        setDeleting(true);
+        setDeleteError(null);
+
+        try {
+            const response = await fetch('/api/admin/delete-deck', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ deckId: id, password: adminPassword }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to delete deck.');
+            }
+
+            router.push('/');
+        } catch (err: any) {
+            setDeleteError(err.message);
+            setDeleting(false);
+        }
     };
 
     return (
@@ -203,7 +238,79 @@ export default function DeckView() {
                         </div>
                     </div>
                 )}
+
+                {/* Admin: Delete Deck */}
+                <div style={{ marginTop: '48px', borderTop: '1px solid var(--border)', paddingTop: '24px' }}>
+                    <button
+                        className="btn btn-ghost btn-sm"
+                        style={{ color: 'var(--error)', opacity: 0.7 }}
+                        onClick={() => { setShowDeleteModal(true); setDeleteError(null); setAdminPassword(''); }}
+                    >
+                        Delete Deck
+                    </button>
+                </div>
             </div>
+
+            {/* Admin delete modal */}
+            {showDeleteModal && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        background: 'rgba(0,0,0,0.5)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 1000,
+                        padding: '20px',
+                    }}
+                    onClick={() => !deleting && setShowDeleteModal(false)}
+                >
+                    <div
+                        className="card"
+                        style={{ padding: '32px', maxWidth: '420px', width: '100%' }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h2 className="mb-sm" style={{ color: 'var(--error)' }}>Delete Deck</h2>
+                        <p className="text-sm text-muted mb-md">
+                            This will permanently delete <strong>{deck?.title}</strong> and all its cards, quizzes, and progress. This cannot be undone.
+                        </p>
+
+                        {deleteError && <div className="error-box mb-md">{deleteError}</div>}
+
+                        <div className="field">
+                            <label className="label">Admin Password</label>
+                            <input
+                                type="password"
+                                className="input"
+                                placeholder="Enter admin password"
+                                value={adminPassword}
+                                onChange={(e) => setAdminPassword(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && !deleting && deleteDeck()}
+                                autoFocus
+                            />
+                        </div>
+
+                        <div className="flex gap-sm" style={{ justifyContent: 'flex-end' }}>
+                            <button
+                                className="btn btn-secondary"
+                                onClick={() => setShowDeleteModal(false)}
+                                disabled={deleting}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="btn btn-primary"
+                                style={{ background: 'var(--error)', borderColor: 'var(--error)' }}
+                                onClick={deleteDeck}
+                                disabled={deleting}
+                            >
+                                {deleting ? 'Deleting...' : 'Delete Permanently'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

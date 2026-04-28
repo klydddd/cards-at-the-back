@@ -2,24 +2,20 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { fetchDecks, fetchAllQuizzes } from '@/lib/supabase';
+import { fetchDecks } from '@/lib/supabase';
 import DeckCard from '@/components/DeckCard';
-import { WandIcon } from '@/components/Icons';
+import type { Deck } from '@/types';
 
 export default function Home() {
-    const [decks, setDecks] = useState([]);
-    const [quizzes, setQuizzes] = useState([]);
+    const [decks, setDecks] = useState<Deck[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
     const [activeSubject, setActiveSubject] = useState('All');
-    const [quizSubject, setQuizSubject] = useState('All');
-    const [quizType, setQuizType] = useState('All');
 
     useEffect(() => {
-        Promise.all([fetchDecks(), fetchAllQuizzes(20)])
-            .then(([d, q]) => {
+        fetchDecks()
+            .then((d) => {
                 setDecks(d);
-                setQuizzes(q);
             })
             .catch((err) => setError(err.message))
             .finally(() => setLoading(false));
@@ -34,43 +30,10 @@ export default function Home() {
         return ['All', ...Array.from(set).sort()];
     }, [decks]);
 
-    // Unique subjects from quizzes
-    const quizSubjects = useMemo(() => {
-        const set = new Set();
-        quizzes.forEach(q => {
-            if (q.subject && q.subject.trim()) set.add(q.subject.trim());
-        });
-        return ['All', ...Array.from(set).sort()];
-    }, [quizzes]);
-
-    const quizTypes = useMemo(() => {
-        const set = new Set();
-        quizzes.forEach(q => {
-            q.question_types?.forEach(t => set.add(t));
-        });
-        return ['All', ...Array.from(set).sort()];
-    }, [quizzes]);
-
     const filteredDecks = useMemo(() => {
         if (activeSubject === 'All') return decks;
         return decks.filter(d => d.subject && d.subject.trim() === activeSubject);
     }, [decks, activeSubject]);
-
-    const filteredQuizzes = useMemo(() => {
-        let filtered = quizzes;
-        if (quizSubject !== 'All') {
-            filtered = filtered.filter(q => q.subject && q.subject.trim() === quizSubject);
-        }
-        if (quizType !== 'All') {
-            filtered = filtered.filter(q => q.question_types?.includes(quizType));
-        }
-        return filtered;
-    }, [quizzes, quizSubject, quizType]);
-
-    const formatDate = (dateStr) => {
-        const d = new Date(dateStr);
-        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    };
 
     const renderFilterTabs = (items, active, setActive) => {
         if (items.length <= 1) return null;
@@ -159,51 +122,6 @@ export default function Home() {
                         </div>
                     )}
                 </div>
-
-                {/* Public Quizzes */}
-                {!loading && quizzes.length > 0 && (
-                    <div style={{ marginTop: '56px' }}>
-                        <h2 className="mb-md">Public Quizzes</h2>
-                        {renderFilterTabs(quizSubjects, quizSubject, setQuizSubject)}
-                        {renderFilterTabs(
-                            quizTypes.map(t => t === 'All' ? 'All' : t.replace(/_/g, ' ')),
-                            quizType === 'All' ? 'All' : quizType.replace(/_/g, ' '),
-                            (label) => setQuizType(label === 'All' ? 'All' : quizTypes.find(t => t.replace(/_/g, ' ') === label) || label)
-                        )}
-                        <div className="deck-grid">
-                            {filteredQuizzes.map((quiz) => (
-                                <Link
-                                    key={quiz.id}
-                                    href={`/take/${quiz.id}`}
-                                    className="card card-clickable"
-                                    style={{ padding: '20px' }}
-                                >
-                                    <div className="flex gap-sm mb-sm" style={{ alignItems: 'center' }}>
-                                        <WandIcon size={16} style={{ opacity: 0.5 }} />
-                                        <h3 style={{ fontSize: '1rem', marginBottom: 0 }}>
-                                            {quiz.decks?.title || 'Untitled Deck'}
-                                        </h3>
-                                    </div>
-                                    <div className="flex gap-sm mb-sm" style={{ flexWrap: 'wrap' }}>
-                                        <span className="badge">{quiz.questions?.length || 0} questions</span>
-                                        {quiz.subject && (
-                                            <span className="badge badge-purple">{quiz.subject}</span>
-                                        )}
-                                        {quiz.question_types?.map(t => (
-                                            <span key={t} className="badge" style={{ fontSize: '0.68rem' }}>
-                                                {t.replace('_', ' ')}
-                                            </span>
-                                        ))}
-                                    </div>
-                                    <div className="flex-between">
-                                        <span className="text-sm text-muted light">by {quiz.creator_name}</span>
-                                        <span className="text-sm text-muted light">{formatDate(quiz.created_at)}</span>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     );

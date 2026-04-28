@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { fetchDeck, fetchCards, saveQuiz, updateQuizResults } from '@/lib/supabase';
+import { fetchDeck, fetchCards, saveQuiz } from '@/lib/supabase';
 import { generateQuizFromCards } from '@/lib/quizGenerator';
-import { CheckIcon, XIcon } from '@/components/Icons';
+import { gradeQuizAttempt, isAnswerCorrect } from '@/lib/quizGrading';
+import type { Card, Deck, Quiz, QuizQuestion } from '@/types';
 
 const QUESTION_TYPES = [
     { id: 'multiple_choice', label: 'Multiple Choice' },
@@ -15,25 +16,13 @@ const QUESTION_TYPES = [
     { id: 'situational', label: 'Situational' },
 ];
 
-function checkAnswer(question, userAnswer) {
-    if (userAnswer === undefined || userAnswer === '') return false;
-    if (typeof question.answer === 'string' && typeof userAnswer === 'string') {
-        return userAnswer.toLowerCase().trim() === question.answer.toLowerCase().trim();
-    }
-    if (typeof question.answer === 'boolean') {
-        return userAnswer === question.answer;
-    }
-    return false;
-}
-
 export default function Quiz() {
-    const { id } = useParams();
-    const [deck, setDeck] = useState(null);
-    const [cards, setCards] = useState([]);
+    const { id } = useParams<{ id: string }>();
+    const [deck, setDeck] = useState<Deck | null>(null);
+    const [cards, setCards] = useState<Card[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
 
-    // Setup state
     const [typeCounts, setTypeCounts] = useState({
         multiple_choice: 2,
         true_false: 2,
@@ -43,20 +32,15 @@ export default function Quiz() {
     });
     const [creatorName, setCreatorName] = useState('');
     const [generating, setGenerating] = useState(false);
+    const [publishing, setPublishing] = useState(false);
+    const [publishedQuiz, setPublishedQuiz] = useState<Quiz | null>(null);
+    const [copiedShareLink, setCopiedShareLink] = useState(false);
 
-    // Quiz state
-    const [quizId, setQuizId] = useState(null);
-    const [questions, setQuestions] = useState([]);
+    const [questions, setQuestions] = useState<QuizQuestion[]>([]);
     const [currentQ, setCurrentQ] = useState(0);
-    const [answers, setAnswers] = useState({});
+    const [answers, setAnswers] = useState<Record<number, string | boolean | string[]>>({});
     const [currentInput, setCurrentInput] = useState('');
-
-    // Feedback state
-    const [feedback, setFeedback] = useState(null); // { userAnswer, isCorrect } or null
-
-    // Results
     const [showResults, setShowResults] = useState(false);
-    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         Promise.all([fetchDeck(id), fetchCards(id)])
@@ -77,10 +61,20 @@ export default function Quiz() {
         setTypeCounts(prev => {
             const newVal = prev[typeId] + delta;
             if (newVal < 0) return prev;
-            const otherTotal = Object.entries(prev).reduce((sum, [k, v]) => k === typeId ? sum : sum + v, 0);
+            const otherTotal = Object.entries(prev).reduce((sum, [key, value]) => key === typeId ? sum : sum + value, 0);
             if (otherTotal + newVal > TOTAL_LIMIT) return prev;
             return { ...prev, [typeId]: newVal };
         });
+    };
+
+    const resetQuiz = () => {
+        setQuestions([]);
+        setCurrentQ(0);
+        setAnswers({});
+        setCurrentInput('');
+        setShowResults(false);
+        setPublishedQuiz(null);
+        setCopiedShareLink(false);
     };
 
     const startGenerating = async () => {
@@ -88,23 +82,18 @@ export default function Quiz() {
             setError('Add at least one question.');
             return;
         }
+
         setError(null);
         setGenerating(true);
 
         try {
-            const qs = await generateQuizFromCards(cards, typeCounts);
-            setQuestions(qs);
+            const generatedQuestions = await generateQuizFromCards(cards, typeCounts);
+            setQuestions(generatedQuestions);
             setCurrentQ(0);
             setAnswers({});
+            setCurrentInput('');
             setShowResults(false);
-            setFeedback(null);
-
-            try {
-                const saved = await saveQuiz(id, creatorName.trim() || 'Anonymous', qs, activeTypes, deck?.subject || '');
-                setQuizId(saved.id);
-            } catch (saveErr) {
-                console.error('Failed to save quiz:', saveErr);
-            }
+            setPublishedQuiz(null);
         } catch (err) {
             setError(err.message);
         } finally {
@@ -112,42 +101,54 @@ export default function Quiz() {
         }
     };
 
-    // Step 1: Submit answer → show feedback
-    const submitAnswer = (overrideAnswer = null) => {
-        if (feedback) return; // already showing feedback
-        const finalAnswer = overrideAnswer !== null ? overrideAnswer : currentInput;
-        const q = questions[currentQ];
-        const isCorrect = checkAnswer(q, finalAnswer);
-
-        setAnswers(prev => ({ ...prev, [currentQ]: finalAnswer }));
-        setCurrentInput('');
-        setFeedback({ userAnswer: finalAnswer, isCorrect });
-    };
-
-    // Step 2: Dismiss feedback → go to next question or results
-    const goNext = async () => {
-        setFeedback(null);
+    const goToNextQuestion = (nextAnswers) => {
         if (currentQ < questions.length - 1) {
             setCurrentQ(currentQ + 1);
-        } else {
-            setShowResults(true);
-
-            // Save results
-            if (quizId) {
-                setSaving(true);
-                const finalAnswers = { ...answers };
-                let score = 0;
-                questions.forEach((q, i) => {
-                    if (checkAnswer(q, finalAnswers[i])) score++;
-                });
-                try {
-                    await updateQuizResults(quizId, finalAnswers, score);
-                } catch (err) {
-                    console.error('Failed to save quiz results:', err);
-                }
-                setSaving(false);
-            }
+            setCurrentInput('');
+            return;
         }
+
+        setAnswers(nextAnswers);
+        setCurrentInput('');
+        setShowResults(true);
+    };
+
+    const submitAnswer = (overrideAnswer = null) => {
+        const finalAnswer = overrideAnswer !== null ? overrideAnswer : currentInput;
+        const nextAnswers = { ...answers, [currentQ]: finalAnswer };
+        setAnswers(nextAnswers);
+        goToNextQuestion(nextAnswers);
+    };
+
+    const publishChallenge = async () => {
+        if (publishedQuiz) return;
+
+        setPublishing(true);
+        setError(null);
+
+        try {
+            const savedQuiz = await saveQuiz(
+                id,
+                creatorName.trim() || 'Anonymous',
+                questions,
+                activeTypes,
+                deck?.subject || '',
+                'ai'
+            );
+            setPublishedQuiz(savedQuiz);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setPublishing(false);
+        }
+    };
+
+    const copyShareLink = async () => {
+        if (!publishedQuiz) return;
+
+        await navigator.clipboard.writeText(`${window.location.origin}/take/${publishedQuiz.id}`);
+        setCopiedShareLink(true);
+        window.setTimeout(() => setCopiedShareLink(false), 2000);
     };
 
     if (loading)
@@ -169,7 +170,6 @@ export default function Quiz() {
             </div>
         );
 
-    // ── Phase 1: Setup ──
     if (questions.length === 0) {
         return (
             <div className="page">
@@ -225,7 +225,7 @@ export default function Quiz() {
 
                     <div className="card mb-lg">
                         <div className="field" style={{ marginBottom: 0 }}>
-                            <label className="label">Your Name</label>
+                            <label className="label">Challenge Creator Name</label>
                             <input
                                 className="input"
                                 placeholder="Anonymous"
@@ -254,39 +254,60 @@ export default function Quiz() {
         );
     }
 
-    // ── Phase 3: Results ──
     if (showResults) {
-        let score = 0;
+        const { score, questionCount } = gradeQuizAttempt(questions, answers);
 
         return (
             <div className="page">
                 <div className="container" style={{ maxWidth: '720px' }}>
                     <div className="text-center mb-lg">
                         <h1>Quiz Completed</h1>
-                        <p className="text-muted mt-sm">
-                            {saving ? 'Saving results...' : 'Your answers have been saved.'}
-                        </p>
+                        <p className="text-muted mt-sm">Review your answers, then publish this exact question set if you want a public challenge.</p>
                     </div>
 
+                    {error && <div className="error-box mb-md">{error}</div>}
+
+                    {publishedQuiz ? (
+                        <div className="card mb-lg" style={{ padding: '24px', background: 'var(--success-light)' }}>
+                            <p className="bold mb-sm">Challenge published</p>
+                            <p className="text-sm text-muted mb-md">Players can now compete for the best score on this fixed quiz.</p>
+                            <div className="flex gap-sm" style={{ flexWrap: 'wrap' }}>
+                                <Link href={`/take/${publishedQuiz.id}`} className="btn btn-primary">
+                                    Open Challenge
+                                </Link>
+                                <button className="btn btn-secondary" onClick={copyShareLink}>
+                                    {copiedShareLink ? 'Link Copied' : 'Copy Share Link'}
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="card mb-lg" style={{ padding: '24px' }}>
+                            <p className="bold mb-sm">Publish this quiz as a challenge</p>
+                            <p className="text-sm text-muted mb-md">Publishing creates a shareable link where other players can join the leaderboard on this exact question set.</p>
+                            <button className="btn btn-primary" onClick={publishChallenge} disabled={publishing}>
+                                {publishing ? 'Publishing...' : 'Publish Challenge'}
+                            </button>
+                        </div>
+                    )}
+
                     <div className="flex" style={{ flexDirection: 'column', gap: '16px' }}>
-                        {questions.map((q, i) => {
-                            const userAnswer = answers[i];
-                            const exactMatch = checkAnswer(q, userAnswer);
-                            if (exactMatch) score++;
+                        {questions.map((question, index) => {
+                            const userAnswer = answers[index];
+                            const isCorrect = isAnswerCorrect(question, userAnswer);
 
                             return (
-                                <div key={i} className="card" style={{ borderLeftWidth: exactMatch ? 1.5 : 4, borderLeftColor: exactMatch ? 'var(--border)' : 'var(--warning)' }}>
-                                    <div className="text-sm light text-muted mb-sm" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>{q.type.replace('_', ' ')}</div>
-                                    {q.scenario && <p className="mb-sm light" style={{ fontStyle: 'italic' }}>{q.scenario}</p>}
-                                    <p className="bold mb-md" style={{ fontSize: '1.1rem' }}>{q.question}</p>
+                                <div key={index} className="card" style={{ borderLeftWidth: isCorrect ? 1.5 : 4, borderLeftColor: isCorrect ? 'var(--border)' : 'var(--warning)' }}>
+                                    <div className="text-sm light text-muted mb-sm" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>{question.type.replace('_', ' ')}</div>
+                                    {question.scenario && <p className="mb-sm light" style={{ fontStyle: 'italic' }}>{question.scenario}</p>}
+                                    <p className="bold mb-md" style={{ fontSize: '1.1rem' }}>{question.question}</p>
                                     <div className="flex gap-md mb-sm" style={{ flexWrap: 'wrap' }}>
                                         <div style={{ flex: 1, background: 'var(--bg)', padding: '12px', borderRadius: '8px' }}>
                                             <span className="text-sm text-muted block mb-sm">Your Answer:</span>
                                             <p>{Array.isArray(userAnswer) ? userAnswer.join(', ') : (userAnswer !== undefined && userAnswer !== '' ? String(userAnswer) : 'Skipped')}</p>
                                         </div>
-                                        <div style={{ flex: 1, background: exactMatch ? 'var(--success-light)' : 'var(--warning-light)', padding: '12px', borderRadius: '8px' }}>
-                                            <span className="text-sm text-muted block mb-sm">Expected Answer:</span>
-                                            <p className="bold">{Array.isArray(q.answer) ? q.answer.join(', ') : String(q.answer)}</p>
+                                        <div style={{ flex: 1, background: isCorrect ? 'var(--success-light)' : 'var(--warning-light)', padding: '12px', borderRadius: '8px' }}>
+                                            <span className="text-sm text-muted block mb-sm">Correct Answer:</span>
+                                            <p className="bold">{Array.isArray(question.answer) ? question.answer.join(', ') : String(question.answer)}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -295,12 +316,12 @@ export default function Quiz() {
                     </div>
 
                     <div className="text-center mt-lg mb-md">
-                        <p className="text-sm text-muted">Auto-graded score (exact match only)</p>
-                        <p style={{ fontSize: '2rem', fontWeight: 800 }}>{score} / {questions.length}</p>
+                        <p className="text-sm text-muted">Score</p>
+                        <p style={{ fontSize: '2rem', fontWeight: 800 }}>{score} / {questionCount}</p>
                     </div>
 
                     <div className="mt-md flex-center gap-md" style={{ flexWrap: 'wrap' }}>
-                        <button className="btn btn-secondary" onClick={() => { setQuestions([]); setQuizId(null); }}>
+                        <button className="btn btn-secondary" onClick={resetQuiz}>
                             New Quiz
                         </button>
                         <Link href={`/deck/${id}`} className="btn btn-primary">
@@ -312,95 +333,63 @@ export default function Quiz() {
         );
     }
 
-    // ── Phase 2: Taking Quiz ──
-    const q = questions[currentQ];
+    const question = questions[currentQ];
 
     return (
         <div className="page">
             <div className="container" style={{ maxWidth: '640px' }}>
                 <div className="mb-lg flex-between">
-                    <button className="btn btn-ghost btn-sm" onClick={() => setQuestions([])} style={{ marginLeft: '-16px' }}>
+                    <button className="btn btn-ghost btn-sm" onClick={resetQuiz} style={{ marginLeft: '-16px' }}>
                         Quit
                     </button>
                     <span className="text-sm bold">Question {currentQ + 1} of {questions.length}</span>
                 </div>
 
-                {/* Progress bar */}
                 <div className="mb-lg" style={{ height: '3px', background: 'var(--border)', borderRadius: '100px' }}>
                     <div style={{ height: '100%', width: `${((currentQ + 1) / questions.length) * 100}%`, background: 'var(--primary)', borderRadius: '100px', transition: 'width 0.3s ease' }}></div>
                 </div>
 
                 <div className="card mb-lg" style={{ padding: '32px' }}>
                     <div className="text-sm light text-muted mb-sm" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        {q.type.replace('_', ' ')}
+                        {question.type.replace('_', ' ')}
                     </div>
 
-                    {q.scenario && <p className="mb-md light" style={{ fontSize: '1.05rem', fontStyle: 'italic', paddingLeft: '12px', borderLeft: '2px solid var(--border-hover)' }}>{q.scenario}</p>}
+                    {question.scenario && <p className="mb-md light" style={{ fontSize: '1.05rem', fontStyle: 'italic', paddingLeft: '12px', borderLeft: '2px solid var(--border-hover)' }}>{question.scenario}</p>}
 
-                    <h2 className="mb-lg" style={{ fontSize: '1.4rem' }}>{q.question}</h2>
+                    <h2 className="mb-lg" style={{ fontSize: '1.4rem' }}>{question.question}</h2>
 
                     <div style={{ marginTop: '24px' }}>
-                        {q.type === 'multiple_choice' && (
+                        {question.type === 'multiple_choice' && (
                             <div className="flex" style={{ flexDirection: 'column', gap: '8px' }}>
-                                {q.options.map((opt, i) => {
-                                    let optStyle = { justifyContent: 'flex-start', textAlign: 'left', padding: '16px', fontWeight: 400 };
-
-                                    if (feedback) {
-                                        if (opt === q.answer) {
-                                            optStyle = { ...optStyle, background: 'var(--success-light)', borderColor: 'var(--success)', color: 'var(--success-dark)', fontWeight: 600 };
-                                        } else if (opt === feedback.userAnswer && !feedback.isCorrect) {
-                                            optStyle = { ...optStyle, background: 'var(--error-light)', borderColor: 'var(--error)', color: 'var(--error-dark)' };
-                                        } else {
-                                            optStyle = { ...optStyle, opacity: 0.4 };
-                                        }
-                                    }
-
-                                    return (
-                                        <button
-                                            key={`${currentQ}-${i}`}
-                                            className="btn btn-secondary"
-                                            style={optStyle}
-                                            onClick={() => submitAnswer(opt)}
-                                            disabled={!!feedback}
-                                        >
-                                            {opt}
-                                        </button>
-                                    );
-                                })}
+                                {(question.options || []).map((option, index) => (
+                                    <button
+                                        key={index}
+                                        className="btn btn-secondary"
+                                        style={{ justifyContent: 'flex-start', textAlign: 'left', padding: '16px', fontWeight: 400 }}
+                                        onClick={() => submitAnswer(option)}
+                                    >
+                                        {option}
+                                    </button>
+                                ))}
                             </div>
                         )}
 
-                        {q.type === 'true_false' && (
+                        {question.type === 'true_false' && (
                             <div className="flex gap-md">
-                                {[true, false].map(val => {
-                                    let btnStyle = { flex: 1, padding: '24px' };
-
-                                    if (feedback) {
-                                        if (val === q.answer) {
-                                            btnStyle = { ...btnStyle, background: 'var(--success-light)', borderColor: 'var(--success)', color: 'var(--success-dark)', fontWeight: 700 };
-                                        } else if (val === feedback.userAnswer && !feedback.isCorrect) {
-                                            btnStyle = { ...btnStyle, background: 'var(--error-light)', borderColor: 'var(--error)', color: 'var(--error-dark)' };
-                                        } else {
-                                            btnStyle = { ...btnStyle, opacity: 0.4 };
-                                        }
-                                    }
-
-                                    return (
-                                        <button
-                                            key={`${currentQ}-${String(val)}`}
-                                            className="btn btn-secondary"
-                                            style={btnStyle}
-                                            onClick={() => submitAnswer(val)}
-                                            disabled={!!feedback}
-                                        >
-                                            {val ? 'True' : 'False'}
-                                        </button>
-                                    );
-                                })}
+                                {[true, false].map((value) => (
+                                    <button
+                                        key={String(value)}
+                                        className="btn btn-secondary"
+                                        style={{ flex: 1, padding: '24px' }}
+                                        onClick={() => submitAnswer(value)}
+                                    >
+                                        {value ? 'True' : 'False'}
+                                    </button>
+                                ))}
                             </div>
                         )}
 
-                        {(q.type === 'identification' || q.type === 'situational') && (
+                        {(question.type === 'identification' || question.type === 'situational') && (
                             <div>
                                 <input
                                     type="text"
@@ -409,18 +398,15 @@ export default function Quiz() {
                                     placeholder="Type your answer here..."
                                     value={currentInput}
                                     onChange={(e) => setCurrentInput(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && !feedback && submitAnswer()}
-                                    disabled={!!feedback}
+                                    onKeyDown={(e) => e.key === 'Enter' && submitAnswer()}
                                 />
-                                {!feedback && (
-                                    <div className="mt-md text-right">
-                                        <button className="btn btn-primary" onClick={() => submitAnswer()}>Submit</button>
-                                    </div>
-                                )}
+                                <div className="mt-md text-right">
+                                    <button className="btn btn-primary" onClick={() => submitAnswer()}>Submit</button>
+                                </div>
                             </div>
                         )}
 
-                        {q.type === 'enumeration' && (
+                        {question.type === 'enumeration' && (
                             <div>
                                 <p className="text-sm text-muted mb-sm">Separate your answers with commas.</p>
                                 <textarea
@@ -430,66 +416,21 @@ export default function Quiz() {
                                     value={currentInput}
                                     onChange={(e) => setCurrentInput(e.target.value)}
                                     rows={3}
-                                    disabled={!!feedback}
                                 />
-                                {!feedback && (
-                                    <div className="mt-md text-right">
-                                        <button className="btn btn-primary" onClick={() => {
-                                            const ansArray = currentInput.split(',').map(s => s.trim()).filter(s => s);
-                                            submitAnswer(ansArray.length ? ansArray : '');
-                                        }}>Submit</button>
-                                    </div>
-                                )}
+                                <div className="mt-md text-right">
+                                    <button
+                                        className="btn btn-primary"
+                                        onClick={() => {
+                                            const answerList = currentInput.split(',').map((item) => item.trim()).filter(Boolean);
+                                            submitAnswer(answerList.length ? answerList : '');
+                                        }}
+                                    >
+                                        Submit
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </div>
-
-                    {/* ── Instant Feedback Banner ── */}
-                    {feedback && (
-                        <div style={{
-                            marginTop: '24px',
-                            padding: '16px 20px',
-                            borderRadius: 'var(--radius-md)',
-                            background: feedback.isCorrect ? 'var(--success-light)' : 'var(--error-light)',
-                            border: `1.5px solid ${feedback.isCorrect ? 'var(--success-border)' : 'var(--error-border)'}`,
-                        }}>
-                            <div className="flex gap-sm" style={{ alignItems: 'center', marginBottom: '8px' }}>
-                                <div style={{
-                                    width: 28,
-                                    height: 28,
-                                    borderRadius: '50%',
-                                    background: feedback.isCorrect ? 'var(--success)' : 'var(--error)',
-                                    color: '#fff',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                }}>
-                                    {feedback.isCorrect ? <CheckIcon size={14} /> : <XIcon size={14} />}
-                                </div>
-                                <span style={{ fontWeight: 700, color: feedback.isCorrect ? 'var(--success-dark)' : 'var(--error-dark)' }}>
-                                    {feedback.isCorrect ? 'Correct!' : 'Incorrect'}
-                                </span>
-                            </div>
-
-                            {!feedback.isCorrect && (
-                                <div style={{ marginTop: '4px' }}>
-                                    <span className="text-sm text-muted">Correct answer: </span>
-                                    <span style={{ fontWeight: 700 }}>
-                                        {Array.isArray(q.answer) ? q.answer.join(', ') : String(q.answer)}
-                                    </span>
-                                </div>
-                            )}
-
-                            <button
-                                className="btn btn-primary mt-md"
-                                style={{ width: '100%' }}
-                                onClick={goNext}
-                                autoFocus
-                            >
-                                {currentQ < questions.length - 1 ? 'Next Question' : 'See Results'}
-                            </button>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

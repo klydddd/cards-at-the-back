@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import type { QuizAttempt, QuizSourceKind } from '@/types';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -13,7 +14,7 @@ export function isSupabaseReady() {
   return !!supabase;
 }
 
-// ─── Deck operations ───
+// Deck operations
 
 export async function fetchDecks() {
   if (!supabase) return [];
@@ -80,9 +81,16 @@ export async function createCards(deckId, cards) {
   if (error) throw error;
 }
 
-// ─── Quiz operations ───
+// Quiz operations
 
-export async function saveQuiz(deckId, creatorName, questions, questionTypes, subject = '') {
+export async function saveQuiz(
+  deckId,
+  creatorName,
+  questions,
+  questionTypes,
+  subject = '',
+  sourceKind: QuizSourceKind = 'ai'
+) {
   if (!supabase) throw new Error('Supabase is not configured.');
 
   const { data, error } = await supabase
@@ -93,6 +101,7 @@ export async function saveQuiz(deckId, creatorName, questions, questionTypes, su
       questions,
       question_types: questionTypes,
       subject: subject || '',
+      source_kind: sourceKind,
     })
     .select()
     .single();
@@ -101,24 +110,15 @@ export async function saveQuiz(deckId, creatorName, questions, questionTypes, su
   return data;
 }
 
-export async function updateQuizResults(quizId, answers, score) {
-  if (!supabase) throw new Error('Supabase is not configured.');
-
-  const { error } = await supabase
-    .from('quizzes')
-    .update({ answers, score })
-    .eq('id', quizId);
-
-  if (error) throw error;
-}
-
-export async function fetchQuizzesByDeck(deckId) {
+export async function fetchQuizChallengesByDeck(deckId) {
   if (!supabase) return [];
 
   const { data, error } = await supabase
     .from('quizzes')
     .select('*')
     .eq('deck_id', deckId)
+    .is('answers', null)
+    .is('score', null)
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -138,20 +138,60 @@ export async function fetchQuiz(quizId) {
   return data;
 }
 
-export async function fetchAllQuizzes(limit = 20) {
+export async function fetchQuizAttempts(quizId, limit = 10): Promise<QuizAttempt[]> {
   if (!supabase) return [];
 
   const { data, error } = await supabase
-    .from('quizzes')
-    .select('*, decks(title)')
-    .order('created_at', { ascending: false })
+    .from('quiz_attempts')
+    .select('*')
+    .eq('quiz_id', quizId)
+    .order('score', { ascending: false })
+    .order('elapsed_ms', { ascending: true })
+    .order('created_at', { ascending: true })
     .limit(limit);
 
   if (error) throw error;
-  return data;
+  return data || [];
 }
 
-// ─── SRS Card Progress operations ───
+export async function submitQuizAttempt(
+  quizId: string,
+  playerName: string,
+  answers: Record<number, string | boolean | string[]>,
+  startedAt: string,
+  completedAt: string
+) {
+  if (!supabase) throw new Error('Supabase is not configured.');
+
+  const response = await fetch(`/api/quizzes/${quizId}/attempts`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      playerName,
+      answers,
+      startedAt,
+      completedAt,
+    }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to submit quiz attempt.');
+  }
+
+  return data as SubmittedQuizAttempt;
+}
+
+export type SubmittedQuizAttempt = {
+  attempt: QuizAttempt;
+  score: number;
+  questionCount: number;
+  elapsedMs: number;
+  rank: number;
+  leaderboard: QuizAttempt[];
+};
+
+// SRS Card Progress operations
 
 export async function fetchCardProgress(deckId) {
   if (!supabase) return [];

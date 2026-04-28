@@ -3,29 +3,31 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { fetchDeck, fetchCards, fetchQuizzesByDeck } from '@/lib/supabase';
+import { fetchDeck, fetchCards, fetchQuizChallengesByDeck } from '@/lib/supabase';
 import { getLearnedCardIds, loadSRSProgress, getDueCount } from '@/lib/tracking';
 import { formatInterval } from '@/lib/srs';
 import { WandIcon } from '@/components/Icons';
+import type { Card, CardProgress, Deck, Quiz } from '@/types';
 
 export default function DeckView() {
-    const { id } = useParams();
-    const [deck, setDeck] = useState(null);
-    const [cards, setCards] = useState([]);
+    const { id } = useParams<{ id: string }>();
+    const [deck, setDeck] = useState<Deck | null>(null);
+    const [cards, setCards] = useState<Card[]>([]);
     const [learnedCount, setLearnedCount] = useState(0);
-    const [quizzes, setQuizzes] = useState([]);
+    const [challenges, setChallenges] = useState<Quiz[]>([]);
     const [dueCount, setDueCount] = useState(0);
-    const [srsProgress, setSrsProgress] = useState({});
+    const [srsProgress, setSrsProgress] = useState<Record<string, CardProgress>>({});
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
+    const [copiedChallengeId, setCopiedChallengeId] = useState<string | null>(null);
 
     useEffect(() => {
         async function load() {
             try {
-                const [d, c, q] = await Promise.all([fetchDeck(id), fetchCards(id), fetchQuizzesByDeck(id)]);
+                const [d, c, q] = await Promise.all([fetchDeck(id), fetchCards(id), fetchQuizChallengesByDeck(id)]);
                 setDeck(d);
                 setCards(c);
-                setQuizzes(q);
+                setChallenges(q);
 
                 const learned = getLearnedCardIds(id);
                 const count = c.filter(card => learned.has(card.id)).length;
@@ -68,16 +70,24 @@ export default function DeckView() {
         return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     };
 
+    const copyChallengeLink = async (quizId) => {
+        const shareUrl = `${window.location.origin}/take/${quizId}`;
+        await navigator.clipboard.writeText(shareUrl);
+        setCopiedChallengeId(quizId);
+        window.setTimeout(() => {
+            setCopiedChallengeId((current) => current === quizId ? null : current);
+        }, 2000);
+    };
+
     return (
         <div className="page">
             <div className="container" style={{ maxWidth: '720px' }}>
-                {/* Header */}
                 <div className="mb-lg">
                     <Link href="/" className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px', marginBottom: '12px' }}>
                         ← Back
                     </Link>
-                    <h1>{deck.title}</h1>
-                    {deck.description && <p style={{ marginTop: '8px' }}>{deck.description}</p>}
+                    <h1>{deck?.title}</h1>
+                    {deck?.description && <p style={{ marginTop: '8px' }}>{deck.description}</p>}
                     <div className="flex gap-sm mt-sm" style={{ alignItems: 'center', flexWrap: 'wrap' }}>
                         <span className="badge">{cards.length} cards</span>
                         {cards.length > 0 && (
@@ -90,11 +100,10 @@ export default function DeckView() {
                                 {dueCount} due for review
                             </span>
                         )}
-                        <span className="text-sm text-muted light" style={{ marginLeft: '4px' }}>by {deck.creator_name}</span>
+                        <span className="text-sm text-muted light" style={{ marginLeft: '4px' }}>by {deck?.creator_name}</span>
                     </div>
                 </div>
 
-                {/* Actions */}
                 <div className="mb-lg flex gap-md" style={{ flexWrap: 'wrap' }}>
                     {dueCount > 0 && (
                         <Link href={`/deck/${id}/review`} className="btn btn-primary btn-lg" style={{ background: 'var(--purple)', color: 'var(--surface)', borderColor: 'var(--purple)' }}>
@@ -119,7 +128,6 @@ export default function DeckView() {
                     )}
                 </div>
 
-                {/* Card List */}
                 <h2 className="mb-md">All Cards</h2>
                 <div className="flex" style={{ flexDirection: 'column', gap: '8px' }}>
                     {cards.map((card) => {
@@ -153,47 +161,44 @@ export default function DeckView() {
                     })}
                 </div>
 
-                {/* Past Quizzes */}
-                {quizzes.length > 0 && (
+                {challenges.length > 0 && (
                     <div style={{ marginTop: '48px' }}>
-                        <h2 className="mb-md">Past Quizzes</h2>
+                        <h2 className="mb-md">Published Challenges</h2>
                         <div className="flex" style={{ flexDirection: 'column', gap: '10px' }}>
-                            {quizzes.map((quiz) => (
-                                <Link
-                                    key={quiz.id}
-                                    href={`/deck/${id}/quiz/${quiz.id}`}
-                                    className="card card-clickable"
-                                    style={{ padding: '16px 20px' }}
-                                >
-                                    <div className="flex-between">
-                                        <div>
+                            {challenges.map((quiz) => (
+                                <div key={quiz.id} className="card" style={{ padding: '16px 20px' }}>
+                                    <div className="flex-between gap-md" style={{ alignItems: 'flex-start' }}>
+                                        <div style={{ flex: 1 }}>
                                             <p style={{ fontWeight: 600, marginBottom: '4px' }}>
                                                 {quiz.questions?.length || 0} questions
                                             </p>
                                             <div className="flex gap-sm" style={{ flexWrap: 'wrap' }}>
-                                                {quiz.question_types.map(t => (
-                                                    <span key={t} className="badge" style={{ fontSize: '0.7rem' }}>
-                                                        {t.replace('_', ' ')}
+                                                <span className="badge badge-purple">
+                                                    {quiz.source_kind === 'quick' ? 'Quick challenge' : 'AI challenge'}
+                                                </span>
+                                                {quiz.question_types.map((type) => (
+                                                    <span key={type} className="badge" style={{ fontSize: '0.7rem' }}>
+                                                        {type.replace('_', ' ')}
                                                     </span>
                                                 ))}
                                             </div>
-                                        </div>
-                                        <div style={{ textAlign: 'right' }}>
-                                            {quiz.score !== null ? (
-                                                <p style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--success)' }}>
-                                                    {quiz.score}/{quiz.questions?.length || 0}
-                                                </p>
-                                            ) : (
-                                                <span className="badge badge-warning">
-                                                    Not taken
-                                                </span>
-                                            )}
-                                            <p className="text-sm text-muted light" style={{ marginTop: '4px' }}>
+                                            <p className="text-sm text-muted light" style={{ marginTop: '8px' }}>
                                                 {quiz.creator_name} · {formatDate(quiz.created_at)}
                                             </p>
                                         </div>
+                                        <div className="flex gap-sm" style={{ flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                                            <Link href={`/take/${quiz.id}`} className="btn btn-primary btn-sm">
+                                                Open Challenge
+                                            </Link>
+                                            <Link href={`/deck/${id}/quiz/${quiz.id}`} className="btn btn-secondary btn-sm">
+                                                Review Questions
+                                            </Link>
+                                            <button className="btn btn-ghost btn-sm" onClick={() => copyChallengeLink(quiz.id)}>
+                                                {copiedChallengeId === quiz.id ? 'Copied' : 'Copy Link'}
+                                            </button>
+                                        </div>
                                     </div>
-                                </Link>
+                                </div>
                             ))}
                         </div>
                     </div>

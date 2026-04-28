@@ -31,6 +31,7 @@ create table if not exists quizzes (
   id uuid primary key default uuid_generate_v4(),
   deck_id uuid not null references decks(id) on delete cascade,
   creator_name text not null default 'Anonymous',
+  source_kind text not null default 'ai',
   subject text not null default '',
   questions jsonb not null,
   answers jsonb default null,
@@ -42,10 +43,27 @@ create table if not exists quizzes (
 -- Index for fast quiz lookups by deck
 create index if not exists idx_quizzes_deck_id on quizzes(deck_id);
 
+create table if not exists quiz_attempts (
+  id uuid primary key default uuid_generate_v4(),
+  quiz_id uuid not null references quizzes(id) on delete cascade,
+  player_name text not null,
+  answers jsonb not null,
+  score int not null,
+  question_count int not null,
+  elapsed_ms bigint not null,
+  started_at timestamptz not null,
+  completed_at timestamptz not null,
+  created_at timestamptz default now()
+);
+
+create index if not exists idx_quiz_attempts_quiz_id on quiz_attempts(quiz_id);
+create index if not exists idx_quiz_attempts_quiz_score_time on quiz_attempts(quiz_id, score desc, elapsed_ms asc, created_at asc);
+
 -- Row Level Security
 alter table decks enable row level security;
 alter table cards enable row level security;
 alter table quizzes enable row level security;
+alter table quiz_attempts enable row level security;
 
 -- Public read access
 create policy "Public read decks" on decks
@@ -57,6 +75,9 @@ create policy "Public read cards" on cards
 create policy "Public read quizzes" on quizzes
   for select using (true);
 
+create policy "Public read quiz attempts" on quiz_attempts
+  for select using (true);
+
 -- Public insert access
 create policy "Public insert decks" on decks
   for insert with check (true);
@@ -66,7 +87,3 @@ create policy "Public insert cards" on cards
 
 create policy "Public insert quizzes" on quizzes
   for insert with check (true);
-
--- Public update for quizzes (to save answers/score)
-create policy "Public update quizzes" on quizzes
-  for update using (true) with check (true);

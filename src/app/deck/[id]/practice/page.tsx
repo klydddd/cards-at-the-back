@@ -13,9 +13,9 @@ const CHECK_IN_INTERVAL = 15;
 const REVIEW_INSERT_COUNT = 3; // how many review cards to slip in after check-in
 
 const FEELINGS = [
-    { emoji: '😊', label: 'Great', color: '#10b981' },
-    { emoji: '😐', label: 'Okay', color: '#f59e0b' },
-    { emoji: '😵‍💫', label: 'Struggling', color: '#ef4444' },
+    { label: 'Great', color: '#10b981' },
+    { label: 'Okay', color: '#f59e0b' },
+    { label: 'Struggling', color: '#ef4444' },
 ];
 
 export default function Practice() {
@@ -312,7 +312,7 @@ export default function Practice() {
         return (
             <div className="page">
                 <div className="container text-center" style={{ maxWidth: '480px' }}>
-                    <div style={{ fontSize: '2.5rem', marginBottom: '16px' }}>🧠</div>
+
                     <h2 className="mb-sm">Quick Check-In</h2>
                     <p className="text-muted mb-lg">
                         You've gone through {CHECK_IN_INTERVAL} cards. How are you feeling?
@@ -326,7 +326,7 @@ export default function Practice() {
                                 style={{ width: '100%', justifyContent: 'center', gap: '10px' }}
                                 onClick={() => handleCheckInContinue(f.label)}
                             >
-                                <span style={{ fontSize: '1.3rem' }}>{f.emoji}</span> {f.label}
+                                {f.label}
                             </button>
                         ))}
                     </div>

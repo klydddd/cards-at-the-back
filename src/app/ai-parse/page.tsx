@@ -339,7 +339,7 @@ export default function AIParse() {
                                             style={{ flex: 1 }}
                                             id="mode-cards-btn"
                                         >
-                                            📇 Flashcards
+                                            Flashcards
                                         </button>
                                         <button
                                             className={`btn ${parseMode === 'mcq' ? 'btn-primary' : 'btn-secondary'}`}
@@ -347,7 +347,7 @@ export default function AIParse() {
                                             style={{ flex: 1 }}
                                             id="mode-mcq-btn"
                                         >
-                                            ✅ Multiple Choice Quiz
+                                            Multiple Choice Quiz
                                         </button>
                                     </div>
                                 </div>
@@ -391,7 +391,7 @@ export default function AIParse() {
                                         </span>
                                     ) : (
                                         parseMode === 'mcq'
-                                            ? '🤖 Extract MCQ with AI'
+                                            ? 'Extract MCQ with AI'
                                             : (isImageFile ? 'Generate Cards from OCR' : 'Generate Cards with AI')
                                     )}
                                 </button>
@@ -405,7 +405,7 @@ export default function AIParse() {
                                         disabled={loading}
                                         id="tesseract-only-btn"
                                     >
-                                        🔍 Extract with Tesseract Only (No AI)
+                                        Extract with Tesseract Only (No AI)
                                     </button>
                                 )}
                             </div>

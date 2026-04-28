@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { fetchQuiz, fetchDeck, fetchQuizAttempts, submitQuizAttempt, type SubmittedQuizAttempt } from '@/lib/supabase';
 import { gradeQuizAttempt, isAnswerCorrect } from '@/lib/quizGrading';
+import { CheckIcon, XIcon } from '@/components/Icons';
 import type { Deck, Quiz, QuizAttempt, QuizQuestion } from '@/types';
 
 function formatElapsed(elapsedMs: number) {
@@ -28,6 +29,7 @@ export default function TakeQuiz() {
     const [currentQ, setCurrentQ] = useState(0);
     const [answers, setAnswers] = useState<Record<number, string | boolean | string[]>>({});
     const [currentInput, setCurrentInput] = useState('');
+    const [feedback, setFeedback] = useState<{ userAnswer: string | boolean | string[]; isCorrect: boolean } | null>(null);
     const [showResults, setShowResults] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [attemptStartedAt, setAttemptStartedAt] = useState<string | null>(null);
@@ -65,13 +67,11 @@ export default function TakeQuiz() {
         setError(null);
         setStarted(true);
         setAttemptStartedAt(new Date().toISOString());
+        setFeedback(null);
     };
 
-    const submitAnswer = async (overrideAnswer = null) => {
-        const finalAnswer = overrideAnswer !== null ? overrideAnswer : currentInput;
-        const nextAnswers = { ...answers, [currentQ]: finalAnswer };
-        setAnswers(nextAnswers);
-        setCurrentInput('');
+    const goNext = async () => {
+        setFeedback(null);
 
         if (currentQ < questions.length - 1) {
             setCurrentQ(currentQ + 1);
@@ -85,7 +85,7 @@ export default function TakeQuiz() {
             const result = await submitQuizAttempt(
                 quizId,
                 playerName.trim(),
-                nextAnswers,
+                { ...answers },
                 attemptStartedAt || new Date().toISOString(),
                 new Date().toISOString()
             );
@@ -98,6 +98,15 @@ export default function TakeQuiz() {
         } finally {
             setSubmitting(false);
         }
+    };
+
+    const submitAnswer = (overrideAnswer = null) => {
+        const finalAnswer = overrideAnswer !== null ? overrideAnswer : currentInput;
+        const isCorrect = isAnswerCorrect(question, finalAnswer);
+        const nextAnswers = { ...answers, [currentQ]: finalAnswer };
+        setAnswers(nextAnswers);
+        setCurrentInput('');
+        setFeedback({ userAnswer: finalAnswer, isCorrect });
     };
 
     if (loading)
@@ -315,7 +324,21 @@ export default function TakeQuiz() {
                         {question.type === 'multiple_choice' && (
                             <div className="flex" style={{ flexDirection: 'column', gap: '8px' }}>
                                 {question.options.map((option, index) => (
-                                    <button key={index} className="btn btn-secondary" style={{ justifyContent: 'flex-start', textAlign: 'left', padding: '16px', fontWeight: 400 }} onClick={() => void submitAnswer(option)}>
+                                    <button
+                                        key={index}
+                                        className="btn btn-secondary"
+                                        style={{
+                                            justifyContent: 'flex-start',
+                                            textAlign: 'left',
+                                            padding: '16px',
+                                            fontWeight: 400,
+                                            ...(feedback && option === question.answer ? { background: 'var(--success-light)', borderColor: 'var(--success)', color: 'var(--success-dark)', fontWeight: 600 } : {}),
+                                            ...(feedback && option === feedback.userAnswer && !feedback.isCorrect ? { background: 'var(--error-light)', borderColor: 'var(--error)', color: 'var(--error-dark)' } : {}),
+                                            ...(feedback && option !== question.answer && option !== feedback.userAnswer ? { opacity: 0.4 } : {}),
+                                        }}
+                                        onClick={() => submitAnswer(option)}
+                                        disabled={!!feedback}
+                                    >
                                         {option}
                                     </button>
                                 ))}
@@ -325,7 +348,19 @@ export default function TakeQuiz() {
                         {question.type === 'true_false' && (
                             <div className="flex gap-md">
                                 {[true, false].map((value) => (
-                                    <button key={String(value)} className="btn btn-secondary" style={{ flex: 1, padding: '24px' }} onClick={() => void submitAnswer(value)}>
+                                    <button
+                                        key={String(value)}
+                                        className="btn btn-secondary"
+                                        style={{
+                                            flex: 1,
+                                            padding: '24px',
+                                            ...(feedback && value === question.answer ? { background: 'var(--success-light)', borderColor: 'var(--success)', color: 'var(--success-dark)', fontWeight: 700 } : {}),
+                                            ...(feedback && value === feedback.userAnswer && !feedback.isCorrect ? { background: 'var(--error-light)', borderColor: 'var(--error)', color: 'var(--error-dark)' } : {}),
+                                            ...(feedback && value !== question.answer && value !== feedback.userAnswer ? { opacity: 0.4 } : {}),
+                                        }}
+                                        onClick={() => submitAnswer(value)}
+                                        disabled={!!feedback}
+                                    >
                                         {value ? 'True' : 'False'}
                                     </button>
                                 ))}
@@ -341,11 +376,12 @@ export default function TakeQuiz() {
                                     placeholder="Type your answer here..."
                                     value={currentInput}
                                     onChange={(e) => setCurrentInput(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && void submitAnswer()}
+                                    onKeyDown={(e) => e.key === 'Enter' && !feedback && submitAnswer()}
+                                    disabled={!!feedback}
                                 />
-                                <div className="mt-md text-right">
-                                    <button className="btn btn-primary" onClick={() => void submitAnswer()}>Submit</button>
-                                </div>
+                                {!feedback && <div className="mt-md text-right">
+                                    <button className="btn btn-primary" onClick={() => submitAnswer()}>Submit</button>
+                                </div>}
                             </div>
                         )}
 
@@ -359,21 +395,59 @@ export default function TakeQuiz() {
                                     value={currentInput}
                                     onChange={(e) => setCurrentInput(e.target.value)}
                                     rows={3}
+                                    disabled={!!feedback}
                                 />
-                                <div className="mt-md text-right">
+                                {!feedback && <div className="mt-md text-right">
                                     <button
                                         className="btn btn-primary"
                                         onClick={() => {
                                             const answerList = currentInput.split(',').map((item) => item.trim()).filter(Boolean);
-                                            void submitAnswer(answerList.length ? answerList : '');
+                                            submitAnswer(answerList.length ? answerList : '');
                                         }}
                                     >
                                         Submit
                                     </button>
-                                </div>
+                                </div>}
                             </div>
                         )}
                     </div>
+
+                    {feedback && (
+                        <div style={{
+                            marginTop: '24px',
+                            padding: '16px 20px',
+                            borderRadius: 'var(--radius-md)',
+                            background: feedback.isCorrect ? 'var(--success-light)' : 'var(--error-light)',
+                            border: `1.5px solid ${feedback.isCorrect ? 'var(--success-border)' : 'var(--error-border)'}`,
+                        }}>
+                            <div className="flex gap-sm" style={{ alignItems: 'center', marginBottom: '8px' }}>
+                                <div style={{
+                                    width: 28,
+                                    height: 28,
+                                    borderRadius: '50%',
+                                    background: feedback.isCorrect ? 'var(--success)' : 'var(--error)',
+                                    color: '#fff',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}>
+                                    {feedback.isCorrect ? <CheckIcon size={14} /> : <XIcon size={14} />}
+                                </div>
+                                <span style={{ fontWeight: 700, color: feedback.isCorrect ? 'var(--success-dark)' : 'var(--error-dark)' }}>
+                                    {feedback.isCorrect ? 'Correct!' : 'Incorrect'}
+                                </span>
+                            </div>
+                            <div>
+                                <span className="text-sm text-muted">Correct answer: </span>
+                                <span style={{ fontWeight: 700 }}>
+                                    {Array.isArray(question.answer) ? question.answer.join(', ') : String(question.answer)}
+                                </span>
+                            </div>
+                            <button className="btn btn-primary mt-md" style={{ width: '100%' }} onClick={() => void goNext()} autoFocus>
+                                {currentQ < questions.length - 1 ? 'Next Question' : 'See Results'}
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

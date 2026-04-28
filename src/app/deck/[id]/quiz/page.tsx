@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { fetchDeck, fetchCards, saveQuiz } from '@/lib/supabase';
 import { generateQuizFromCards } from '@/lib/quizGenerator';
 import { gradeQuizAttempt, isAnswerCorrect } from '@/lib/quizGrading';
+import { CheckIcon, XIcon } from '@/components/Icons';
 import type { Card, Deck, Quiz, QuizQuestion } from '@/types';
 
 const QUESTION_TYPES = [
@@ -35,11 +36,13 @@ export default function Quiz() {
     const [publishing, setPublishing] = useState(false);
     const [publishedQuiz, setPublishedQuiz] = useState<Quiz | null>(null);
     const [copiedShareLink, setCopiedShareLink] = useState(false);
+    const [started, setStarted] = useState(false);
 
     const [questions, setQuestions] = useState<QuizQuestion[]>([]);
     const [currentQ, setCurrentQ] = useState(0);
     const [answers, setAnswers] = useState<Record<number, string | boolean | string[]>>({});
     const [currentInput, setCurrentInput] = useState('');
+    const [feedback, setFeedback] = useState<{ userAnswer: string | boolean | string[]; isCorrect: boolean } | null>(null);
     const [showResults, setShowResults] = useState(false);
 
     useEffect(() => {
@@ -72,7 +75,9 @@ export default function Quiz() {
         setCurrentQ(0);
         setAnswers({});
         setCurrentInput('');
+        setFeedback(null);
         setShowResults(false);
+        setStarted(false);
         setPublishedQuiz(null);
         setCopiedShareLink(false);
     };
@@ -92,6 +97,8 @@ export default function Quiz() {
             setCurrentQ(0);
             setAnswers({});
             setCurrentInput('');
+            setFeedback(null);
+            setStarted(false);
             setShowResults(false);
             setPublishedQuiz(null);
         } catch (err) {
@@ -102,6 +109,8 @@ export default function Quiz() {
     };
 
     const goToNextQuestion = (nextAnswers) => {
+        setFeedback(null);
+
         if (currentQ < questions.length - 1) {
             setCurrentQ(currentQ + 1);
             setCurrentInput('');
@@ -115,9 +124,11 @@ export default function Quiz() {
 
     const submitAnswer = (overrideAnswer = null) => {
         const finalAnswer = overrideAnswer !== null ? overrideAnswer : currentInput;
+        const isCorrect = isAnswerCorrect(questions[currentQ], finalAnswer);
         const nextAnswers = { ...answers, [currentQ]: finalAnswer };
         setAnswers(nextAnswers);
-        goToNextQuestion(nextAnswers);
+        setCurrentInput('');
+        setFeedback({ userAnswer: finalAnswer, isCorrect });
     };
 
     const publishChallenge = async () => {
@@ -149,6 +160,13 @@ export default function Quiz() {
         await navigator.clipboard.writeText(`${window.location.origin}/take/${publishedQuiz.id}`);
         setCopiedShareLink(true);
         window.setTimeout(() => setCopiedShareLink(false), 2000);
+    };
+
+    const startQuiz = () => {
+        setStarted(true);
+        setCurrentQ(0);
+        setCurrentInput('');
+        setFeedback(null);
     };
 
     if (loading)
@@ -333,6 +351,70 @@ export default function Quiz() {
         );
     }
 
+    if (!started) {
+        return (
+            <div className="page">
+                <div className="container" style={{ maxWidth: '720px' }}>
+                    <div className="mb-md">
+                        <Link href={`/deck/${id}`} className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px' }}>
+                            ← Back to Deck
+                        </Link>
+                    </div>
+
+                    <div className="text-center mb-lg">
+                        <h1 className="mb-sm">Quiz Ready</h1>
+                        <p className="text-muted">{deck?.title}</p>
+                    </div>
+
+                    {error && <div className="error-box mb-md">{error}</div>}
+
+                    {publishedQuiz ? (
+                        <div className="card mb-lg" style={{ padding: '24px', background: 'var(--success-light)' }}>
+                            <p className="bold mb-sm">Challenge published</p>
+                            <p className="text-sm text-muted mb-md">This exact quiz is now shareable before you start taking it.</p>
+                            <div className="flex gap-sm" style={{ flexWrap: 'wrap' }}>
+                                <Link href={`/take/${publishedQuiz.id}`} className="btn btn-primary">
+                                    Open Challenge
+                                </Link>
+                                <button className="btn btn-secondary" onClick={copyShareLink}>
+                                    {copiedShareLink ? 'Link Copied' : 'Copy Share Link'}
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="card mb-lg" style={{ padding: '24px' }}>
+                            <p className="bold mb-sm">Publish this quiz as a challenge</p>
+                            <p className="text-sm text-muted mb-md">Publish the fixed question set now, then start taking the same quiz locally.</p>
+                            <button className="btn btn-primary" onClick={publishChallenge} disabled={publishing}>
+                                {publishing ? 'Publishing...' : 'Publish Challenge'}
+                            </button>
+                        </div>
+                    )}
+
+                    <div className="card mb-lg" style={{ padding: '24px' }}>
+                        <div className="flex-between" style={{ flexWrap: 'wrap', gap: '12px' }}>
+                            <div>
+                                <p className="text-sm text-muted">Question Count</p>
+                                <p style={{ fontSize: '2rem', fontWeight: 800 }}>{questions.length}</p>
+                            </div>
+                            <div className="flex gap-sm" style={{ flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                                {activeTypes.map((type) => (
+                                    <span key={type} className="badge">
+                                        {type.replace('_', ' ')}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    <button className="btn btn-primary btn-lg" style={{ width: '100%' }} onClick={startQuiz}>
+                        Start Quiz
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     const question = questions[currentQ];
 
     return (
@@ -365,8 +447,17 @@ export default function Quiz() {
                                     <button
                                         key={index}
                                         className="btn btn-secondary"
-                                        style={{ justifyContent: 'flex-start', textAlign: 'left', padding: '16px', fontWeight: 400 }}
+                                        style={{
+                                            justifyContent: 'flex-start',
+                                            textAlign: 'left',
+                                            padding: '16px',
+                                            fontWeight: 400,
+                                            ...(feedback && option === question.answer ? { background: 'var(--success-light)', borderColor: 'var(--success)', color: 'var(--success-dark)', fontWeight: 600 } : {}),
+                                            ...(feedback && option === feedback.userAnswer && !feedback.isCorrect ? { background: 'var(--error-light)', borderColor: 'var(--error)', color: 'var(--error-dark)' } : {}),
+                                            ...(feedback && option !== question.answer && option !== feedback.userAnswer ? { opacity: 0.4 } : {}),
+                                        }}
                                         onClick={() => submitAnswer(option)}
+                                        disabled={!!feedback}
                                     >
                                         {option}
                                     </button>
@@ -380,8 +471,15 @@ export default function Quiz() {
                                     <button
                                         key={String(value)}
                                         className="btn btn-secondary"
-                                        style={{ flex: 1, padding: '24px' }}
+                                        style={{
+                                            flex: 1,
+                                            padding: '24px',
+                                            ...(feedback && value === question.answer ? { background: 'var(--success-light)', borderColor: 'var(--success)', color: 'var(--success-dark)', fontWeight: 700 } : {}),
+                                            ...(feedback && value === feedback.userAnswer && !feedback.isCorrect ? { background: 'var(--error-light)', borderColor: 'var(--error)', color: 'var(--error-dark)' } : {}),
+                                            ...(feedback && value !== question.answer && value !== feedback.userAnswer ? { opacity: 0.4 } : {}),
+                                        }}
                                         onClick={() => submitAnswer(value)}
+                                        disabled={!!feedback}
                                     >
                                         {value ? 'True' : 'False'}
                                     </button>
@@ -398,11 +496,12 @@ export default function Quiz() {
                                     placeholder="Type your answer here..."
                                     value={currentInput}
                                     onChange={(e) => setCurrentInput(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && submitAnswer()}
+                                    onKeyDown={(e) => e.key === 'Enter' && !feedback && submitAnswer()}
+                                    disabled={!!feedback}
                                 />
-                                <div className="mt-md text-right">
+                                {!feedback && <div className="mt-md text-right">
                                     <button className="btn btn-primary" onClick={() => submitAnswer()}>Submit</button>
-                                </div>
+                                </div>}
                             </div>
                         )}
 
@@ -416,8 +515,9 @@ export default function Quiz() {
                                     value={currentInput}
                                     onChange={(e) => setCurrentInput(e.target.value)}
                                     rows={3}
+                                    disabled={!!feedback}
                                 />
-                                <div className="mt-md text-right">
+                                {!feedback && <div className="mt-md text-right">
                                     <button
                                         className="btn btn-primary"
                                         onClick={() => {
@@ -427,10 +527,52 @@ export default function Quiz() {
                                     >
                                         Submit
                                     </button>
-                                </div>
+                                </div>}
                             </div>
                         )}
                     </div>
+
+                    {feedback && (
+                        <div style={{
+                            marginTop: '24px',
+                            padding: '16px 20px',
+                            borderRadius: 'var(--radius-md)',
+                            background: feedback.isCorrect ? 'var(--success-light)' : 'var(--error-light)',
+                            border: `1.5px solid ${feedback.isCorrect ? 'var(--success-border)' : 'var(--error-border)'}`,
+                        }}>
+                            <div className="flex gap-sm" style={{ alignItems: 'center', marginBottom: '8px' }}>
+                                <div style={{
+                                    width: 28,
+                                    height: 28,
+                                    borderRadius: '50%',
+                                    background: feedback.isCorrect ? 'var(--success)' : 'var(--error)',
+                                    color: '#fff',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}>
+                                    {feedback.isCorrect ? <CheckIcon size={14} /> : <XIcon size={14} />}
+                                </div>
+                                <span style={{ fontWeight: 700, color: feedback.isCorrect ? 'var(--success-dark)' : 'var(--error-dark)' }}>
+                                    {feedback.isCorrect ? 'Correct!' : 'Incorrect'}
+                                </span>
+                            </div>
+                            <div>
+                                <span className="text-sm text-muted">Correct answer: </span>
+                                <span style={{ fontWeight: 700 }}>
+                                    {Array.isArray(question.answer) ? question.answer.join(', ') : String(question.answer)}
+                                </span>
+                            </div>
+                            <button
+                                className="btn btn-primary mt-md"
+                                style={{ width: '100%' }}
+                                onClick={() => goToNextQuestion({ ...answers })}
+                                autoFocus
+                            >
+                                {currentQ < questions.length - 1 ? 'Next Question' : 'See Results'}
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

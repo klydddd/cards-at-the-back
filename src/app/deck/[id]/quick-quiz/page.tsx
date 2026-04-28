@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { fetchDeck, fetchCards, saveQuiz } from '@/lib/supabase';
 import { generateQuickQuiz } from '@/lib/mcqGenerator';
 import { gradeQuizAttempt, isAnswerCorrect } from '@/lib/quizGrading';
+import { CheckIcon, XIcon } from '@/components/Icons';
 import type { Card, Deck, Quiz, QuizQuestion } from '@/types';
 
 const QUIZ_TYPES = [
@@ -32,6 +33,7 @@ export default function MCQuiz() {
     const [currentQ, setCurrentQ] = useState(0);
     const [answers, setAnswers] = useState<Record<number, string | boolean | string[]>>({});
     const [currentInput, setCurrentInput] = useState('');
+    const [feedback, setFeedback] = useState<{ userAnswer: string | boolean | string[]; isCorrect: boolean } | null>(null);
     const [showResults, setShowResults] = useState(false);
 
     useEffect(() => {
@@ -54,8 +56,9 @@ export default function MCQuiz() {
             setCurrentQ(0);
             setAnswers({});
             setCurrentInput('');
+            setFeedback(null);
             setShowResults(false);
-            setStarted(true);
+            setStarted(false);
             setPublishedQuiz(null);
             setCopiedShareLink(false);
         } catch (err) {
@@ -67,6 +70,7 @@ export default function MCQuiz() {
         setStarted(false);
         setQuestions([]);
         setError(null);
+        setFeedback(null);
         setPublishedQuiz(null);
         setCopiedShareLink(false);
     };
@@ -75,11 +79,8 @@ export default function MCQuiz() {
         if (selectedType) startQuiz(selectedType as any);
     };
 
-    const submitAnswer = (overrideAnswer = null) => {
-        const finalAnswer = overrideAnswer !== null ? overrideAnswer : currentInput;
-        const nextAnswers = { ...answers, [currentQ]: finalAnswer };
-        setAnswers(nextAnswers);
-        setCurrentInput('');
+    const goNext = () => {
+        setFeedback(null);
 
         if (currentQ < questions.length - 1) {
             setCurrentQ(currentQ + 1);
@@ -87,6 +88,15 @@ export default function MCQuiz() {
         }
 
         setShowResults(true);
+    };
+
+    const submitAnswer = (overrideAnswer = null) => {
+        const finalAnswer = overrideAnswer !== null ? overrideAnswer : currentInput;
+        const isCorrect = isAnswerCorrect(question, finalAnswer);
+        const nextAnswers = { ...answers, [currentQ]: finalAnswer };
+        setAnswers(nextAnswers);
+        setCurrentInput('');
+        setFeedback({ userAnswer: finalAnswer, isCorrect });
     };
 
     const publishChallenge = async () => {
@@ -120,6 +130,13 @@ export default function MCQuiz() {
         window.setTimeout(() => setCopiedShareLink(false), 2000);
     };
 
+    const beginQuiz = () => {
+        setStarted(true);
+        setCurrentQ(0);
+        setCurrentInput('');
+        setFeedback(null);
+    };
+
     if (loading)
         return (
             <div className="page">
@@ -139,7 +156,7 @@ export default function MCQuiz() {
             </div>
         );
 
-    if (!started) {
+    if (questions.length === 0) {
         return (
             <div className="page">
                 <div className="container" style={{ maxWidth: '520px' }}>
@@ -190,6 +207,66 @@ export default function MCQuiz() {
                     <p className="text-sm text-muted mt-lg" style={{ opacity: 0.5 }}>
                         Generate a fixed quick quiz, then publish it as a competitive challenge if you want to share it.
                     </p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!started) {
+        return (
+            <div className="page">
+                <div className="container" style={{ maxWidth: '640px' }}>
+                    <div className="mb-md">
+                        <Link href={`/deck/${id}`} className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px' }}>
+                            ← Back to Deck
+                        </Link>
+                    </div>
+
+                    <div className="text-center mb-lg">
+                        <h1 className="mb-sm">Quick Quiz Ready</h1>
+                        <p className="text-muted">{deck?.title}</p>
+                    </div>
+
+                    {error && <div className="error-box mb-md">{error}</div>}
+
+                    {publishedQuiz ? (
+                        <div className="card mb-lg" style={{ padding: '24px', background: 'var(--success-light)' }}>
+                            <p className="bold mb-sm">Challenge published</p>
+                            <p className="text-sm text-muted mb-md">This fixed quick quiz is now shareable before you start taking it.</p>
+                            <div className="flex gap-sm" style={{ flexWrap: 'wrap' }}>
+                                <Link href={`/take/${publishedQuiz.id}`} className="btn btn-primary">
+                                    Open Challenge
+                                </Link>
+                                <button className="btn btn-secondary" onClick={copyShareLink}>
+                                    {copiedShareLink ? 'Link Copied' : 'Copy Share Link'}
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="card mb-lg" style={{ padding: '24px' }}>
+                            <p className="bold mb-sm">Publish this quick quiz as a challenge</p>
+                            <p className="text-sm text-muted mb-md">Publish the generated question set now, then start taking the same quiz locally.</p>
+                            <button className="btn btn-primary" onClick={publishChallenge} disabled={publishing}>
+                                {publishing ? 'Publishing...' : 'Publish Challenge'}
+                            </button>
+                        </div>
+                    )}
+
+                    <div className="card mb-lg" style={{ padding: '24px' }}>
+                        <div className="flex-between" style={{ flexWrap: 'wrap', gap: '12px' }}>
+                            <div>
+                                <p className="text-sm text-muted">Question Count</p>
+                                <p style={{ fontSize: '2rem', fontWeight: 800 }}>{questions.length}</p>
+                            </div>
+                            <span className="badge badge-purple">
+                                {(selectedType || 'quick quiz').replace('_', ' ')}
+                            </span>
+                        </div>
+                    </div>
+
+                    <button className="btn btn-primary btn-lg" style={{ width: '100%' }} onClick={beginQuiz}>
+                        Start Quiz
+                    </button>
                 </div>
             </div>
         );
@@ -311,7 +388,21 @@ export default function MCQuiz() {
                         {question.type === 'multiple_choice' && (
                             <div className="flex" style={{ flexDirection: 'column', gap: '8px' }}>
                                 {(question.options || []).map((option, index) => (
-                                    <button key={index} className="btn btn-secondary" style={{ justifyContent: 'flex-start', textAlign: 'left', padding: '16px', fontWeight: 500 }} onClick={() => submitAnswer(option)}>
+                                    <button
+                                        key={index}
+                                        className="btn btn-secondary"
+                                        style={{
+                                            justifyContent: 'flex-start',
+                                            textAlign: 'left',
+                                            padding: '16px',
+                                            fontWeight: 500,
+                                            ...(feedback && option === question.answer ? { background: 'var(--success-light)', borderColor: 'var(--success)', color: 'var(--success-dark)', fontWeight: 700 } : {}),
+                                            ...(feedback && option === feedback.userAnswer && !feedback.isCorrect ? { background: 'var(--error-light)', borderColor: 'var(--error)', color: 'var(--error-dark)' } : {}),
+                                            ...(feedback && option !== question.answer && option !== feedback.userAnswer ? { opacity: 0.35 } : {}),
+                                        }}
+                                        onClick={() => submitAnswer(option)}
+                                        disabled={!!feedback}
+                                    >
                                         {option}
                                     </button>
                                 ))}
@@ -321,7 +412,19 @@ export default function MCQuiz() {
                         {question.type === 'true_false' && (
                             <div className="flex gap-md">
                                 {[true, false].map(value => (
-                                    <button key={String(value)} className="btn btn-secondary" style={{ flex: 1, padding: '24px' }} onClick={() => submitAnswer(value)}>
+                                    <button
+                                        key={String(value)}
+                                        className="btn btn-secondary"
+                                        style={{
+                                            flex: 1,
+                                            padding: '24px',
+                                            ...(feedback && value === question.answer ? { background: 'var(--success-light)', borderColor: 'var(--success)', color: 'var(--success-dark)', fontWeight: 700 } : {}),
+                                            ...(feedback && value === feedback.userAnswer && !feedback.isCorrect ? { background: 'var(--error-light)', borderColor: 'var(--error)', color: 'var(--error-dark)' } : {}),
+                                            ...(feedback && value !== question.answer && value !== feedback.userAnswer ? { opacity: 0.35 } : {}),
+                                        }}
+                                        onClick={() => submitAnswer(value)}
+                                        disabled={!!feedback}
+                                    >
                                         {value ? 'True' : 'False'}
                                     </button>
                                 ))}
@@ -337,14 +440,47 @@ export default function MCQuiz() {
                                     placeholder="Type your answer here..."
                                     value={currentInput}
                                     onChange={(e) => setCurrentInput(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && submitAnswer()}
+                                    onKeyDown={(e) => e.key === 'Enter' && !feedback && submitAnswer()}
+                                    disabled={!!feedback}
                                 />
-                                <div className="mt-md text-right">
+                                {!feedback && <div className="mt-md text-right">
                                     <button className="btn btn-primary" onClick={() => submitAnswer()}>Submit</button>
-                                </div>
+                                </div>}
                             </div>
                         )}
                     </div>
+
+                    {feedback && (
+                        <div style={{
+                            marginTop: '20px',
+                            padding: '16px 20px',
+                            borderRadius: 'var(--radius-md)',
+                            background: feedback.isCorrect ? 'var(--success-light)' : 'var(--error-light)',
+                            border: `1.5px solid ${feedback.isCorrect ? 'var(--success-border)' : 'var(--error-border)'}`,
+                        }}>
+                            <div className="flex gap-sm" style={{ alignItems: 'center', marginBottom: '8px' }}>
+                                <div style={{
+                                    width: 28, height: 28, borderRadius: '50%',
+                                    background: feedback.isCorrect ? 'var(--success)' : 'var(--error)',
+                                    color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                }}>
+                                    {feedback.isCorrect ? <CheckIcon size={14} /> : <XIcon size={14} />}
+                                </div>
+                                <span style={{ fontWeight: 700, color: feedback.isCorrect ? 'var(--success-dark)' : 'var(--error-dark)' }}>
+                                    {feedback.isCorrect ? 'Correct!' : 'Incorrect'}
+                                </span>
+                            </div>
+                            <p style={{ marginTop: '4px' }}>
+                                <span className="text-sm text-muted">Answer: </span>
+                                <span style={{ fontWeight: 700 }}>
+                                    {Array.isArray(question.answer) ? question.answer.join(', ') : String(question.answer)}
+                                </span>
+                            </p>
+                            <button className="btn btn-primary mt-md" style={{ width: '100%' }} onClick={goNext} autoFocus>
+                                {currentQ < questions.length - 1 ? 'Next' : 'See Results'}
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

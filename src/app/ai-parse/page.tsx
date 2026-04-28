@@ -305,7 +305,7 @@ export default function AIParse() {
                             type="file"
                             accept={ALL_EXTENSIONS.join(',')}
                             style={{ display: 'none' }}
-                            onChange={(e) => handleFile(e.target.files[0])}
+                            onChange={(e) => handleFile(e.target.files?.[0])}
                             id="file-input"
                         />
 
@@ -624,7 +624,7 @@ export default function AIParse() {
                                             <label className="label">Answer</label>
                                             <input
                                                 className="input"
-                                                value={q.answer}
+                                                value={q.answer as string}
                                                 onChange={(e) => updateQuestion(i, 'answer', e.target.value)}
                                             />
                                         </div>

@@ -122,7 +122,7 @@ export default function Quiz() {
         setShowResults(true);
     };
 
-    const submitAnswer = (overrideAnswer = null) => {
+    const submitAnswer = (overrideAnswer: string | boolean | string[] | null = null) => {
         const finalAnswer = overrideAnswer !== null ? overrideAnswer : currentInput;
         const isCorrect = isAnswerCorrect(questions[currentQ], finalAnswer);
         const nextAnswers = { ...answers, [currentQ]: finalAnswer };
@@ -197,7 +197,7 @@ export default function Quiz() {
                             ← Back to Deck
                         </Link>
                     </div>
-                    <h1 className="mb-sm">Quiz: {deck.title}</h1>
+                    <h1 className="mb-sm">Quiz: {deck?.title}</h1>
                     <p className="mb-lg">Set how many questions you want per type.</p>
 
                     {error && <div className="error-box">{error}</div>}

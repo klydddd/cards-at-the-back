@@ -100,7 +100,7 @@ export default function TakeQuiz() {
         }
     };
 
-    const submitAnswer = (overrideAnswer = null) => {
+    const submitAnswer = (overrideAnswer: string | boolean | string[] | null = null) => {
         const finalAnswer = overrideAnswer !== null ? overrideAnswer : currentInput;
         const isCorrect = isAnswerCorrect(question, finalAnswer);
         const nextAnswers = { ...answers, [currentQ]: finalAnswer };
@@ -273,7 +273,7 @@ export default function TakeQuiz() {
                         <Link href={`/take/${quizId}`} className="btn btn-secondary">
                             Play Again
                         </Link>
-                        <Link href={`/deck/${quiz.deck_id}`} className="btn btn-primary">
+                        <Link href={`/deck/${quiz!.deck_id}`} className="btn btn-primary">
                             View Deck
                         </Link>
                     </div>
@@ -323,7 +323,7 @@ export default function TakeQuiz() {
                     <div style={{ marginTop: '24px' }}>
                         {question.type === 'multiple_choice' && (
                             <div className="flex" style={{ flexDirection: 'column', gap: '8px' }}>
-                                {question.options.map((option, index) => (
+                                {(question.options ?? []).map((option, index) => (
                                     <button
                                         key={`${currentQ}-${index}`}
                                         className="btn btn-secondary"

@@ -8,6 +8,7 @@ import FlipCard from '@/components/FlipCard';
 import { getLearnedCardIds, markCardAsLearned, markCardAsLearning, rateCard, loadSRSProgress } from '@/lib/tracking';
 import { Rating, formatInterval, previewIntervals } from '@/lib/srs';
 import { ShuffleIcon, SparklesIcon, CheckIcon, XIcon } from '@/components/Icons';
+import type { Deck, Card } from '@/types';
 
 const CHECK_IN_INTERVAL = 15;
 const REVIEW_INSERT_COUNT = 3; // how many review cards to slip in after check-in
@@ -23,18 +24,18 @@ export default function Practice() {
     const searchParams = useSearchParams();
     const isReplayMode = searchParams ? searchParams.get('filter') === 'not-learned' : false;
 
-    const [deck, setDeck] = useState(null);
-    const [cards, setCards] = useState([]);
+    const [deck, setDeck] = useState<Deck | null>(null);
+    const [cards, setCards] = useState<(Card & { _isReview?: boolean })[]>([]);
     const [current, setCurrent] = useState(0);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
     const [shuffled, setShuffled] = useState(false);
     const [flipKey, setFlipKey] = useState(0);
-    const [learnedIds, setLearnedIds] = useState(new Set());
+    const [learnedIds, setLearnedIds] = useState<Set<string>>(new Set());
     const [swipeOffset, setSwipeOffset] = useState(0);
-    const [swipeAction, setSwipeAction] = useState(null);
+    const [swipeAction, setSwipeAction] = useState<'learned' | 'learning' | null>(null);
     const [finished, setFinished] = useState(false);
-    const [srsProgress, setSrsProgress] = useState({});
+    const [srsProgress, setSrsProgress] = useState<Record<string, any>>({});
 
     // Animation states
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
@@ -44,14 +45,14 @@ export default function Practice() {
     const [showCheckIn, setShowCheckIn] = useState(false);
     const [cardsSeenSinceCheckIn, setCardsSeenSinceCheckIn] = useState(0);
     const [checkInCount, setCheckInCount] = useState(0);
-    const [lastFeeling, setLastFeeling] = useState(null);
-    const reviewInsertedRef = useRef(new Set()); // track which check-in rounds already inserted reviews
+    const [lastFeeling, setLastFeeling] = useState<string | null>(null);
+    const reviewInsertedRef = useRef<Set<number>>(new Set()); // track which check-in rounds already inserted reviews
 
-    const flipCardRef = useRef(null);
-    const swipeAreaRef = useRef(null);
-    const touchStartX = useRef(null);
-    const touchStartY = useRef(null);
-    const isHorizontalSwipe = useRef(null);
+    const flipCardRef = useRef<{ toggle: () => void } | null>(null);
+    const swipeAreaRef = useRef<HTMLDivElement>(null);
+    const touchStartX = useRef<number | null>(null);
+    const touchStartY = useRef<number | null>(null);
+    const isHorizontalSwipe = useRef<boolean | null>(null);
 
     useEffect(() => {
         async function load() {

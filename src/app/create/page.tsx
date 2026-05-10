@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createDeck, createCards } from '@/lib/supabase';
 import CardForm from '@/components/CardForm';
@@ -16,10 +16,33 @@ export default function CreateDeck() {
     const [cards, setCards] = useState([emptyCard(), emptyCard(), emptyCard()]);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
+    const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const updateCard = (index, field, value) => {
         setCards((prev) => prev.map((c, i) => (i === index ? { ...c, [field]: value } : c)));
+
+        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = setTimeout(() => {
+            setCards((latest) => {
+                if (latest.length < 2) return latest;
+                const secondLast = latest[latest.length - 2];
+                const last = latest[latest.length - 1];
+                const secondLastComplete = secondLast.front.trim() && secondLast.back.trim();
+                const lastBlank = !last.front.trim() && !last.back.trim();
+                return secondLastComplete && lastBlank
+                    ? [...latest, { front: '', back: '' }]
+                    : latest;
+            });
+        }, 300);
     };
+
+    useEffect(() => {
+        return () => {
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
+            }
+        };
+    }, []);
 
     const removeCard = (index) => {
         setCards((prev) => prev.filter((_, i) => i !== index));

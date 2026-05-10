@@ -1,6 +1,6 @@
 "use client";
 
-export default function CardForm({ index, front, back, onChange, onRemove, canRemove }: { index: number, front: string, back: string, onChange: (field: string, value: string) => void, onRemove: () => void, canRemove: boolean }) {
+export default function CardForm({ index, front, back, onChange, onRemove, canRemove, disabled = false }: { index: number, front: string, back: string, onChange: (field: string, value: string) => void, onRemove: () => void, canRemove: boolean, disabled?: boolean }) {
     return (
         <div className="card" style={{ position: 'relative' }}>
             <div className="flex-between mb-sm">
@@ -24,6 +24,7 @@ export default function CardForm({ index, front, back, onChange, onRemove, canRe
                     placeholder="Enter the term or keyword..."
                     value={back}
                     onChange={(e) => onChange('back', e.target.value)}
+                    disabled={disabled}
                 />
             </div>
             <div className="field" style={{ marginBottom: 0 }}>
@@ -35,6 +36,7 @@ export default function CardForm({ index, front, back, onChange, onRemove, canRe
                     onChange={(e) => onChange('front', e.target.value)}
                     rows={2}
                     style={{ minHeight: '72px' }}
+                    disabled={disabled}
                 />
             </div>
         </div>

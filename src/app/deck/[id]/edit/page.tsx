@@ -68,6 +68,14 @@ export default function EditDeck() {
         }
         setUnlocked(true);
         setUnlockError(null);
+        // Ensure there's always a blank card at the end so the user can add immediately
+        setCards(prev => {
+            const last = prev[prev.length - 1];
+            if (!last || last.front.trim() || last.back.trim()) {
+                return [...prev, emptyCard()];
+            }
+            return prev;
+        });
     };
 
     const updateCard = (index: number, field: string, value: string) => {

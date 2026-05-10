@@ -239,8 +239,11 @@ export default function DeckView() {
                     </div>
                 )}
 
-                {/* Admin: Delete Deck */}
-                <div style={{ marginTop: '48px', borderTop: '1px solid var(--border)', paddingTop: '24px' }}>
+                {/* Admin: Edit / Delete Deck */}
+                <div style={{ marginTop: '48px', borderTop: '1px solid var(--border)', paddingTop: '24px' }} className="flex gap-sm">
+                    <Link href={`/deck/${id}/edit`} className="btn btn-ghost btn-sm">
+                        Edit Deck
+                    </Link>
                     <button
                         className="btn btn-ghost btn-sm"
                         style={{ color: 'var(--error)', opacity: 0.7 }}

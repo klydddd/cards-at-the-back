@@ -10,6 +10,7 @@ export default function CardForm({ index, front, back, onChange, onRemove, canRe
                         type="button"
                         className="btn btn-ghost btn-sm"
                         onClick={onRemove}
+                        tabIndex={-1}
                         style={{ padding: '4px 10px', fontSize: '0.78rem' }}
                     >
                         Remove

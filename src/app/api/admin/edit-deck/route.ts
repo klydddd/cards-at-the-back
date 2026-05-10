@@ -49,7 +49,21 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'deckId, deck, and cards are required.' }, { status: 400 });
     }
 
+    if (!deck.title?.trim()) {
+        return NextResponse.json({ error: 'Title is required.' }, { status: 400 });
+    }
+    const validCards = cards.filter(c => c.front?.trim() && c.back?.trim());
+    if (validCards.length < 2) {
+        return NextResponse.json({ error: 'At least 2 complete cards are required.' }, { status: 400 });
+    }
+
     const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+    // Verify deck exists
+    const { data: existingDeck, error: deckCheckError } = await supabase
+        .from('decks').select('id').eq('id', deckId).maybeSingle();
+    if (deckCheckError) return NextResponse.json({ error: deckCheckError.message }, { status: 500 });
+    if (!existingDeck) return NextResponse.json({ error: 'Deck not found.' }, { status: 404 });
 
     try {
         // 1. Fetch existing card IDs for this deck
@@ -62,31 +76,33 @@ export async function POST(request: NextRequest) {
         const existingIds = new Set((existingCards ?? []).map((c: { id: string }) => c.id));
         const incomingIds = new Set(cards.filter(c => c.id).map(c => c.id as string));
 
-        // 2. Delete removed cards (and their SRS progress)
-        const deletedIds = [...existingIds].filter(id => !incomingIds.has(id));
-        if (deletedIds.length > 0) {
-            const { error: progressError } = await supabase.from('card_progress').delete().in('card_id', deletedIds);
-            if (progressError) console.error('card_progress cleanup failed:', progressError);
-            const { error } = await supabase.from('cards').delete().in('id', deletedIds);
-            if (error) throw error;
-        }
-
-        // 3. Update existing cards
-        for (const card of cards.filter(c => c.id)) {
-            const { error } = await supabase
-                .from('cards')
-                .update({ front: card.front, back: card.back, position: card.position })
-                .eq('id', card.id)
-                .eq('deck_id', deckId);
-            if (error) throw error;
-        }
-
-        // 4. Insert new cards
+        // 2. Insert new cards
         const newCards = cards
             .filter(c => !c.id)
             .map(c => ({ deck_id: deckId, front: c.front, back: c.back, position: c.position }));
         if (newCards.length > 0) {
             const { error } = await supabase.from('cards').insert(newCards);
+            if (error) throw error;
+        }
+
+        // 3. Update existing cards
+        await Promise.all(
+            cards.filter(c => c.id).map(async (card) => {
+                const { error } = await supabase
+                    .from('cards')
+                    .update({ front: card.front, back: card.back, position: card.position })
+                    .eq('id', card.id)
+                    .eq('deck_id', deckId);
+                if (error) throw error;
+            })
+        );
+
+        // 4. Delete removed cards (and their SRS progress)
+        const deletedIds = [...existingIds].filter(id => !incomingIds.has(id));
+        if (deletedIds.length > 0) {
+            const { error: progressError } = await supabase.from('card_progress').delete().in('card_id', deletedIds);
+            if (progressError) console.error('card_progress cleanup failed:', progressError);
+            const { error } = await supabase.from('cards').delete().in('id', deletedIds);
             if (error) throw error;
         }
 

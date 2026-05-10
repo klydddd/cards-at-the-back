@@ -18,6 +18,15 @@ export default function CardForm({ index, front, back, onChange, onRemove, canRe
                 )}
             </div>
             <div className="field">
+                <label className="label">Term (Back)</label>
+                <input
+                    className="input"
+                    placeholder="Enter the term or keyword..."
+                    value={back}
+                    onChange={(e) => onChange('back', e.target.value)}
+                />
+            </div>
+            <div className="field" style={{ marginBottom: 0 }}>
                 <label className="label">Description (Front)</label>
                 <textarea
                     className="textarea"
@@ -26,15 +35,6 @@ export default function CardForm({ index, front, back, onChange, onRemove, canRe
                     onChange={(e) => onChange('front', e.target.value)}
                     rows={2}
                     style={{ minHeight: '72px' }}
-                />
-            </div>
-            <div className="field" style={{ marginBottom: 0 }}>
-                <label className="label">Term (Back)</label>
-                <input
-                    className="input"
-                    placeholder="Enter the term or keyword..."
-                    value={back}
-                    onChange={(e) => onChange('back', e.target.value)}
                 />
             </div>
         </div>

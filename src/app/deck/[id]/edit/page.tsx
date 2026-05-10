@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { fetchDeck, fetchCards } from '@/lib/supabase';
 import CardForm from '@/components/CardForm';
-import type { Card, Deck } from '@/types';
+import type { Card } from '@/types';
 
 type EditCard = {
     id?: string;
@@ -19,7 +19,6 @@ export default function EditDeck() {
     const { id } = useParams<{ id: string }>();
     const router = useRouter();
 
-    const [deck, setDeck] = useState<Deck | null>(null);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [subject, setSubject] = useState('');
@@ -42,7 +41,6 @@ export default function EditDeck() {
         async function load() {
             try {
                 const [d, c] = await Promise.all([fetchDeck(id), fetchCards(id)]);
-                setDeck(d);
                 setTitle(d.title);
                 setDescription(d.description || '');
                 setSubject(d.subject || '');
@@ -140,7 +138,6 @@ export default function EditDeck() {
                     setUnlocked(false);
                     setPassword('');
                     setUnlockError('Incorrect password. Please unlock again.');
-                    setSaving(false);
                     return;
                 }
                 throw new Error(data.error || 'Failed to save changes.');
@@ -149,6 +146,7 @@ export default function EditDeck() {
             router.push(`/deck/${id}`);
         } catch (err: any) {
             setSaveError(err.message);
+        } finally {
             setSaving(false);
         }
     };

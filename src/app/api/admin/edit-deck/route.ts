@@ -65,7 +65,8 @@ export async function POST(request: NextRequest) {
         // 2. Delete removed cards (and their SRS progress)
         const deletedIds = [...existingIds].filter(id => !incomingIds.has(id));
         if (deletedIds.length > 0) {
-            await supabase.from('card_progress').delete().in('card_id', deletedIds);
+            const { error: progressError } = await supabase.from('card_progress').delete().in('card_id', deletedIds);
+            if (progressError) console.error('card_progress cleanup failed:', progressError);
             const { error } = await supabase.from('cards').delete().in('id', deletedIds);
             if (error) throw error;
         }
@@ -75,7 +76,8 @@ export async function POST(request: NextRequest) {
             const { error } = await supabase
                 .from('cards')
                 .update({ front: card.front, back: card.back, position: card.position })
-                .eq('id', card.id);
+                .eq('id', card.id)
+                .eq('deck_id', deckId);
             if (error) throw error;
         }
 

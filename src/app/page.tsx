@@ -67,7 +67,7 @@ export default function Home() {
                         cards at <span className="light">the back</span>
                     </h1>
                     <p style={{ fontSize: '1.1rem', marginTop: '12px', maxWidth: '480px', margin: '12px auto 0' }}>
-                        Create, share, and practice flashcards. Upload a file and let AI do the rest.
+                        Create, share, and practice flashkards.
                     </p>
                     <div className="flex-center gap-sm mt-md">
                         <Link href="/create" className="btn btn-primary btn-lg">

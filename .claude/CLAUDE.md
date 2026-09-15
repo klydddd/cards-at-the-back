@@ -97,6 +97,9 @@ quizzes       — id, deck_id, creator_name, questions (JSON), question_types (J
                 answers (JSON), score, subject, created_at
 card_progress — id, card_id, deck_id, ease_factor, interval, repetitions,
                 due_date, last_reviewed
+contact_messages — id, topic, name, email, link, message, created_at
+                   (private: RLS on, no policies; written only by /api/contact
+                   with the service role key)
 ```
 
 **Row Level Security:** RLS must be enabled on all tables. Without it, the public anon key grants full read/write access to the entire database. See `AUDIT.md` SECRET-02 and SEC-06.

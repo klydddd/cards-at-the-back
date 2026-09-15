@@ -1421,6 +1421,345 @@ p {
   align-items: center;
 }
 
+/* ─── Footer ─── */
+.footer {
+  padding: 24px 0 32px;
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--text-faint);
+}
+
+.footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.footer-inner > span {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.footer .brand-accent {
+  color: var(--text-secondary);
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+}
+
+.footer-links a {
+  color: var(--text-secondary);
+  transition: color var(--transition);
+}
+
+.footer-links a:hover {
+  color: var(--text);
+}
+
+/* ─── Consent Prompt ─── */
+.consent-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(17, 17, 16, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease both;
+}
+
+.consent-dialog {
+  width: 100%;
+  max-width: 440px;
+  box-shadow: var(--shadow-lg);
+  animation: fadeInUp 0.25s ease both;
+}
+
+.consent-body {
+  gap: 12px;
+  padding: 22px 26px 26px;
+}
+
+.consent-body h2 {
+  font-size: 2rem;
+}
+
+.consent-body p {
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.consent-body a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+}
+
+.consent-agree {
+  margin-top: 8px;
+  align-self: stretch;
+}
+
+/* ─── Contact Page ─── */
+.contact {
+  max-width: 1040px;
+}
+
+.contact .legal-header {
+  max-width: 720px;
+  border-bottom: none;
+  padding-bottom: 8px;
+}
+
+.contact-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 40px;
+  align-items: start;
+}
+
+.contact-form {
+  gap: 0;
+  padding: 20px 26px 26px;
+}
+
+.select-wrap {
+  position: relative;
+}
+
+.select-wrap::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 18px;
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid var(--text-secondary);
+  border-bottom: 1.5px solid var(--text-secondary);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 44px;
+  cursor: pointer;
+}
+
+.contact-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 16px;
+}
+
+.contact-optional {
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-faint);
+  font-weight: 400;
+}
+
+.contact-honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.contact-submit {
+  align-self: flex-start;
+}
+
+.contact-form .error-box a,
+.contact-aside a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+  overflow-wrap: anywhere;
+}
+
+.contact-sent {
+  gap: 12px;
+  padding: 28px 26px 30px;
+}
+
+.contact-sent h2 {
+  font-size: 2.25rem;
+}
+
+.contact-sent .btn {
+  align-self: flex-start;
+  margin-top: 8px;
+}
+
+.contact-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-top: 8px;
+}
+
+.contact-aside h3 {
+  margin-bottom: 4px;
+}
+
+.contact-aside p {
+  font-size: 0.9rem;
+}
+
+.contact-aside .contact-legal {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--text-faint);
+}
+
+/* ─── Legal Pages ─── */
+.legal {
+  max-width: 720px;
+}
+
+.legal-header {
+  padding-bottom: 28px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+}
+
+.legal-header h1 {
+  margin: 8px 0 14px;
+  font-size: 3.5rem;
+}
+
+.legal-lede {
+  font-size: 1.125rem;
+  max-width: 60ch;
+}
+
+.legal-updated {
+  margin-top: 14px;
+  font-size: 0.8rem;
+  color: var(--text-faint);
+}
+
+.legal-toc {
+  margin-bottom: 40px;
+}
+
+.legal-toc ol {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 24px;
+  padding-left: 42px;
+  font-size: 0.9rem;
+}
+
+.legal-toc li::marker {
+  color: var(--text-faint);
+}
+
+.legal-toc a {
+  color: var(--text-secondary);
+  transition: color var(--transition);
+}
+
+.legal-toc a:hover {
+  color: var(--text);
+}
+
+.legal-body section {
+  padding-bottom: 12px;
+  margin-bottom: 28px;
+  scroll-margin-top: 88px;
+}
+
+.legal-body h2 {
+  margin-bottom: 12px;
+  font-size: 2rem;
+}
+
+.legal-body h3 {
+  margin: 20px 0 8px;
+}
+
+.legal-body p,
+.legal-body li,
+.legal-body dd {
+  color: var(--text-secondary);
+  line-height: 1.75;
+}
+
+.legal-body p + p,
+.legal-body p + ul,
+.legal-body ul + p,
+.legal-body dl + p {
+  margin-top: 12px;
+}
+
+.legal-body ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 22px;
+}
+
+.legal-body strong {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.legal-body a,
+.legal-crosslink a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+}
+
+.legal-body code {
+  font-size: 0.85em;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--primary-light);
+  color: var(--text);
+}
+
+.legal-list {
+  margin-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.legal-list dt {
+  padding-top: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.legal-list dd {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.legal-crosslink {
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
 /* ─── Progress Bar ─── */
 .progress-bar-track {
   height: 2px;
@@ -1641,4 +1980,13 @@ p {
   .srs-btn-interval { font-size: 0.62rem; }
 
   .srs-stats-grid { grid-template-columns: repeat(2, 1fr); }
+
+  .legal-header h1 { font-size: 2.75rem; }
+  .legal-toc ol { grid-template-columns: minmax(0, 1fr); }
+  .legal-body h2 { font-size: 1.625rem; }
+
+  .contact-layout { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .contact-row { grid-template-columns: minmax(0, 1fr); }
+  .contact-form { padding: 18px 20px 22px; }
+  .contact-submit { align-self: stretch; }
 }

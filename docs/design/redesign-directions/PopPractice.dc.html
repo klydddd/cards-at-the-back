@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Onest:wght@400;500;600&amp;display=swap">
+  <style>
+    body { margin: 0; background: #FAF6EE; font-family: 'Onest', 'Trebuchet MS', sans-serif; color: #1A1511; -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #1A1511; text-decoration-thickness: 2px; } a:hover { color: #6A4A2A; }
+    button { font-family: inherit; cursor: pointer; }
+    .display { font-family: 'Bricolage Grotesque', 'Arial Black', sans-serif; }
+    .press { transition: transform .12s ease, box-shadow .12s ease; }
+    .press:hover { transform: translate(-2px, -2px); }
+    .press:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #1A1511 !important; }
+  </style>
+</helmet>
+<div style="min-height: 100%; background: #FAF6EE; display: flex; flex-direction: column;">
+  <div style="display: flex; align-items: center; gap: 20px; padding: 20px 64px;">
+    <button class="press" style="display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border: 2px solid #1A1511; border-radius: 14px; background: #FFFFFF; color: #1A1511; box-shadow: 3px 3px 0 #1A1511;" aria-label="Back to deck">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+    </button>
+    <div style="display: flex; flex-direction: column; gap: 2px;">
+      <span style="font-size: 13px; font-weight: 500; color: #6A6058;">Practicing</span>
+      <span class="display" style="font-size: 22px; font-weight: 800; letter-spacing: -0.03em;">Data Structures</span>
+    </div>
+    <div style="flex-grow: 1;"></div>
+    <div style="display: flex; gap: 6px;">
+      <sc-for list="{{ pips }}" as="p" hint-placeholder-count="6">
+        <div style="width: 30px; height: 14px; border: 2px solid #1A1511; border-radius: 100px; background: {{ p.color }}; transition: background .2s ease;"></div>
+      </sc-for>
+    </div>
+  </div>
+
+  <main style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 36px; padding: 12px 64px 48px;">
+    <sc-if value="{{ active }}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 40px;">
+        <div onClick="{{ flip }}" style="position: relative; width: 660px; height: 420px; perspective: 1800px; cursor: pointer;">
+          <sc-if value="{{ hasTwoBehind }}" hint-placeholder-val="{{ true }}">
+            <div style="position: absolute; inset: 0; border: 3px solid #1A1511; border-radius: 28px; background: #CAACFF; transform: rotate(5deg) translate(18px, 8px);"></div>
+          </sc-if>
+          <sc-if value="{{ hasOneBehind }}" hint-placeholder-val="{{ true }}">
+            <div style="position: absolute; inset: 0; border: 3px solid #1A1511; border-radius: 28px; background: #71D6A3; transform: rotate(-3deg) translate(-10px, 6px);"></div>
+          </sc-if>
+          <div style="position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .5s cubic-bezier(.34,1.4,.5,1); transform: rotateY({{ deg }}deg);">
+            <div style="position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border: 3px solid #1A1511; border-radius: 28px; background: #FFFFFF; box-shadow: 8px 8px 0 #1A1511; display: flex; flex-direction: column; justify-content: space-between; padding: 30px 36px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="padding: 5px 14px; border: 2px solid #1A1511; border-radius: 100px; background: #EFCE6F; font-size: 14px; font-weight: 600;">Description</span>
+                <span style="font-size: 14px; font-weight: 500; color: #6A6058;">tap to flip</span>
+              </div>
+              <p class="display" style="margin: 0; font-size: 38px; font-weight: 700; line-height: 1.12; letter-spacing: -0.03em; text-wrap: pretty;">{{ card.front }}</p>
+            </div>
+            <div style="position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; transform: rotateY(180deg); border: 3px solid #1A1511; border-radius: 28px; background: #6FC8FF; box-shadow: 8px 8px 0 #1A1511; display: flex; flex-direction: column; justify-content: space-between; padding: 30px 36px;">
+              <span style="align-self: flex-start; padding: 5px 14px; border: 2px solid #1A1511; border-radius: 100px; background: #FAF6EE; font-size: 14px; font-weight: 600;">Term</span>
+              <span class="display" style="font-size: 84px; font-weight: 800; line-height: 0.95; letter-spacing: -0.05em; text-wrap: balance;">{{ card.back }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 16px;">
+          <button onClick="{{ stillLearning }}" class="press" style="display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 0 30px; border: 2.5px solid #1A1511; border-radius: 16px; background: #FFA282; color: #1A1511; font-size: 18px; font-weight: 600; box-shadow: 4px 4px 0 #1A1511;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v5h5"></path></svg>
+            Still learning
+          </button>
+          <button onClick="{{ knowIt }}" class="press" style="display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 0 34px; border: 2.5px solid #1A1511; border-radius: 16px; background: #71D6A3; color: #1A1511; font-size: 18px; font-weight: 600; box-shadow: 4px 4px 0 #1A1511;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+            Know it
+          </button>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ done }}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 28px; text-align: center;">
+        <div style="position: relative; width: 300px; height: 160px;">
+          <div style="position: absolute; left: 20px; top: 30px; width: 110px; height: 110px; border: 3px solid #1A1511; border-radius: 22px; background: #71D6A3; transform: rotate(-8deg); display: flex; flex-direction: column; align-items: center; justify-content: center;"><span class="display" style="font-size: 52px; font-weight: 800; line-height: 1;">{{ learned }}</span><span style="font-size: 13px; font-weight: 600;">know it</span></div>
+          <div style="position: absolute; right: 20px; top: 10px; width: 110px; height: 110px; border: 3px solid #1A1511; border-radius: 22px; background: #FFA282; transform: rotate(7deg); display: flex; flex-direction: column; align-items: center; justify-content: center;"><span class="display" style="font-size: 52px; font-weight: 800; line-height: 1;">{{ learning }}</span><span style="font-size: 13px; font-weight: 600;">still learning</span></div>
+        </div>
+        <h2 class="display" style="margin: 0; font-size: 72px; font-weight: 800; line-height: 0.95; letter-spacing: -0.05em;">Stack cleared.</h2>
+        <div style="display: flex; gap: 14px;">
+          <button onClick="{{ restart }}" class="press" style="min-height: 56px; padding: 0 28px; border: 2px solid #1A1511; border-radius: 14px; background: #1A1511; color: #FAF6EE; font-size: 17px; font-weight: 600; box-shadow: 4px 4px 0 #FFA282;">Go again</button>
+          <button class="press" style="min-height: 56px; padding: 0 28px; border: 2px solid #1A1511; border-radius: 14px; background: #FFFFFF; color: #1A1511; font-size: 17px; font-weight: 600; box-shadow: 4px 4px 0 #1A1511;">Back to deck</button>
+        </div>
+      </div>
+    </sc-if>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1280,"height":860}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { i: 0, flipped: false, marks: [] }; }
+  renderVals() {
+    const cards = [
+      { front: 'A collection where the last element added is the first one removed.', back: 'Stack' },
+      { front: 'A collection where elements leave in the same order they arrived.', back: 'Queue' },
+      { front: 'Maps keys to values by hashing them into buckets, giving average O(1) lookup.', back: 'Hash table' },
+      { front: 'A binary search tree that keeps every node’s subtree heights within one of each other.', back: 'AVL tree' },
+      { front: 'A complete binary tree where every parent is ordered relative to its children.', back: 'Heap' },
+      { front: 'Visits a graph’s nodes level by level, using a queue.', back: 'Breadth-first search' }
+    ];
+    const s = this.state;
+    const done = s.i >= cards.length;
+    const left = cards.length - s.i - 1;
+    const learned = s.marks.filter(Boolean).length;
+    const rate = (known) => this.setState({ i: s.i + 1, flipped: false, marks: [...s.marks, known] });
+    return {
+      active: !done, done,
+      hasOneBehind: left >= 1, hasTwoBehind: left >= 2,
+      card: cards[Math.min(s.i, cards.length - 1)],
+      deg: s.flipped ? 180 : 0,
+      pips: cards.map((_, idx) => ({ color: s.marks[idx] === true ? '#71D6A3' : s.marks[idx] === false ? '#FFA282' : (idx === s.i ? '#1A1511' : '#FFFFFF') })),
+      learned, learning: s.marks.length - learned,
+      flip: () => this.setState({ flipped: !s.flipped }),
+      knowIt: () => rate(true),
+      stillLearning: () => rate(false),
+      restart: () => this.setState({ i: 0, flipped: false, marks: [] })
+    };
+  }
+}
+</script>
+</body>
+</html>

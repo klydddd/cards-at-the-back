@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Onest:wght@400;500;600&amp;display=swap">
+  <style>
+    body { margin: 0; background: #FAF6EE; font-family: 'Onest', 'Trebuchet MS', sans-serif; color: #1A1511; -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #1A1511; text-decoration-thickness: 2px; } a:hover { color: #6A4A2A; }
+    button { font-family: inherit; cursor: pointer; }
+    .display { font-family: 'Bricolage Grotesque', 'Arial Black', sans-serif; }
+    .press { transition: transform .12s ease, box-shadow .12s ease; }
+    .press:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #1A1511 !important; }
+    .press:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #1A1511 !important; }
+  </style>
+</helmet>
+<div style="min-height: 100%; background: #FAF6EE;">
+  <nav style="display: flex; align-items: center; justify-content: space-between; padding: 20px 64px;">
+    <div class="display" style="display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 800; letter-spacing: -0.03em;">
+      <div style="position: relative; width: 30px; height: 26px;">
+        <div style="position: absolute; left: 8px; top: 0; width: 22px; height: 17px; border: 2px solid #1A1511; border-radius: 4px; background: #6FC8FF;"></div>
+        <div style="position: absolute; left: 0; top: 8px; width: 22px; height: 17px; border: 2px solid #1A1511; border-radius: 4px; background: #FFA282;"></div>
+      </div>
+      cards at the back
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <button style="min-height: 44px; padding: 0 18px; border: 2px solid transparent; border-radius: 12px; background: transparent; color: #1A1511; font-size: 15px; font-weight: 600;">Create</button>
+      <button class="press" style="min-height: 44px; padding: 0 18px; border: 2px solid #1A1511; border-radius: 12px; background: #EFCE6F; color: #1A1511; font-size: 15px; font-weight: 600; box-shadow: 3px 3px 0 #1A1511;">AI Parse</button>
+    </div>
+  </nav>
+
+  <header style="display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 32px; align-items: center; padding: 28px 64px 56px;">
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      <h1 class="display" style="margin: 0; font-size: 112px; font-weight: 800; line-height: 0.86; letter-spacing: -0.05em;">cards at<br>the <span style="display: inline-block; padding: 0 18px 8px; border: 3px solid #1A1511; border-radius: 22px; background: #71D6A3; transform: rotate(-3deg); box-shadow: 5px 5px 0 #1A1511;">back</span></h1>
+      <p style="margin: 0; max-width: 440px; font-size: 19px; line-height: 1.5; color: #4A433C;">Create, share, and practice flashcards. Drop in your notes and let AI write the deck for you.</p>
+      <div style="display: flex; gap: 12px;">
+        <button class="press" style="min-height: 56px; padding: 0 28px; border: 2px solid #1A1511; border-radius: 14px; background: #1A1511; color: #FAF6EE; font-size: 17px; font-weight: 600; box-shadow: 4px 4px 0 #FFA282;">Create Deck</button>
+        <button class="press" style="min-height: 56px; padding: 0 28px; border: 2px solid #1A1511; border-radius: 14px; background: #FFFFFF; color: #1A1511; font-size: 17px; font-weight: 600; box-shadow: 4px 4px 0 #1A1511;">AI Parse</button>
+      </div>
+    </div>
+    <div style="position: relative; height: 380px;">
+      <div style="position: absolute; left: 90px; top: 10px; width: 340px; height: 230px; border: 3px solid #1A1511; border-radius: 22px; background: #CAACFF; transform: rotate(9deg);"></div>
+      <div style="position: absolute; left: 30px; top: 50px; width: 340px; height: 230px; border: 3px solid #1A1511; border-radius: 22px; background: #6FC8FF; transform: rotate(-6deg);"></div>
+      <div style="position: absolute; left: 60px; top: 110px; width: 360px; height: 240px; border: 3px solid #1A1511; border-radius: 22px; background: #FFA282; box-shadow: 8px 8px 0 #1A1511; transform: rotate(2deg); display: flex; flex-direction: column; justify-content: space-between; padding: 22px 26px;">
+        <span style="align-self: flex-start; padding: 4px 12px; border: 2px solid #1A1511; border-radius: 100px; background: #FAF6EE; font-size: 13px; font-weight: 600;">Term</span>
+        <span class="display" style="font-size: 54px; font-weight: 800; letter-spacing: -0.04em; line-height: 1;">Hash table</span>
+      </div>
+    </div>
+  </header>
+
+  <section style="padding: 0 64px 72px; display: flex; flex-direction: column; gap: 24px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 24px;">
+      <h2 class="display" style="margin: 0; font-size: 44px; font-weight: 800; letter-spacing: -0.04em;">Public decks</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end;">
+        <sc-for list="{{ subjects }}" as="s" hint-placeholder-count="7">
+          <button onClick="{{ s.pick }}" style="min-height: 44px; padding: 0 16px; border: 2px solid #1A1511; border-radius: 100px; background: {{ s.bg }}; color: {{ s.fg }}; font-size: 14px; font-weight: 600; box-shadow: {{ s.shadow }}; transition: all .15s ease;">{{ s.name }}</button>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px;">
+      <sc-for list="{{ decks }}" as="d" hint-placeholder-count="6">
+        <div class="press" style="display: flex; flex-direction: column; gap: 14px; min-height: 220px; padding: 22px; border: 2.5px solid #1A1511; border-radius: 20px; background: {{ d.color }}; box-shadow: 4px 4px 0 #1A1511; cursor: pointer;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="padding: 4px 12px; border: 2px solid #1A1511; border-radius: 100px; background: #FAF6EE; font-size: 13px; font-weight: 600;">{{ d.subject }}</span>
+            <span class="display" style="font-size: 15px; font-weight: 700;">{{ d.cards }} cards</span>
+          </div>
+          <h3 class="display" style="margin: 0; font-size: 32px; font-weight: 800; line-height: 1; letter-spacing: -0.035em; text-wrap: balance;">{{ d.title }}</h3>
+          <p style="margin: 0; font-size: 15px; line-height: 1.45; color: #2E2823; text-wrap: pretty;">{{ d.desc }}</p>
+          <span style="margin-top: auto; font-size: 13px; font-weight: 500; color: #2E2823;">by {{ d.by }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1280,"height":1200}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { subject: 'All' }; }
+  renderVals() {
+    const colors = { 'Computer Science': '#6FC8FF', 'Biology': '#71D6A3', 'Economics': '#EFCE6F', 'Languages': '#CAACFF', 'Chemistry': '#FFA282', 'History': '#FFFFFF' };
+    const all = [
+      { title: 'Data Structures', desc: 'Stacks, queues, trees and graphs from a first algorithms course.', subject: 'Computer Science', cards: 40, by: 'rina' },
+      { title: 'Cellular Respiration', desc: 'Glycolysis, the Krebs cycle, and the electron transport chain.', subject: 'Biology', cards: 24, by: 'ana' },
+      { title: 'Intro to Macroeconomics', desc: 'GDP, inflation, and fiscal versus monetary policy.', subject: 'Economics', cards: 32, by: 'marco' },
+      { title: 'Passé Composé', desc: 'French past tense: avoir or être, and the irregular participles.', subject: 'Languages', cards: 18, by: 'jules' },
+      { title: 'Organic Reactions', desc: 'Substitution, elimination, and addition mechanisms.', subject: 'Chemistry', cards: 28, by: 'ana' },
+      { title: 'Philippine Revolution', desc: 'Key figures, battles, and treaties from 1896 to 1898.', subject: 'History', cards: 22, by: 'paolo' }
+    ];
+    const cur = this.state.subject;
+    const names = ['All', ...Array.from(new Set(all.map((d) => d.subject))).sort()];
+    return {
+      subjects: names.map((n) => ({
+        name: n,
+        bg: n === cur ? '#1A1511' : '#FAF6EE',
+        fg: n === cur ? '#FAF6EE' : '#1A1511',
+        shadow: n === cur ? '2px 2px 0 #FFA282' : 'none',
+        pick: () => this.setState({ subject: n })
+      })),
+      decks: (cur === 'All' ? all : all.filter((d) => d.subject === cur)).map((d) => ({ ...d, color: colors[d.subject] }))
+    };
+  }
+}
+</script>
+</body>
+</html>

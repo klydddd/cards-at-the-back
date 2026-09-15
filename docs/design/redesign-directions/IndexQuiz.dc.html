@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&amp;family=DM+Sans:wght@300;400;500;600&amp;display=swap">
+  <style>
+    body { margin: 0; background: #F8F7F4; font-family: 'DM Sans', -apple-system, 'Helvetica Neue', sans-serif; color: #111110; -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #111110; text-decoration-color: #C4AE6A; } a:hover { color: #7A6518; }
+    button { font-family: inherit; cursor: pointer; }
+  </style>
+</helmet>
+<div style="min-height: 100%; background: #F8F7F4; display: flex; flex-direction: column;">
+  <nav style="display: flex; align-items: center; justify-content: space-between; padding: 14px 80px; border-bottom: 1px solid #E6E3DE;">
+    <div style="font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 600; font-size: 22px; letter-spacing: -0.01em;">cards at <span style="color: #6B6866;">the back</span></div>
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <button style="min-height: 36px; padding: 7px 16px; border: none; border-radius: 100px; background: transparent; color: #6B6866; font-size: 12.8px; font-weight: 500;">Create</button>
+      <button style="min-height: 36px; padding: 7px 16px; border: none; border-radius: 100px; background: #111110; color: #F8F7F4; font-size: 12.8px; font-weight: 500;">AI Parse</button>
+    </div>
+  </nav>
+
+  <main style="flex-grow: 1; display: flex; justify-content: center; padding: 44px 80px 56px;">
+    <sc-if value="{{ active }}" hint-placeholder-val="{{ true }}">
+      <div style="width: 680px; display: flex; flex-direction: column; gap: 28px;">
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: #4E3F68;">Data Structures · Challenge</span>
+            <span style="font-size: 13px; color: #9B9896;">{{ counter }}</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;">
+            <sc-for list="{{ segs }}" as="g" hint-placeholder-count="4">
+              <div style="height: 3px; border-radius: 100px; background: {{ g.color }};"></div>
+            </sc-for>
+          </div>
+        </div>
+
+        <h2 style="margin: 0; font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 600; font-size: 42px; line-height: 1.1; letter-spacing: -0.02em; text-wrap: pretty;">{{ q.text }}</h2>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <sc-for list="{{ options }}" as="o" hint-placeholder-count="4">
+            <button onClick="{{ o.pick }}" style="display: flex; align-items: center; gap: 16px; min-height: 60px; padding: 12px 20px; text-align: left; border: 1px solid {{ o.border }}; border-radius: 10px; background: {{ o.bg }}; color: {{ o.fg }}; font-size: 16px; font-weight: 400; box-shadow: 0 1px 4px rgba(17,17,16,.04); transition: background .2s ease, border-color .2s ease;">
+              <span style="display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; flex-shrink: 0; border: 1px solid {{ o.border }}; border-radius: 100px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 17px; font-weight: 600; color: {{ o.fg }};">{{ o.letter }}</span>
+              <span style="flex-grow: 1;">{{ o.label }}</span>
+              <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;">{{ o.tag }}</span>
+            </button>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ answered }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-top: 20px; border-top: 1px solid #E6E3DE;">
+            <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #6B6866; text-wrap: pretty;">{{ q.why }}</p>
+            <button onClick="{{ next }}" style="flex-shrink: 0; min-height: 48px; padding: 14px 30px; border: none; border-radius: 100px; background: #111110; color: #F8F7F4; font-size: 15px; font-weight: 500;">{{ nextLabel }}</button>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ done }}" hint-placeholder-val="{{ false }}">
+      <div style="width: 680px; display: flex; flex-direction: column; gap: 32px;">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding-top: 12px;">
+          <span style="font-size: 12px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: #4E3F68;">Challenge complete</span>
+          <div style="font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 700; font-size: 128px; line-height: 1; letter-spacing: -0.04em;">{{ score }}<span style="font-weight: 500; color: #9B9896;">/4</span></div>
+          <p style="margin: 0; font-size: 16px; color: #6B6866;">You're on the leaderboard for this challenge.</p>
+        </div>
+        <div style="background: #FFFFFF; border: 1px solid #E6E3DE; border-radius: 14px; box-shadow: 0 1px 4px rgba(17,17,16,.05); display: flex; flex-direction: column;">
+          <div style="padding: 16px 24px; border-bottom: 1px solid #E6E3DE; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 24px; font-weight: 600;">Leaderboard</div>
+          <sc-for list="{{ board }}" as="r" hint-placeholder-count="4">
+            <div style="display: flex; align-items: center; gap: 16px; padding: 14px 24px; border-bottom: 1px solid #F0EEEA; background: {{ r.bg }};">
+              <span style="width: 20px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 20px; font-weight: 600; color: #9B9896;">{{ r.rank }}</span>
+              <span style="flex-grow: 1; font-size: 15px; font-weight: {{ r.weight }};">{{ r.name }}</span>
+              <span style="font-size: 15px; font-weight: 500;">{{ r.score }}/4</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: flex; justify-content: center; gap: 10px;">
+          <button onClick="{{ restart }}" style="min-height: 48px; padding: 14px 32px; border: 1px solid #E6E3DE; border-radius: 100px; background: #FFFFFF; color: #111110; font-size: 15px; font-weight: 500;">Try again</button>
+          <button style="min-height: 48px; padding: 14px 32px; border: none; border-radius: 100px; background: #111110; color: #F8F7F4; font-size: 15px; font-weight: 500;">Study this deck</button>
+        </div>
+      </div>
+    </sc-if>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1280,"height":860}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { q: 0, picked: null, score: 0, results: [] }; }
+  renderVals() {
+    const qs = [
+      { text: 'Which structure removes the most recently added element first?', options: ['Queue', 'Stack', 'Heap', 'Linked list'], ans: 1, why: 'A stack is last-in, first-out: push and pop both happen at the top.' },
+      { text: 'What is the average-case lookup time of a hash table?', options: ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)'], ans: 0, why: 'Hashing jumps straight to a bucket, so lookups are constant time on average.' },
+      { text: 'Which traversal uses a queue to visit nodes level by level?', options: ['Depth-first search', 'In-order traversal', 'Breadth-first search', 'Post-order traversal'], ans: 2, why: 'Breadth-first search queues each level’s neighbours before going deeper.' },
+      { text: 'In a max-heap, where is the largest element stored?', options: ['At a leaf', 'At the root', 'In the rightmost node', 'Wherever it was inserted'], ans: 1, why: 'The heap property keeps every parent at least as large as its children, so the max sits at the root.' }
+    ];
+    const s = this.state;
+    const done = s.q >= qs.length;
+    const q = qs[Math.min(s.q, qs.length - 1)];
+    const answered = s.picked !== null;
+    const letters = ['A', 'B', 'C', 'D'];
+    return {
+      active: !done, done, answered, q,
+      counter: 'Question ' + Math.min(s.q + 1, qs.length) + ' of ' + qs.length,
+      segs: qs.map((_, i) => ({ color: i < s.results.length ? (s.results[i] ? '#2A6A48' : '#8A3838') : (i === s.q ? '#111110' : '#E6E3DE') })),
+      options: q.options.map((label, i) => {
+        const right = answered && i === q.ans;
+        const wrong = answered && i === s.picked && i !== q.ans;
+        return {
+          label, letter: letters[i],
+          tag: right ? 'Correct' : wrong ? 'Your answer' : '',
+          bg: right ? '#EFF5F2' : wrong ? '#F5EEEE' : '#FFFFFF',
+          border: right ? '#88B8A0' : wrong ? '#C88888' : '#E6E3DE',
+          fg: right ? '#1E5038' : wrong ? '#6A2828' : (answered ? '#9B9896' : '#111110'),
+          pick: () => { if (s.picked === null) this.setState({ picked: i, score: s.score + (i === q.ans ? 1 : 0), results: [...s.results, i === q.ans] }); }
+        };
+      }),
+      nextLabel: s.q === qs.length - 1 ? 'See results' : 'Next question',
+      next: () => this.setState({ q: s.q + 1, picked: null }),
+      score: s.score,
+      board: [
+        { name: 'ana', score: 4 }, { name: 'You', score: s.score, me: true }, { name: 'marco', score: 2 }, { name: 'jules', score: 1 }
+      ].sort((a, b) => b.score - a.score).map((r, i) => ({ ...r, rank: i + 1, bg: r.me ? '#F5F2E8' : 'transparent', weight: r.me ? 600 : 400 })),
+      restart: () => this.setState({ q: 0, picked: null, score: 0, results: [] })
+    };
+  }
+}
+</script>
+</body>
+</html>

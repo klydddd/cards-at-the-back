@@ -1,0 +1,143 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500&amp;display=swap">
+  <style>
+    body { margin: 0; background: #0D1012; font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif; color: #E6E8EA; -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #B6E86E; } a:hover { color: #D4F5A4; }
+    button { font-family: inherit; cursor: pointer; }
+    .row:hover { background: #15171A; }
+    .mono { font-family: 'Geist Mono', ui-monospace, Menlo, monospace; }
+  </style>
+</helmet>
+<div style="min-height: 100%; display: grid; grid-template-columns: 248px minmax(0, 1fr); background: #0D1012;">
+  <aside style="border-right: 1px solid #2D3135; padding: 20px 14px; display: flex; flex-direction: column; gap: 28px; background: #0D1012;">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 4px 10px;">
+      <div style="position: relative; width: 22px; height: 18px;">
+        <div style="position: absolute; left: 4px; top: 0; width: 18px; height: 13px; border: 1.5px solid #6A6F76; border-radius: 3px;"></div>
+        <div style="position: absolute; left: 0; top: 5px; width: 18px; height: 13px; border-radius: 3px; background: #B6E86E;"></div>
+      </div>
+      <span style="font-size: 15px; font-weight: 600; letter-spacing: -0.01em;">cards at the back</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 2px;">
+      <div style="display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 0 10px; border-radius: 8px; background: #1E2124; font-size: 14px; font-weight: 500;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"></rect><path d="M7 22h10"></path></svg>
+        <span style="flex-grow: 1;">Library</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 0 10px; border-radius: 8px; color: #9FA5AC; font-size: 14px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+        <span style="flex-grow: 1;">Due today</span>
+        <span class="mono" style="font-size: 12px; color: #FFC742;">15</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 0 10px; border-radius: 8px; color: #9FA5AC; font-size: 14px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M7 4h10v5a5 5 0 0 1-10 0z"></path></svg>
+        <span style="flex-grow: 1;">Challenges</span>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 2px;">
+      <div class="mono" style="padding: 0 10px 8px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #6A6F76;">Subjects</div>
+      <sc-for list="{{ subjects }}" as="s" hint-placeholder-count="7">
+        <button onClick="{{ s.pick }}" style="display: flex; align-items: center; gap: 10px; min-height: 34px; padding: 0 10px; border: none; border-radius: 8px; background: {{ s.bg }}; color: {{ s.fg }}; font-size: 14px; text-align: left;">
+          <span style="width: 6px; height: 6px; border-radius: 2px; background: {{ s.dot }};"></span>
+          <span style="flex-grow: 1;">{{ s.name }}</span>
+          <span class="mono" style="font-size: 12px; color: #6A6F76;">{{ s.count }}</span>
+        </button>
+      </sc-for>
+    </div>
+  </aside>
+
+  <main style="display: flex; flex-direction: column; min-width: 0;">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 16px 32px; border-bottom: 1px solid #2D3135;">
+      <div style="flex-grow: 1; display: flex; align-items: center; gap: 10px; max-width: 420px; min-height: 38px; padding: 0 12px; border: 1px solid #2D3135; border-radius: 8px; background: #15171A; color: #6A6F76; font-size: 14px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+        <span style="flex-grow: 1;">Search decks and cards</span>
+        <span class="mono" style="padding: 1px 6px; border: 1px solid #2D3135; border-radius: 4px; font-size: 11px;">/</span>
+      </div>
+      <div style="flex-grow: 1;"></div>
+      <button style="min-height: 38px; padding: 0 14px; border: 1px solid #2D3135; border-radius: 8px; background: transparent; color: #E6E8EA; font-size: 14px; font-weight: 500;">New deck</button>
+      <button style="display: flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 14px; border: none; border-radius: 8px; background: #B6E86E; color: #0D1012; font-size: 14px; font-weight: 600;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"></path><path d="M12 11v6"></path><path d="M9 14l3-3 3 3"></path></svg>
+        AI Parse
+      </button>
+    </div>
+
+    <div style="padding: 28px 32px 40px; display: flex; flex-direction: column; gap: 24px;">
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px;">
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <h1 style="margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.02em;">{{ heading }}</h1>
+          <p style="margin: 0; font-size: 14px; color: #9FA5AC;">Create, share, and practice flashcards.</p>
+        </div>
+        <button style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 16px; border: 1px solid #5A4A1A; border-radius: 8px; background: #1F1A0E; color: #FFC742; font-size: 14px; font-weight: 500;">
+          Review 15 due cards
+          <span class="mono" style="padding: 1px 6px; border: 1px solid #5A4A1A; border-radius: 4px; font-size: 11px;">R</span>
+        </button>
+      </div>
+
+      <div style="border: 1px solid #2D3135; border-radius: 10px; overflow: hidden;">
+        <div class="mono" style="display: grid; grid-template-columns: minmax(0, 2.4fr) minmax(0, 1.2fr) 80px minmax(0, 1.4fr) 70px 80px; gap: 16px; align-items: center; padding: 10px 18px; background: #15171A; border-bottom: 1px solid #2D3135; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: #6A6F76;">
+          <span>Deck</span><span>Subject</span><span style="text-align: right;">Cards</span><span>Mastery</span><span style="text-align: right;">Due</span><span>By</span>
+        </div>
+        <sc-for list="{{ decks }}" as="d" hint-placeholder-count="6">
+          <div class="row" style="display: grid; grid-template-columns: minmax(0, 2.4fr) minmax(0, 1.2fr) 80px minmax(0, 1.4fr) 70px 80px; gap: 16px; align-items: center; min-height: 64px; padding: 10px 18px; border-bottom: 1px solid #1E2124; cursor: pointer;">
+            <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0;">
+              <span style="font-size: 15px; font-weight: 500;">{{ d.title }}</span>
+              <span style="font-size: 13px; color: #6A6F76; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ d.desc }}</span>
+            </div>
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #9FA5AC;"><span style="width: 6px; height: 6px; border-radius: 2px; background: {{ d.dot }};"></span>{{ d.subject }}</span>
+            <span class="mono" style="text-align: right; font-size: 13px; color: #9FA5AC;">{{ d.cards }}</span>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="flex-grow: 1; height: 4px; border-radius: 100px; background: #2D3135; overflow: hidden;"><div style="height: 100%; width: {{ d.pct }}%; background: #B6E86E;"></div></div>
+              <span class="mono" style="width: 36px; text-align: right; font-size: 12px; color: #9FA5AC;">{{ d.pct }}%</span>
+            </div>
+            <span class="mono" style="text-align: right; font-size: 13px; color: {{ d.dueColor }};">{{ d.dueLabel }}</span>
+            <span style="font-size: 13px; color: #6A6F76;">{{ d.by }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1280,"height":820}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { subject: 'All decks' }; }
+  renderVals() {
+    const dots = { 'Computer Science': '#6FC8FF', 'Biology': '#71D6A3', 'Economics': '#EFCE6F', 'Languages': '#CAACFF', 'Chemistry': '#FFA282', 'History': '#9FA5AC' };
+    const all = [
+      { title: 'Data Structures', desc: 'Stacks, queues, trees and graphs from a first algorithms course.', subject: 'Computer Science', cards: 40, learned: 26, due: 6, by: 'rina' },
+      { title: 'Cellular Respiration', desc: 'Glycolysis, the Krebs cycle, and the electron transport chain.', subject: 'Biology', cards: 24, learned: 9, due: 4, by: 'ana' },
+      { title: 'Intro to Macroeconomics', desc: 'GDP, inflation, and fiscal versus monetary policy.', subject: 'Economics', cards: 32, learned: 0, due: 0, by: 'marco' },
+      { title: 'Passé Composé', desc: 'French past tense: avoir or être, and the irregular participles.', subject: 'Languages', cards: 18, learned: 18, due: 2, by: 'jules' },
+      { title: 'Organic Reactions', desc: 'Substitution, elimination, and addition mechanisms.', subject: 'Chemistry', cards: 28, learned: 5, due: 0, by: 'ana' },
+      { title: 'Philippine Revolution', desc: 'Key figures, battles, and treaties from 1896 to 1898.', subject: 'History', cards: 22, learned: 11, due: 3, by: 'paolo' }
+    ];
+    const cur = this.state.subject;
+    const names = Array.from(new Set(all.map((d) => d.subject))).sort();
+    const list = cur === 'All decks' ? all : all.filter((d) => d.subject === cur);
+    return {
+      heading: cur === 'All decks' ? 'Library' : cur,
+      subjects: [{ name: 'All decks', count: all.length, dot: '#E6E8EA' }, ...names.map((n) => ({ name: n, count: all.filter((d) => d.subject === n).length, dot: dots[n] }))].map((s) => ({
+        ...s,
+        bg: s.name === cur ? '#1E2124' : 'transparent',
+        fg: s.name === cur ? '#E6E8EA' : '#9FA5AC',
+        pick: () => this.setState({ subject: s.name })
+      })),
+      decks: list.map((d) => ({
+        ...d, dot: dots[d.subject],
+        pct: Math.round((d.learned / d.cards) * 100),
+        dueLabel: d.due ? String(d.due) : '—',
+        dueColor: d.due ? '#FFC742' : '#6A6F76'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

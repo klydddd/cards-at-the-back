@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { AI_MODELS } from '@/lib/aiModels';
 
 const apiKey = process.env.GEMINI_API_KEY;
-
-const MODELS = [
-    'gemini-3.1-flash-lite-preview',
-    'gemini-2.5-flash',
-    'gemma-3-27b-it',
-];
 
 export async function POST(request: NextRequest) {
     if (!apiKey || apiKey === 'your_gemini_api_key') {
@@ -76,7 +71,7 @@ ${content}`;
 
         let lastError: any = null;
 
-        for (const modelName of MODELS) {
+        for (const modelName of AI_MODELS) {
             try {
                 console.log(`[parse-ocr] Trying model: ${modelName}`);
                 const model = genAI.getGenerativeModel({ model: modelName });

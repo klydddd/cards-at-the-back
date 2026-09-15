@@ -1518,6 +1518,48 @@ p {
   align-self: stretch;
 }
 
+/* ─── Onboarding (steps after consent) ─── */
+.consent-body h2:focus {
+  outline: none;
+}
+
+.consent-body .onboarding-field {
+  margin: 4px 0 0;
+}
+
+.onboarding-chips {
+  margin-top: 4px;
+}
+
+.onboarding-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.onboarding-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.onboarding-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.onboarding-actions .btn-primary {
+  margin-left: auto;
+  min-width: 120px;
+}
+
 /* ─── Contact Page ─── */
 .contact {
   max-width: 1040px;

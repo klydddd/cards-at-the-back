@@ -1,27 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleSupabaseClient } from '@/lib/supabaseAdmin';
 import { isContactTopic } from '@/lib/legal';
+import { createRateLimiter, getClientIp } from '@/lib/rateLimit';
 
 const LIMITS = { name: 100, email: 254, link: 500, messageMin: 10, messageMax: 5000 };
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Best-effort per-IP throttle. Serverless instances don't share memory,
-// so this slows down casual spam rather than guaranteeing a hard limit.
-const RATE_WINDOW_MS = 10 * 60 * 1000;
-const RATE_MAX = 5;
-const recentSubmissions = new Map<string, number[]>();
-
-function isRateLimited(ip: string) {
-    const now = Date.now();
-    const recent = (recentSubmissions.get(ip) || []).filter((t) => now - t < RATE_WINDOW_MS);
-    if (recent.length >= RATE_MAX) {
-        recentSubmissions.set(ip, recent);
-        return true;
-    }
-    recent.push(now);
-    recentSubmissions.set(ip, recent);
-    return false;
-}
+const isRateLimited = createRateLimiter({ windowMs: 10 * 60 * 1000, max: 5 });
 
 function text(value: unknown) {
     return typeof value === 'string' ? value.trim() : '';
@@ -65,8 +50,7 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'unknown';
-    if (isRateLimited(ip)) {
+    if (isRateLimited(getClientIp(request))) {
         return NextResponse.json(
             { error: 'Too many messages. Please wait a few minutes and try again.' },
             { status: 429 }

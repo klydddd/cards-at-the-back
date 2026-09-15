@@ -34,7 +34,8 @@ export default function PrivacyPage() {
             <section id="summary">
                 <h2>The short version</h2>
                 <ul>
-                    <li>gokards has no accounts. We don&apos;t ask for your email, password, or real name.</li>
+                    <li>gokards has no accounts. We don&apos;t ask for an email address or password.</li>
+                    <li>On your first visit, we ask your name (or you can stay anonymous), age range, grade level, and program. These answers are <strong>private</strong> and used only for usage reports.</li>
                     <li>Decks, quizzes, the names you type, and leaderboard entries are stored in our database and are <strong>visible to anyone</strong> with the link or on the home page.</li>
                     <li>When you use AI Parse or generate an AI quiz, the text of your file or kards is sent to Google&apos;s Gemini API to produce the result.</li>
                     <li>We use Vercel Analytics to count page views. We don&apos;t use advertising trackers and we don&apos;t sell data.</li>
@@ -43,6 +44,21 @@ export default function PrivacyPage() {
 
             <section id="collect">
                 <h2>What we collect</h2>
+                <h3>About you</h3>
+                <p>
+                    Before you use gokards for the first time, we ask a few questions. Answering them is required to
+                    continue:
+                </p>
+                <ul>
+                    <li><strong>Name</strong>: whatever you type, or &ldquo;Anonymous&rdquo; if you choose to stay anonymous. A nickname is fine.</li>
+                    <li><strong>Age range</strong>, such as 16–17 or 18–21. We don&apos;t ask for your exact age or birthday.</li>
+                    <li><strong>Grade level</strong>, such as Grade 11 or 2nd year college, and your Senior High strand or college program if that applies.</li>
+                </ul>
+                <p>
+                    These answers are private. They are never shown on the site, and they aren&apos;t linked to the decks,
+                    quizzes, or leaderboard entries you create.
+                </p>
+
                 <h3>Content you create</h3>
                 <ul>
                     <li><strong>Decks and kards</strong>: the title, description, subject, creator name, and the front and back of every kard.</li>
@@ -88,6 +104,7 @@ export default function PrivacyPage() {
                     <li>To grade shared quiz attempts on the server and rank the leaderboard.</li>
                     <li>To reply to messages and handle removal, abuse, and privacy requests.</li>
                     <li>To understand which features get used, and to find and fix problems or abuse.</li>
+                    <li>To make demographic reports about who uses gokards, such as how many users are in Senior High or college. Reports show totals only and never include names.</li>
                 </ul>
                 <p>We don&apos;t use your content to build advertising profiles, and we don&apos;t sell or rent it to anyone.</p>
             </section>
@@ -98,6 +115,10 @@ export default function PrivacyPage() {
                     gokards has no sign-in and no private decks. Anything you save, including decks, kards, quizzes,
                     creator names, and leaderboard entries, can be viewed by anyone who visits the site or has a share
                     link. Decks appear in the public list on the home page.
+                </p>
+                <p>
+                    The only exceptions are your onboarding answers and messages you send through the contact form.
+                    Those are never shown publicly.
                 </p>
                 <p>
                     <strong>Don&apos;t put personal, confidential, or sensitive information in your kards or uploads.</strong>{' '}
@@ -111,7 +132,7 @@ export default function PrivacyPage() {
                 <p>gokards uses a few providers to run. Each handles data under its own privacy policy.</p>
                 <dl className="legal-list">
                     <dt>Supabase</dt>
-                    <dd>Hosts the database where decks, kards, quizzes, attempts, study progress, and contact messages are stored.</dd>
+                    <dd>Hosts the database where decks, kards, quizzes, attempts, study progress, onboarding answers, and contact messages are stored.</dd>
                     <dt>Google Gemini API</dt>
                     <dd>
                         Receives the extracted text of files you parse, and the kards of a deck when you generate an AI
@@ -134,6 +155,7 @@ export default function PrivacyPage() {
                 <p>gokards uses your browser&apos;s local storage, not cookies, to remember:</p>
                 <ul>
                     <li>that you agreed to these policies, and which version you agreed to,</li>
+                    <li>that you finished onboarding, as a random reference code that points to your answers,</li>
                     <li>your light or dark theme choice, and</li>
                     <li>a copy of your study progress for each deck, used when the database can&apos;t be reached.</li>
                 </ul>
@@ -145,8 +167,9 @@ export default function PrivacyPage() {
                 <p>
                     Decks, quizzes, attempts, and progress are kept until they are deleted. Because there are no
                     accounts, you can&apos;t delete content yourself from inside the app.{' '}
-                    <Link href="/contact?topic=removal">Send a removal request</Link> and we&apos;ll remove it. Contact
-                    messages are kept only as long as needed to handle your request. Analytics and server logs are
+                    <Link href="/contact?topic=removal">Send a removal request</Link> and we&apos;ll remove it. Onboarding
+                    answers are kept until you ask us to delete them. Contact messages are kept only as long as needed
+                    to handle your request. Analytics and server logs are
                     kept for the periods set by Vercel.
                 </p>
             </section>
@@ -159,6 +182,10 @@ export default function PrivacyPage() {
                     <Link href="/contact?topic=privacy">contact form</Link>. Since gokards doesn&apos;t link content to
                     accounts, include the link to the deck or quiz, and the name that was used, so we can find it.
                 </p>
+                <p>
+                    For your onboarding answers, send the request from the same browser you used for onboarding. The
+                    contact form adds your reference code automatically so we can find and delete them.
+                </p>
                 <p>You can also simply choose not to use AI features, and use a nickname instead of your name.</p>
             </section>
 
@@ -166,8 +193,13 @@ export default function PrivacyPage() {
                 <h2>Children</h2>
                 <p>
                     gokards isn&apos;t directed at children under 13, and we don&apos;t knowingly collect personal information
-                    from them. If you believe a child has shared personal information on gokards,{' '}
+                    from them. If you choose &ldquo;Under 13&rdquo; during onboarding, you can&apos;t continue and none of
+                    your answers are saved. If you believe a child has shared personal information on gokards,{' '}
                     <Link href="/contact?topic=privacy">contact us</Link> and we&apos;ll remove it.
+                </p>
+                <p>
+                    If you&apos;re between 13 and the age of majority where you live, you should have a parent or
+                    guardian&apos;s permission before using gokards and answering the onboarding questions.
                 </p>
             </section>
 

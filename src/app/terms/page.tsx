@@ -47,6 +47,11 @@ export default function TermsPage() {
                     AI, practice with flip kards and spaced repetition, generate quizzes, and share quizzes with others.
                     gokards has no accounts, and all saved content is public.
                 </p>
+                <p>
+                    On your first visit, you&apos;ll answer a few short questions: your name or &ldquo;Anonymous&rdquo;,
+                    age range, grade level, and program. You need to answer them to use gokards. Your answers are
+                    private, and the <Link href="/privacy#collect">Privacy Policy</Link> explains how they are used.
+                </p>
             </section>
 
             <section id="eligibility">

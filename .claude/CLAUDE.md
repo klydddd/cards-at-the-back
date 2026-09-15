@@ -9,9 +9,11 @@ npm run dev      # Start dev server (http://localhost:3000)
 npm run build    # Production build → .next/
 npm run start    # Serve the production build locally
 npm run lint     # ESLint check
+npm run test:models              # Smoke-test the AI fallback chain (needs GEMINI_API_KEY)
+npm run test:models -- --all     # Test every text model available to the key
 ```
 
-No test suite is configured.
+No test suite is configured beyond the AI model smoke test.
 
 ## Environment Variables
 
@@ -127,14 +129,14 @@ This convention is enforced by the Gemini prompt in `/api/gemini/parse/route.ts`
 2. Client extracts text using `pdfParser.ts` / `docParser.ts`
 3. Text is POSTed to `/api/gemini/parse`
 4. Server sends to Gemini with a flashcard-generation prompt
-5. Server tries 3 models in sequence: `gemini-3.1-flash-lite-preview` → `gemini-2.5-flash` → `gemma-3-27b-it`
+5. Server tries the models in `src/lib/aiModels.ts` (`AI_MODELS`) in order, falling back on failure. Run `npm run test:models -- --all` before changing the list; models that 404, stay overloaded, or wrap JSON in extra text break the routes
 6. Returns JSON array of `{ front, back }` cards
 7. User reviews/edits cards, then saves as a new deck via Supabase
 
 **AI Quiz (`/deck/:id/quiz`):**
 1. User selects question types and counts
 2. Client POSTs cards + `questionTypeCounts` to `/api/gemini/quiz`
-3. Server generates questions using the same 3-model fallback chain
+3. Server generates questions using the same `AI_MODELS` fallback chain
 4. Quiz is saved to Supabase with `saveQuiz()`
 5. Shareable via `/take/:quizId`
 

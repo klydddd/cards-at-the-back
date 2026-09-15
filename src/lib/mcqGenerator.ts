@@ -8,9 +8,36 @@ function pickRandom(arr, count) {
     return shuffled.slice(0, count);
 }
 
+// Same normalization as quizGrading, so "distinct" here means "graded differently" there.
+function normalizeTerm(term) {
+    return String(term ?? '').trim().toLowerCase();
+}
+
+function countDistinctTerms(cards) {
+    return new Set(cards.map(c => normalizeTerm(c.back)).filter(Boolean)).size;
+}
+
+// Terms that are safe wrong answers for this card. Decks may reuse a term across
+// definitions ("use case" twice) or a definition across terms ("node" / "vertex"),
+// so skip every term that matches this card's term or shares its definition.
+function getDistinctOtherTerms(card, allCards) {
+    const ownDefinition = normalizeTerm(card.front);
+    const seen = new Set([normalizeTerm(card.back)]);
+    for (const c of allCards) {
+        if (normalizeTerm(c.front) === ownDefinition) seen.add(normalizeTerm(c.back));
+    }
+    const terms: string[] = [];
+    for (const c of allCards) {
+        const normalized = normalizeTerm(c.back);
+        if (!normalized || seen.has(normalized)) continue;
+        seen.add(normalized);
+        terms.push(c.back);
+    }
+    return terms;
+}
+
 function generateMCQ(card, allCards) {
-    const otherCards = allCards.filter(c => c.id !== card.id);
-    const distractors = pickRandom(otherCards, 3).map(c => c.back);
+    const distractors = pickRandom(getDistinctOtherTerms(card, allCards), 3);
     const options = [...distractors, card.back].sort(() => Math.random() - 0.5);
 
     return {
@@ -32,14 +59,14 @@ function generateTrueFalse(card, allCards) {
         };
     } else {
         // Pick a wrong term
-        const otherCards = allCards.filter(c => c.id !== card.id);
-        if (otherCards.length === 0) {
+        const otherTerms = getDistinctOtherTerms(card, allCards);
+        if (otherTerms.length === 0) {
             return { type: 'true_false', question: `"${card.back}" is described as: ${card.front}`, answer: true };
         }
-        const wrongCard = pickRandom(otherCards, 1)[0];
+        const wrongTerm = pickRandom(otherTerms, 1)[0];
         return {
             type: 'true_false',
-            question: `"${wrongCard.back}" is described as: ${card.front}`,
+            question: `"${wrongTerm}" is described as: ${card.front}`,
             answer: false,
         };
     }
@@ -59,11 +86,12 @@ function generateIdentification(card) {
  * @param {number|null} count - how many questions, null = all cards
  */
 export function generateQuickQuiz(cards, questionType = 'multiple_choice', count = null) {
-    if (questionType === 'multiple_choice' && cards.length < 4) {
-        throw new Error('Need at least 4 kards for multiple choice.');
+    const distinctTerms = countDistinctTerms(cards);
+    if (questionType === 'multiple_choice' && cards.some(c => getDistinctOtherTerms(c, cards).length < 3)) {
+        throw new Error('Need at least 4 kards with different terms for multiple choice.');
     }
-    if (cards.length < 2 && questionType === 'true_false') {
-        throw new Error('Need at least 2 kards for true/false.');
+    if (questionType === 'true_false' && distinctTerms < 2) {
+        throw new Error('Need at least 2 kards with different terms for true/false.');
     }
     if (cards.length < 1) {
         throw new Error('Need at least 1 kard to generate a quiz.');

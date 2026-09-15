@@ -8,6 +8,17 @@ type Answer = string | boolean | string[];
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
 
+// Drop repeated choices (AI or previously saved quizzes may contain them), keeping
+// the exact answer string when it appears so the correct option still highlights.
+function uniqueOptions(options: string[], answer: QuizQuestion['answer']) {
+    const byKey = new Map<string, string>();
+    for (const option of options) {
+        const key = option.trim().toLowerCase();
+        if (!byKey.has(key) || option === answer) byKey.set(key, option);
+    }
+    return [...byKey.values()];
+}
+
 export function formatAnswer(value: Answer | undefined) {
     if (Array.isArray(value)) return value.join(', ');
     if (typeof value === 'boolean') return value ? 'True' : 'False';
@@ -101,7 +112,7 @@ export default function QuizQuestionView({
 
             {question.type === 'multiple_choice' && (
                 <div className="option-list">
-                    {(question.options ?? []).map((option, index) =>
+                    {uniqueOptions(question.options ?? [], question.answer).map((option, index) =>
                         renderOption(option, LETTERS[index], option, `${currentQ}-${index}`)
                     )}
                 </div>

@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${cormorant.variable} ${dmSans.variable}`}>
       <body>
         <Navbar />
-        {children}
+        <div className="app-main">{children}</div>
         <Footer />
         <ConsentPrompt />
         <Analytics />

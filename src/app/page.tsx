@@ -38,18 +38,14 @@ export default function Home() {
     const renderFilterTabs = (items, active, setActive) => {
         if (items.length <= 1) return null;
         return (
-            <div className="flex gap-sm mb-md" style={{ flexWrap: 'wrap' }}>
+            <div className="chip-row">
                 {items.map(s => (
                     <button
                         key={s}
-                        className={`btn btn-sm ${active === s ? 'btn-primary' : 'btn-ghost'}`}
+                        type="button"
+                        className={`chip ${active === s ? 'is-active' : ''}`}
+                        aria-pressed={active === s}
                         onClick={() => setActive(s)}
-                        style={{
-                            borderRadius: '100px',
-                            padding: '6px 16px',
-                            fontSize: '0.82rem',
-                            ...(active !== s ? { border: '1.5px solid var(--border)' } : {}),
-                        }}
                     >
                         {s}
                     </button>
@@ -60,29 +56,42 @@ export default function Home() {
 
     return (
         <div className="page">
-            <div className="container">
+            <div className="container container-wide">
                 {/* Hero */}
-                <div className="text-center mb-lg" style={{ padding: '40px 0 20px' }}>
-                    <h1>
-                        cards at <span className="light">the back</span>
-                    </h1>
-                    <p style={{ fontSize: '1.1rem', marginTop: '12px', maxWidth: '480px', margin: '12px auto 0' }}>
-                        Create, share, and practice flashkards.
-                    </p>
-                    <div className="flex-center gap-sm mt-md">
-                        <Link href="/create" className="btn btn-primary btn-lg">
-                            Create Deck
-                        </Link>
-                        <Link href="/ai-parse" className="btn btn-secondary btn-lg">
-                            AI Parse
-                        </Link>
+                <header className="hero">
+                    <div className="hero-copy">
+                        <span className="eyebrow">Flashkards, kept properly</span>
+                        <h1 className="hero-title">
+                            go<em>kards</em>
+                        </h1>
+                        <p className="hero-lede">
+                            Create, share, and practice flashkards. Drop in your notes and let AI write the deck for you.
+                        </p>
+                        <div className="flex gap-sm" style={{ flexWrap: 'wrap' }}>
+                            <Link href="/create" className="btn btn-primary btn-lg">
+                                Create Deck
+                            </Link>
+                            <Link href="/ai-parse" className="btn btn-secondary btn-lg">
+                                AI Parse
+                            </Link>
+                        </div>
                     </div>
-                </div>
+                    <div className="hero-stack" aria-hidden="true">
+                        <div className="hero-stack-card"></div>
+                        <div className="hero-stack-card"></div>
+                        <div className="hero-stack-card">
+                            <div className="index-card-head">Term</div>
+                            <div className="hero-stack-term">Hash table</div>
+                        </div>
+                    </div>
+                </header>
 
                 {/* Deck List */}
-                <div style={{ marginTop: '48px' }}>
-                    <h2 className="mb-md">Public Decks</h2>
-                    {renderFilterTabs(subjects, activeSubject, setActiveSubject)}
+                <section style={{ marginTop: '24px' }}>
+                    <div className="section-head">
+                        <h2>Public decks</h2>
+                        {renderFilterTabs(subjects, activeSubject, setActiveSubject)}
+                    </div>
 
                     {loading && (
                         <div className="loading-center">
@@ -121,7 +130,7 @@ export default function Home() {
                             ))}
                         </div>
                     )}
-                </div>
+                </section>
             </div>
         </div>
     );

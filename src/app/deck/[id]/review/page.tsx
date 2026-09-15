@@ -7,7 +7,7 @@ import { fetchDeck, fetchCards } from '@/lib/supabase';
 import FlipCard from '@/components/FlipCard';
 import { loadSRSProgress, rateCard, getDueCardsList } from '@/lib/tracking';
 import { Rating, formatInterval, previewIntervals } from '@/lib/srs';
-import { SparklesIcon } from '@/components/Icons';
+import { CheckIcon, XIcon, ArrowLeftIcon } from '@/components/Icons';
 
 export default function Review() {
     const { id } = useParams();
@@ -122,13 +122,15 @@ export default function Review() {
     if (dueCards.length === 0)
         return (
             <div className="page">
-                <div className="container text-center">
-                    <SparklesIcon size={32} style={{ marginBottom: '12px', opacity: 0.5 }} />
-                    <h2 className="mb-md">No cards due!</h2>
-                    <p className="mb-lg">All caught up. Come back later when cards are due for review.</p>
-                    <Link href={`/deck/${id}`} className="btn btn-primary">
-                        Back to Deck
-                    </Link>
+                <div className="container">
+                    <div className="session-done">
+                        <span className="eyebrow">Review</span>
+                        <h2>Nothing due.</h2>
+                        <p>All caught up. Come back later when kards are due for review.</p>
+                        <Link href={`/deck/${id}`} className="btn btn-primary btn-lg">
+                            Back to Deck
+                        </Link>
+                    </div>
                 </div>
             </div>
         );
@@ -138,29 +140,31 @@ export default function Review() {
         const total = sessionStats.again + sessionStats.good;
         return (
             <div className="page">
-                <div className="container text-center" style={{ maxWidth: '520px' }}>
-                    <SparklesIcon size={36} style={{ marginBottom: '16px', opacity: 0.6 }} />
-                    <h2 className="mb-sm">Review Complete!</h2>
-                    <p className="mb-lg">You reviewed {total} cards this session.</p>
+                <div className="container">
+                    <div className="session-done">
+                        <span className="eyebrow">Review complete</span>
+                        <h2>That&apos;s the stack.</h2>
+                        <p>You reviewed {total} kards this session.</p>
 
-                    <div className="flex-center gap-md mb-lg" style={{ flexWrap: 'wrap' }}>
-                        <div className="card" style={{ padding: '16px 24px', textAlign: 'center', flex: '1 1 120px' }}>
-                            <p className="text-sm text-muted light" style={{ marginBottom: '4px' }}>Still Learning</p>
-                            <p style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--warning)' }}>{sessionStats.again}</p>
+                        <div className="stat-tiles">
+                            <div className="stat-tile stat-tile-success">
+                                <span className="stat-tile-value">{sessionStats.good}</span>
+                                <span className="stat-tile-label">Known</span>
+                            </div>
+                            <div className="stat-tile stat-tile-warning">
+                                <span className="stat-tile-value">{sessionStats.again}</span>
+                                <span className="stat-tile-label">Still learning</span>
+                            </div>
                         </div>
-                        <div className="card" style={{ padding: '16px 24px', textAlign: 'center', flex: '1 1 120px' }}>
-                            <p className="text-sm text-muted light" style={{ marginBottom: '4px' }}>Known</p>
-                            <p style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--success)' }}>{sessionStats.good}</p>
-                        </div>
-                    </div>
 
-                    <div className="flex" style={{ flexDirection: 'column', gap: '10px' }}>
-                        <Link href={`/deck/${id}`} className="btn btn-primary btn-lg" style={{ width: '100%' }}>
-                            Back to Deck
-                        </Link>
-                        <Link href={`/deck/${id}/practice`} className="btn btn-secondary btn-lg" style={{ width: '100%' }}>
-                            Practice All Cards
-                        </Link>
+                        <div className="stack-actions">
+                            <Link href={`/deck/${id}`} className="btn btn-primary btn-lg">
+                                Back to Deck
+                            </Link>
+                            <Link href={`/deck/${id}/practice`} className="btn btn-secondary btn-lg">
+                                Practice All Kards
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -192,25 +196,20 @@ export default function Review() {
 
     return (
         <div className="page">
-            <div className="container" style={{ maxWidth: '640px' }}>
+            <div className="container" style={{ maxWidth: '768px' }}>
                 {/* Header */}
-                <div className="flex-between mb-lg">
-                    <Link href={`/deck/${id}`} className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px' }}>
-                        ← Back
+                <div className="session-bar">
+                    <Link href={`/deck/${id}`} className="session-back">
+                        <ArrowLeftIcon size={16} /> {deck.title}
                     </Link>
-                    <span className="badge">{remaining} remaining</span>
-                </div>
-
-                <div className="text-center mb-md">
-                    <h2>{deck.title}</h2>
-                    <p className="text-sm text-muted mt-sm light">
-                        Spaced Repetition Review — flip card, then rate your recall
-                    </p>
+                    <div className="session-meta">
+                        <span className="eyebrow eyebrow-purple">Review</span>
+                        <span>{remaining} remaining</span>
+                    </div>
                 </div>
 
                 {/* Flip Card with swipe animation */}
                 <div
-                    className="mb-md"
                     style={{
                         position: 'relative',
                         transform: transformStyle,
@@ -243,34 +242,29 @@ export default function Review() {
                 </div>
 
                 {/* Main Action Buttons */}
-                <div className="flex-center gap-md mb-lg">
-                    <button
-                        className="btn btn-secondary btn-lg"
-                        onClick={() => handleRate(Rating.AGAIN)}
-                        style={{ flex: 1, borderColor: 'var(--warning-border)', color: 'var(--warning-dark)' }}
-                    >
-                        Still Learning <span className="text-muted text-sm" style={{ opacity: 0.5, marginLeft: 8 }}>←</span>
+                <div className="session-actions">
+                    <button className="btn btn-secondary" onClick={() => handleRate(Rating.AGAIN)}>
+                        <XIcon size={18} /> Still learning
                     </button>
-                    <button
-                        className="btn btn-primary btn-lg"
-                        onClick={() => handleRate(Rating.GOOD)}
-                        style={{ flex: 1, background: 'var(--success)', borderColor: 'var(--success)' }}
-                    >
-                        Know It <span className="text-muted text-sm" style={{ opacity: 0.5, marginLeft: 8 }}>→</span>
+                    <button className="btn btn-primary" onClick={() => handleRate(Rating.GOOD)}>
+                        <CheckIcon size={18} /> Know it
                     </button>
                 </div>
 
-                {/* Keyboard hint */}
-                {/* <p className="text-center text-sm text-muted" style={{ opacity: 0.5 }}>
-                    Space = flip · ← = learning · → = know it
-                </p> */}
-
                 {/* Progress bar */}
-                <div className="progress-bar-track" style={{ marginTop: '24px' }}>
+                <div className="progress-bar-track">
                     <div
                         className="progress-bar-fill"
                         style={{ width: `${(current / dueCards.length) * 100}%` }}
                     ></div>
+                </div>
+                <div className="session-foot">
+                    <span>
+                        <span style={{ color: 'var(--success)', fontWeight: 500 }}>{sessionStats.good} known</span>
+                        {' · '}
+                        <span style={{ color: 'var(--warning)', fontWeight: 500 }}>{sessionStats.again} still learning</span>
+                    </span>
+                    <span className="session-foot-hint">Space to flip, ← → to rate</span>
                 </div>
             </div>
         </div>

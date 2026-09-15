@@ -1,4 +1,4 @@
--- Cards at the Back - Supabase Migration
+-- gokards - Supabase Migration
 -- Run this in the Supabase SQL Editor
 
 -- Enable UUID generation

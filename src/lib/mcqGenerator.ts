@@ -60,13 +60,13 @@ function generateIdentification(card) {
  */
 export function generateQuickQuiz(cards, questionType = 'multiple_choice', count = null) {
     if (questionType === 'multiple_choice' && cards.length < 4) {
-        throw new Error('Need at least 4 cards for multiple choice.');
+        throw new Error('Need at least 4 kards for multiple choice.');
     }
     if (cards.length < 2 && questionType === 'true_false') {
-        throw new Error('Need at least 2 cards for true/false.');
+        throw new Error('Need at least 2 kards for true/false.');
     }
     if (cards.length < 1) {
-        throw new Error('Need at least 1 card to generate a quiz.');
+        throw new Error('Need at least 1 kard to generate a quiz.');
     }
 
     const shuffled = [...cards].sort(() => Math.random() - 0.5);

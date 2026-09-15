@@ -6,7 +6,8 @@ import { useParams } from 'next/navigation';
 import { fetchDeck, fetchCards, saveQuiz } from '@/lib/supabase';
 import { generateQuickQuiz } from '@/lib/mcqGenerator';
 import { gradeQuizAttempt, isAnswerCorrect } from '@/lib/quizGrading';
-import { CheckIcon, XIcon } from '@/components/Icons';
+import { ArrowLeftIcon } from '@/components/Icons';
+import QuizQuestionView from '@/components/QuizQuestionView';
 import type { Card, Deck, Quiz, QuizQuestion } from '@/types';
 
 const QUIZ_TYPES = [
@@ -90,7 +91,7 @@ export default function MCQuiz() {
         setShowResults(true);
     };
 
-    const submitAnswer = (overrideAnswer = null) => {
+    const submitAnswer = (overrideAnswer: string | boolean | string[] | null = null) => {
         const finalAnswer = overrideAnswer !== null ? overrideAnswer : currentInput;
         const isCorrect = isAnswerCorrect(question, finalAnswer);
         const nextAnswers = { ...answers, [currentQ]: finalAnswer };
@@ -160,16 +161,14 @@ export default function MCQuiz() {
         return (
             <div className="page">
                 <div className="container" style={{ maxWidth: '520px' }}>
-                    <div className="mb-md">
-                        <Link href={`/deck/${id}`} className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px' }}>
-                            ← Back to Deck
-                        </Link>
-                    </div>
+                    <Link href={`/deck/${id}`} className="session-back" style={{ marginBottom: '20px' }}>
+                        <ArrowLeftIcon size={16} /> {deck?.title}
+                    </Link>
 
-                    <h1 className="mb-sm">Quick Quiz</h1>
-                    <p className="text-muted mb-lg">{deck?.title} — {cards.length} cards</p>
+                    <span className="eyebrow" style={{ display: 'block', marginBottom: '10px' }}>{cards.length} kards · no AI</span>
+                    <h1 className="deck-title mb-lg">Quick quiz</h1>
 
-                    <div className="card mb-lg">
+                    <div className="index-card mb-lg" style={{ padding: '20px 22px' }}>
                         <div className="field" style={{ marginBottom: 0 }}>
                             <label className="label">Challenge Creator Name</label>
                             <input
@@ -182,23 +181,19 @@ export default function MCQuiz() {
                     </div>
 
                     <h3 className="mb-md">Choose a question type</h3>
-                    <div className="flex" style={{ flexDirection: 'column', gap: '10px' }}>
-                        {QUIZ_TYPES.map(type => {
+                    <div className="option-list">
+                        {QUIZ_TYPES.map((type, index) => {
                             const disabled = cards.length < type.minCards;
                             return (
                                 <button
                                     key={type.id}
-                                    className="btn btn-secondary btn-lg"
-                                    style={{
-                                        width: '100%',
-                                        justifyContent: 'space-between',
-                                        opacity: disabled ? 0.4 : 1,
-                                    }}
+                                    className={`option-row ${disabled ? 'is-dim' : ''}`}
                                     onClick={() => startQuiz(type.id)}
                                     disabled={disabled}
                                 >
-                                    <span>{type.label}</span>
-                                    {disabled && <span className="text-sm text-muted">Need {type.minCards}+ cards</span>}
+                                    <span className="option-letter">{String.fromCharCode(65 + index)}</span>
+                                    <span className="option-label">{type.label}</span>
+                                    {disabled && <span className="option-tag">Need {type.minCards}+ kards</span>}
                                 </button>
                             );
                         })}
@@ -216,16 +211,14 @@ export default function MCQuiz() {
         return (
             <div className="page">
                 <div className="container" style={{ maxWidth: '640px' }}>
-                    <div className="mb-md">
-                        <Link href={`/deck/${id}`} className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px' }}>
-                            ← Back to Deck
-                        </Link>
-                    </div>
+                    <Link href={`/deck/${id}`} className="session-back" style={{ marginBottom: '20px' }}>
+                        <ArrowLeftIcon size={16} /> {deck?.title}
+                    </Link>
 
-                    <div className="text-center mb-lg">
-                        <h1 className="mb-sm">Quick Quiz Ready</h1>
-                        <p className="text-muted">{deck?.title}</p>
-                    </div>
+                    <span className="eyebrow" style={{ display: 'block', marginBottom: '10px' }}>
+                        {questions.length} questions · {(selectedType || 'quick quiz').replace('_', ' ')}
+                    </span>
+                    <h1 className="deck-title mb-lg">Quiz ready</h1>
 
                     {error && <div className="error-box mb-md">{error}</div>}
 
@@ -252,18 +245,6 @@ export default function MCQuiz() {
                         </div>
                     )}
 
-                    <div className="card mb-lg" style={{ padding: '24px' }}>
-                        <div className="flex-between" style={{ flexWrap: 'wrap', gap: '12px' }}>
-                            <div>
-                                <p className="text-sm text-muted">Question Count</p>
-                                <p style={{ fontSize: '2rem', fontWeight: 800 }}>{questions.length}</p>
-                            </div>
-                            <span className="badge badge-purple">
-                                {(selectedType || 'quick quiz').replace('_', ' ')}
-                            </span>
-                        </div>
-                    </div>
-
                     <button className="btn btn-primary btn-lg" style={{ width: '100%' }} onClick={beginQuiz}>
                         Start Quiz
                     </button>
@@ -277,10 +258,13 @@ export default function MCQuiz() {
 
         return (
             <div className="page">
-                <div className="container" style={{ maxWidth: '640px' }}>
-                    <div className="text-center mb-lg">
-                        <h1 className="mb-sm">Quick Quiz Complete!</h1>
-                        <p className="text-muted">{deck?.title}</p>
+                <div className="container" style={{ maxWidth: '680px' }}>
+                    <div className="quiz-score mb-lg">
+                        <span className="eyebrow">Quiz complete · {deck?.title}</span>
+                        <div className="quiz-score-value">
+                            {score}<span>/{questionCount}</span>
+                        </div>
+                        <p>{score === questionCount ? 'Perfect score.' : score >= questionCount * 0.7 ? 'Nicely done.' : 'Keep practicing.'}</p>
                     </div>
 
                     {error && <div className="error-box mb-md">{error}</div>}
@@ -308,24 +292,19 @@ export default function MCQuiz() {
                         </div>
                     )}
 
-                    <div className="card text-center mb-lg" style={{ padding: '32px' }}>
-                        <p className="text-sm text-muted" style={{ marginBottom: '4px' }}>Your Score</p>
-                        <p style={{ fontSize: '3rem', fontWeight: 800, lineHeight: 1.1 }}>
-                            {score}<span style={{ fontSize: '1.5rem', fontWeight: 400, color: 'var(--text-faint)' }}>/{questionCount}</span>
-                        </p>
-                        <p className="text-sm text-muted mt-sm">
-                            {score === questionCount ? 'Perfect!' : score >= questionCount * 0.7 ? 'Great job!' : 'Keep practicing!'}
-                        </p>
-                    </div>
-
                     <div className="flex" style={{ flexDirection: 'column', gap: '10px', marginBottom: '32px' }}>
                         {questions.map((question, index) => {
                             const userAnswer = answers[index];
                             const correct = isAnswerCorrect(question, userAnswer);
                             return (
-                                <div key={index} className="card" style={{ padding: '16px 20px', borderLeftWidth: correct ? 1.5 : 4, borderLeftColor: correct ? 'var(--success)' : 'var(--warning)' }}>
-                                    <p className="text-sm text-muted light mb-sm">{question.question}</p>
-                                    <div className="flex gap-md">
+                                <div key={index} className="index-card">
+                                    <div className="index-card-head">
+                                        <span>Question {index + 1}</span>
+                                        <span className={correct ? 'quiz-verdict-correct' : 'quiz-verdict-wrong'}>{correct ? 'Correct' : 'Missed'}</span>
+                                    </div>
+                                    <div className="index-card-body">
+                                    <p style={{ color: 'var(--text)' }}>{question.question}</p>
+                                    <div className="flex gap-md" style={{ flexWrap: 'wrap' }}>
                                         <div>
                                             <span className="text-sm text-muted">You: </span>
                                             <span style={{ fontWeight: correct ? 700 : 400, color: correct ? 'var(--success-dark)' : 'var(--error-dark)' }}>
@@ -340,6 +319,7 @@ export default function MCQuiz() {
                                                 </span>
                                             </div>
                                         )}
+                                    </div>
                                     </div>
                                 </div>
                             );
@@ -366,122 +346,19 @@ export default function MCQuiz() {
 
     return (
         <div className="page">
-            <div className="container" style={{ maxWidth: '640px' }}>
-                <div className="mb-lg flex-between">
-                    <button className="btn btn-ghost btn-sm" onClick={restart} style={{ marginLeft: '-16px' }}>
-                        ← Back
-                    </button>
-                    <span className="text-sm bold">{currentQ + 1} / {questions.length}</span>
-                </div>
-
-                <div className="mb-md" style={{ height: '3px', background: 'var(--border)', borderRadius: '100px' }}>
-                    <div style={{ height: '100%', width: `${((currentQ + 1) / questions.length) * 100}%`, background: 'var(--primary)', borderRadius: '100px', transition: 'width 0.3s ease' }}></div>
-                </div>
-
-                <div className="card" style={{ padding: '32px' }}>
-                    <p className="text-sm text-muted light mb-sm" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        {question.type === 'multiple_choice' ? 'What is the term?' : question.type === 'true_false' ? 'True or False?' : 'Identify the term'}
-                    </p>
-                    <h2 className="mb-lg" style={{ fontSize: '1.3rem', fontWeight: 400, lineHeight: 1.5 }}>{question.question}</h2>
-
-                    <div style={{ marginTop: '24px' }}>
-                        {question.type === 'multiple_choice' && (
-                            <div className="flex" style={{ flexDirection: 'column', gap: '8px' }}>
-                                {(question.options || []).map((option, index) => (
-                                    <button
-                                        key={index}
-                                        className="btn btn-secondary"
-                                        style={{
-                                            justifyContent: 'flex-start',
-                                            textAlign: 'left',
-                                            padding: '16px',
-                                            fontWeight: 500,
-                                            ...(feedback && option === question.answer ? { background: 'var(--success-light)', borderColor: 'var(--success)', color: 'var(--success-dark)', fontWeight: 700 } : {}),
-                                            ...(feedback && option === feedback.userAnswer && !feedback.isCorrect ? { background: 'var(--error-light)', borderColor: 'var(--error)', color: 'var(--error-dark)' } : {}),
-                                            ...(feedback && option !== question.answer && option !== feedback.userAnswer ? { opacity: 0.35 } : {}),
-                                        }}
-                                        onClick={() => submitAnswer(option)}
-                                        disabled={!!feedback}
-                                    >
-                                        {option}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-
-                        {question.type === 'true_false' && (
-                            <div className="flex gap-md">
-                                {[true, false].map(value => (
-                                    <button
-                                        key={String(value)}
-                                        className="btn btn-secondary"
-                                        style={{
-                                            flex: 1,
-                                            padding: '24px',
-                                            ...(feedback && value === question.answer ? { background: 'var(--success-light)', borderColor: 'var(--success)', color: 'var(--success-dark)', fontWeight: 700 } : {}),
-                                            ...(feedback && value === feedback.userAnswer && !feedback.isCorrect ? { background: 'var(--error-light)', borderColor: 'var(--error)', color: 'var(--error-dark)' } : {}),
-                                            ...(feedback && value !== question.answer && value !== feedback.userAnswer ? { opacity: 0.35 } : {}),
-                                        }}
-                                        onClick={() => submitAnswer(value)}
-                                        disabled={!!feedback}
-                                    >
-                                        {value ? 'True' : 'False'}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-
-                        {question.type === 'identification' && (
-                            <div>
-                                <input
-                                    type="text"
-                                    className="input"
-                                    autoFocus
-                                    placeholder="Type your answer here..."
-                                    value={currentInput}
-                                    onChange={(e) => setCurrentInput(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && !feedback && submitAnswer()}
-                                    disabled={!!feedback}
-                                />
-                                {!feedback && <div className="mt-md text-right">
-                                    <button className="btn btn-primary" onClick={() => submitAnswer()}>Submit</button>
-                                </div>}
-                            </div>
-                        )}
-                    </div>
-
-                    {feedback && (
-                        <div style={{
-                            marginTop: '20px',
-                            padding: '16px 20px',
-                            borderRadius: 'var(--radius-md)',
-                            background: feedback.isCorrect ? 'var(--success-light)' : 'var(--error-light)',
-                            border: `1.5px solid ${feedback.isCorrect ? 'var(--success-border)' : 'var(--error-border)'}`,
-                        }}>
-                            <div className="flex gap-sm" style={{ alignItems: 'center', marginBottom: '8px' }}>
-                                <div style={{
-                                    width: 28, height: 28, borderRadius: '50%',
-                                    background: feedback.isCorrect ? 'var(--success)' : 'var(--error)',
-                                    color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                }}>
-                                    {feedback.isCorrect ? <CheckIcon size={14} /> : <XIcon size={14} />}
-                                </div>
-                                <span style={{ fontWeight: 700, color: feedback.isCorrect ? 'var(--success-dark)' : 'var(--error-dark)' }}>
-                                    {feedback.isCorrect ? 'Correct!' : 'Incorrect'}
-                                </span>
-                            </div>
-                            <p style={{ marginTop: '4px' }}>
-                                <span className="text-sm text-muted">Answer: </span>
-                                <span style={{ fontWeight: 700 }}>
-                                    {Array.isArray(question.answer) ? question.answer.join(', ') : String(question.answer)}
-                                </span>
-                            </p>
-                            <button className="btn btn-primary mt-md" style={{ width: '100%' }} onClick={goNext} autoFocus>
-                                {currentQ < questions.length - 1 ? 'Next' : 'See Results'}
-                            </button>
-                        </div>
-                    )}
-                </div>
+            <div className="container">
+                <QuizQuestionView
+                    questions={questions}
+                    currentQ={currentQ}
+                    answers={answers}
+                    feedback={feedback}
+                    currentInput={currentInput}
+                    onInputChange={setCurrentInput}
+                    onSubmit={(answer) => submitAnswer(answer ?? null)}
+                    onNext={goNext}
+                    eyebrow={question.type === 'multiple_choice' ? 'What is the term?' : question.type === 'true_false' ? 'True or false?' : 'Identify the term'}
+                    quit={<button className="session-back session-quit" onClick={restart}>Quit</button>}
+                />
             </div>
         </div>
     );

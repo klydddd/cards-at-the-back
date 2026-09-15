@@ -1,7 +1,7 @@
 # GEMINI.md
 
 ## Project Overview
-**Cards at the Back** is a Next.js-based application for creating and studying flashcards and quizzes. It features manual deck creation as well as AI-powered generation from documents (PDF, Word, ZIP) using Google's Gemini models.
+**gokards** is a Next.js-based application for creating and studying flashcards and quizzes. It features manual deck creation as well as AI-powered generation from documents (PDF, Word, ZIP) using Google's Gemini models.
 
 ### Core Technologies
 - **Frontend/Framework**: Next.js 15+ (App Router), React 19, TypeScript

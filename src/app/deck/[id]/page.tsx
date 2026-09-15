@@ -6,14 +6,14 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     try {
         const deck = await fetchDeck(id);
         return {
-            title: `${deck.title} · Cards at the Back`,
+            title: `${deck.title} · gokards`,
             openGraph: {
-                title: `${deck.title} · Cards at the Back`,
-                description: deck.description || `${deck.title} flashcard deck`,
+                title: `${deck.title} · gokards`,
+                description: deck.description || `${deck.title} flashkard deck`,
             },
         };
     } catch {
-        return { title: 'Cards at the Back' };
+        return { title: 'gokards' };
     }
 }
 

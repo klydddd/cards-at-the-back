@@ -19,9 +19,9 @@ export default function Navbar() {
 
     return (
         <nav className="navbar">
-            <div className="container navbar-inner">
+            <div className="container container-wide navbar-inner">
                 <Link href="/" className="navbar-brand">
-                    cards at <span className="brand-accent">the back</span>
+                    go<span className="brand-accent">kards</span>
                 </Link>
                 <div className="navbar-links">
                     <button

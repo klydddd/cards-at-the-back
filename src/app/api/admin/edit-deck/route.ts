@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     }
     const validCards = cards.filter(c => c.front?.trim() && c.back?.trim());
     if (validCards.length < 2) {
-        return NextResponse.json({ error: 'At least 2 complete cards are required.' }, { status: 400 });
+        return NextResponse.json({ error: 'At least 2 complete kards are required.' }, { status: 400 });
     }
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);

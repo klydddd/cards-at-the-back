@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { fetchDeck, fetchCards, fetchQuizChallengesByDeck } from '@/lib/supabase';
 import { getLearnedCardIds, loadSRSProgress, getDueCount } from '@/lib/tracking';
-import { formatInterval } from '@/lib/srs';
-import { WandIcon } from '@/components/Icons';
+import { WandIcon, ArrowLeftIcon } from '@/components/Icons';
 import ShareButton from '@/components/ShareButton';
+import PracticeMenu from '@/components/PracticeMenu';
 import type { Card, CardProgress, Deck, Quiz } from '@/types';
 
 export default function DeckView({ id }: { id: string }) {
@@ -116,41 +116,31 @@ export default function DeckView({ id }: { id: string }) {
 
     return (
         <div className="page">
-            <div className="container" style={{ maxWidth: '720px' }}>
+            <div className="container" style={{ maxWidth: '768px' }}>
                 <div className="mb-lg">
-                    <Link href="/" className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px', marginBottom: '12px' }}>
-                        ← Back
+                    <Link href="/" className="session-back" style={{ marginBottom: '20px' }}>
+                        <ArrowLeftIcon size={16} /> All decks
                     </Link>
-                    <div className="flex gap-md" style={{ alignItems: 'center' }}>
-                        <h1 style={{ flex: 1 }}>{deck?.title}</h1>
+                    <span className="eyebrow" style={{ display: 'block', marginBottom: '10px' }}>
+                        {[deck?.subject?.trim(), `${cards.length} ${cards.length === 1 ? 'kard' : 'kards'}`].filter(Boolean).join(' · ')}
+                    </span>
+                    <div className="flex gap-md" style={{ alignItems: 'flex-start' }}>
+                        <h1 className="deck-title" style={{ flex: 1 }}>{deck?.title}</h1>
                         <ShareButton url={`/deck/${id}`} title={deck?.title || ''} />
                     </div>
-                    {deck?.description && <p style={{ marginTop: '8px' }}>{deck.description}</p>}
-                    <div className="flex gap-sm mt-sm" style={{ alignItems: 'center', flexWrap: 'wrap' }}>
-                        <span className="badge">{cards.length} cards</span>
+                    {deck?.description && <p style={{ marginTop: '12px', fontSize: '1.0625rem', maxWidth: '560px' }}>{deck.description}</p>}
+                    <div className="flex gap-sm" style={{ alignItems: 'center', flexWrap: 'wrap', marginTop: '16px' }}>
                         {cards.length > 0 && (
                             <span className="badge badge-success">
                                 {learnedCount} learned · {notLearnedCount} learning
                             </span>
                         )}
-                        {dueCount > 0 && (
-                            <span className="badge badge-warning">
-                                {dueCount} due for review
-                            </span>
-                        )}
-                        <span className="text-sm text-muted light" style={{ marginLeft: '4px' }}>by {deck?.creator_name}</span>
+                        <span className="text-sm text-muted light">by {deck?.creator_name}</span>
                     </div>
                 </div>
 
                 <div className="mb-lg flex gap-md" style={{ flexWrap: 'wrap' }}>
-                    {dueCount > 0 && (
-                        <Link href={`/deck/${id}/review`} className="btn btn-primary btn-lg" style={{ background: 'var(--purple)', color: 'var(--surface)', borderColor: 'var(--purple)' }}>
-                            Review Due Cards ({dueCount})
-                        </Link>
-                    )}
-                    <Link href={`/deck/${id}/practice`} className={`btn ${dueCount > 0 ? 'btn-secondary' : 'btn-primary'} btn-lg`}>
-                        Practice All
-                    </Link>
+                    <PracticeMenu deckId={id} dueCount={dueCount} />
                     {notLearnedCount > 0 && notLearnedCount < cards.length && (
                         <Link href={`/deck/${id}/practice?filter=not-learned`} className="btn btn-secondary btn-lg">
                             Practice Not Learned ({notLearnedCount})
@@ -166,33 +156,26 @@ export default function DeckView({ id }: { id: string }) {
                     )}
                 </div>
 
-                <h2 className="mb-md">All Cards</h2>
-                <div className="flex" style={{ flexDirection: 'column', gap: '8px' }}>
-                    {cards.map((card) => {
+                <div className="section-head">
+                    <h2>All kards</h2>
+                </div>
+                <div className="flex" style={{ flexDirection: 'column', gap: '12px' }}>
+                    {cards.map((card, index) => {
                         const isLearned = getLearnedCardIds(id).has(card.id);
                         const progress = srsProgress[card.id];
                         const isDueNow = !progress || new Date(progress.due_date) <= new Date();
                         return (
-                            <div key={card.id} className="card" style={{ padding: '16px 20px', borderLeft: isLearned ? `4px solid var(--success)` : isDueNow && progress ? `4px solid var(--warning)` : '1.5px solid var(--border)' }}>
-                                <div className="flex-between gap-md">
-                                    <div style={{ flex: 1 }}>
-                                        <p className="text-sm text-muted light" style={{ marginBottom: '2px' }}>
-                                            Description
-                                        </p>
-                                        <p style={{ color: 'var(--text-secondary)', fontWeight: 300 }}>{card.front}</p>
-                                    </div>
-                                    <div className="divider" style={{ margin: '0 8px' }}></div>
-                                    <div style={{ flex: 0, minWidth: '120px' }}>
-                                        <p className="text-sm text-muted light" style={{ marginBottom: '2px' }}>
-                                            Term
-                                        </p>
-                                        <p style={{ fontWeight: 700 }}>{card.back}</p>
-                                        {progress && (
-                                            <p className="text-sm light" style={{ marginTop: '4px', color: isDueNow ? 'var(--warning-dark)' : 'var(--text-faint)', fontSize: '0.7rem' }}>
-                                                {isDueNow ? 'Due now' : `Next: ${formatInterval(progress.interval)}`}
-                                            </p>
-                                        )}
-                                    </div>
+                            <div key={card.id} className="index-card">
+                                <div className="index-card-head">
+                                    <span>Kard {index + 1}</span>
+                                    <span className="flex gap-md">
+                                        {isLearned && <span style={{ color: 'var(--success)' }}>Learned</span>}
+                                        {progress && isDueNow && <span style={{ color: 'var(--warning)' }}>Due now</span>}
+                                    </span>
+                                </div>
+                                <div className="term-card-body">
+                                    <p className="term-card-front">{card.front}</p>
+                                    <p className="term-card-back">{card.back}</p>
                                 </div>
                             </div>
                         );
@@ -200,11 +183,13 @@ export default function DeckView({ id }: { id: string }) {
                 </div>
 
                 {challenges.length > 0 && (
-                    <div style={{ marginTop: '48px' }}>
-                        <h2 className="mb-md">Published Challenges</h2>
-                        <div className="flex" style={{ flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ marginTop: '56px' }}>
+                        <div className="section-head">
+                            <h2>Published challenges</h2>
+                        </div>
+                        <div className="flex" style={{ flexDirection: 'column', gap: '12px' }}>
                             {challenges.map((quiz) => (
-                                <div key={quiz.id} className="card" style={{ padding: '16px 20px' }}>
+                                <div key={quiz.id} className="index-card" style={{ padding: '16px 22px' }}>
                                     <div className="flex-between gap-md" style={{ alignItems: 'flex-start' }}>
                                         <div style={{ flex: 1 }}>
                                             <p style={{ fontWeight: 600, marginBottom: '4px' }}>
@@ -279,7 +264,7 @@ export default function DeckView({ id }: { id: string }) {
                     >
                         <h2 className="mb-sm" style={{ color: 'var(--error)' }}>Delete Deck</h2>
                         <p className="text-sm text-muted mb-md">
-                            This will permanently delete <strong>{deck?.title}</strong> and all its cards, quizzes, and progress. This cannot be undone.
+                            This will permanently delete <strong>{deck?.title}</strong> and all its kards, quizzes, and progress. This cannot be undone.
                         </p>
 
                         {deleteError && <div className="error-box mb-md">{deleteError}</div>}

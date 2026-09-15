@@ -58,7 +58,7 @@ export default function CreateDeck() {
 
         if (!title.trim()) return setError('Please add a title for your deck.');
         const validCards = cards.filter((c) => c.front.trim() && c.back.trim());
-        if (validCards.length < 2) return setError('Add at least 2 complete cards.');
+        if (validCards.length < 2) return setError('Add at least 2 complete kards.');
 
         setSaving(true);
         try {
@@ -73,9 +73,10 @@ export default function CreateDeck() {
 
     return (
         <div className="page">
-            <div className="container" style={{ maxWidth: '640px' }}>
-                <h1 className="mb-sm">Create Deck</h1>
-                <p className="mb-lg">Build your flashcard deck manually. Add as many cards as you need.</p>
+            <div className="container" style={{ maxWidth: '680px' }}>
+                <span className="eyebrow" style={{ display: 'block', marginBottom: '10px' }}>New deck</span>
+                <h1 className="deck-title mb-sm">Create a deck</h1>
+                <p className="mb-lg">Build your flashkard deck manually. Add as many kards as you need.</p>
 
                 {error && <div className="error-box">{error}</div>}
 
@@ -124,11 +125,11 @@ export default function CreateDeck() {
                         />
                     </div>
 
-                    <div className="mt-lg mb-md">
-                        <div className="flex-between">
-                            <h2>Cards</h2>
+                    <div className="mt-lg">
+                        <div className="section-head" style={{ alignItems: 'center' }}>
+                            <h2>Kards</h2>
                             <button type="button" className="btn btn-secondary btn-sm" onClick={addCard}>
-                                + Add Card
+                                + Add Kard
                             </button>
                         </div>
                     </div>

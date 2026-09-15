@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { fetchDeck, fetchCards } from '@/lib/supabase';
 import CardForm from '@/components/CardForm';
+import { ArrowLeftIcon } from '@/components/Icons';
 import type { Card } from '@/types';
 
 type EditCard = {
@@ -111,7 +112,7 @@ export default function EditDeck() {
         }
         const validCards = cards.filter(c => c.front.trim() && c.back.trim());
         if (validCards.length < 2) {
-            setSaveError('At least 2 complete cards are required.');
+            setSaveError('At least 2 complete kards are required.');
             return;
         }
 
@@ -181,11 +182,12 @@ export default function EditDeck() {
 
     return (
         <div className="page">
-            <div className="container" style={{ maxWidth: '640px' }}>
-                <Link href={`/deck/${id}`} className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px', marginBottom: '12px' }}>
-                    ← Back
+            <div className="container" style={{ maxWidth: '680px' }}>
+                <Link href={`/deck/${id}`} className="session-back" style={{ marginBottom: '20px' }}>
+                    <ArrowLeftIcon size={16} /> Back to deck
                 </Link>
-                <h1 className="mb-lg">Edit Deck</h1>
+                <span className="eyebrow" style={{ display: 'block', marginBottom: '10px' }}>Admin</span>
+                <h1 className="deck-title mb-lg">Edit deck</h1>
 
                 {/* Admin unlock */}
                 <div className="card mb-lg" style={{ padding: '20px' }}>
@@ -252,12 +254,12 @@ export default function EditDeck() {
                     />
                 </div>
 
-                <div className="mt-lg mb-md">
-                    <div className="flex-between">
-                        <h2>Cards ({cards.filter(c => c.front.trim() && c.back.trim()).length} complete)</h2>
+                <div className="mt-lg">
+                    <div className="section-head" style={{ alignItems: 'center' }}>
+                        <h2>Kards ({cards.filter(c => c.front.trim() && c.back.trim()).length} complete)</h2>
                         {unlocked && (
                             <button type="button" className="btn btn-secondary btn-sm" onClick={addCard}>
-                                + Add Card
+                                + Add Kard
                             </button>
                         )}
                     </div>

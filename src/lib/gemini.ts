@@ -15,7 +15,7 @@ export async function parseMarkdownToCards(markdownContent: string) {
 
     const data = await res.json();
     if (!res.ok) {
-        throw new Error(data.error || 'Failed to generate cards.');
+        throw new Error(data.error || 'Failed to generate kards.');
     }
     return data.cards;
 }
@@ -49,7 +49,7 @@ export async function parseOCRToCards(ocrContent: string) {
 
     const data = await res.json();
     if (!res.ok) {
-        throw new Error(data.error || 'Failed to generate cards from OCR.');
+        throw new Error(data.error || 'Failed to generate kards from OCR.');
     }
     return data.cards;
 }

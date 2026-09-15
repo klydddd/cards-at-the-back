@@ -17,17 +17,26 @@ const FlipCard = forwardRef(function FlipCard({ front, back }: { front: string, 
             onClick={() => setFlipped(!flipped)}
             role="button"
             tabIndex={0}
-            aria-label={flipped ? `Card back: ${back}` : `Card front: ${front}. Press space to flip.`}
+            aria-label={flipped ? `Kard back: ${back}` : `Kard front: ${front}. Press space to flip.`}
             onKeyDown={(e) => e.key === ' ' && setFlipped(!flipped)}
         >
             <div className={`flip-card-inner ${flipped ? 'flipped' : ''}`}>
                 <div className="flip-card-face flip-card-front">
-                    <span className="flip-card-label">Description</span>
-                    <p className="flip-card-text">{front}</p>
+                    <div className="index-card-head">
+                        <span>Description</span>
+                        <span>Tap to flip</span>
+                    </div>
+                    <div className="flip-card-body">
+                        <p className="flip-card-text">{front}</p>
+                    </div>
                 </div>
                 <div className="flip-card-face flip-card-back">
-                    <span className="flip-card-label">Term</span>
-                    <p className="flip-card-text">{back}</p>
+                    <div className="index-card-head">
+                        <span>Term</span>
+                    </div>
+                    <div className="flip-card-body">
+                        <p className="flip-card-text">{back}</p>
+                    </div>
                 </div>
             </div>
         </div>

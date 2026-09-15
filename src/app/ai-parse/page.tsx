@@ -199,7 +199,7 @@ export default function AIParse() {
             return;
         }
         if (cards.length < 2) {
-            setError('You need at least 2 cards.');
+            setError('You need at least 2 kards.');
             return;
         }
 
@@ -264,9 +264,10 @@ export default function AIParse() {
     return (
         <div className="page">
             <div className="container" style={{ maxWidth: '720px' }}>
-                <h1 className="mb-sm">AI Parse</h1>
+                <span className="eyebrow eyebrow-purple" style={{ display: 'block', marginBottom: '10px' }}>New deck from your notes</span>
+                <h1 className="deck-title mb-sm">AI Parse</h1>
                 <p className="mb-lg">
-                    Upload a document or image file and let AI extract flashcards or quiz questions automatically.
+                    Upload a document or image file and let AI extract flashkards or quiz questions automatically.
                 </p>
 
                 {error && <div className="error-box">{error}</div>}
@@ -339,7 +340,7 @@ export default function AIParse() {
                                             style={{ flex: 1 }}
                                             id="mode-cards-btn"
                                         >
-                                            Flashcards
+                                            Flashkards
                                         </button>
                                         <button
                                             className={`btn ${parseMode === 'mcq' ? 'btn-primary' : 'btn-secondary'}`}
@@ -387,12 +388,12 @@ export default function AIParse() {
                                     {loading ? (
                                         <span className="flex-center gap-sm">
                                             <span className="spinner"></span>
-                                            {isMCQMode ? 'Extracting questions...' : 'Generating cards...'}
+                                            {isMCQMode ? 'Extracting questions...' : 'Generating kards...'}
                                         </span>
                                     ) : (
                                         parseMode === 'mcq'
                                             ? 'Extract MCQ with AI'
-                                            : (isImageFile ? 'Generate Cards from OCR' : 'Generate Cards with AI')
+                                            : (isImageFile ? 'Generate Kards from OCR' : 'Generate Kards with AI')
                                     )}
                                 </button>
 
@@ -416,8 +417,8 @@ export default function AIParse() {
                 {/* Step 2: Preview & Edit — Cards mode */}
                 {step === 'preview' && !isMCQMode && cards.length > 0 && (
                     <>
-                        <div className="flex-between mb-md">
-                            <h2>{cards.length} cards generated</h2>
+                        <div className="section-head" style={{ alignItems: 'center' }}>
+                            <h2>{cards.length} kards generated</h2>
                             <button className="btn btn-ghost btn-sm" onClick={() => setStep('upload')}>
                                 ← Re-upload
                             </button>
@@ -425,13 +426,13 @@ export default function AIParse() {
 
                         <div className="flex" style={{ flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
                             {cards.map((card, i) => (
-                                <div key={i} className="card" style={{ padding: '16px 20px' }}>
-                                    <div className="flex-between mb-sm">
-                                        <span className="text-sm text-muted light">Card {i + 1}</span>
+                                <div key={i} className="index-card is-padded">
+                                    <div className="index-card-head">
+                                        <span>Kard {i + 1}</span>
                                         <button
-                                            className="btn btn-ghost btn-sm"
+                                            className="btn btn-ghost btn-sm index-card-head-action"
                                             onClick={() => removeCard(i)}
-                                            style={{ padding: '2px 8px', fontSize: '0.75rem' }}
+                                            aria-label={`Remove kard ${i + 1}`}
                                         >
                                             ×
                                         </button>
@@ -519,7 +520,7 @@ export default function AIParse() {
                 {/* Step 2: Preview & Edit — MCQ mode */}
                 {step === 'preview' && isMCQMode && questions.length > 0 && (
                     <>
-                        <div className="flex-between mb-md">
+                        <div className="section-head" style={{ alignItems: 'center' }}>
                             <h2>{questions.length} questions extracted</h2>
                             <button className="btn btn-ghost btn-sm" onClick={() => setStep('upload')}>
                                 ← Re-upload
@@ -528,18 +529,15 @@ export default function AIParse() {
 
                         <div className="flex" style={{ flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
                             {questions.map((q, i) => (
-                                <div key={i} className="card" style={{ padding: '16px 20px' }}>
-                                    <div className="flex-between mb-sm">
-                                        <div className="flex gap-sm" style={{ alignItems: 'center' }}>
-                                            <span className="text-sm text-muted light">Question {i + 1}</span>
-                                            <span className="badge" style={{ fontSize: '0.65rem' }}>
-                                                {q.type === 'multiple_choice' ? 'MCQ' : q.type === 'true_false' ? 'T/F' : 'ID'}
-                                            </span>
-                                        </div>
+                                <div key={i} className="index-card is-padded">
+                                    <div className="index-card-head">
+                                        <span>
+                                            Question {i + 1} · {q.type === 'multiple_choice' ? 'MCQ' : q.type === 'true_false' ? 'T/F' : 'ID'}
+                                        </span>
                                         <button
-                                            className="btn btn-ghost btn-sm"
+                                            className="btn btn-ghost btn-sm index-card-head-action"
                                             onClick={() => removeQuestion(i)}
-                                            style={{ padding: '2px 8px', fontSize: '0.75rem' }}
+                                            aria-label={`Remove question ${i + 1}`}
                                         >
                                             ×
                                         </button>
@@ -637,7 +635,7 @@ export default function AIParse() {
                         <div className="card" style={{ padding: '24px' }}>
                             <h3 className="mb-md">Save as Deck + Quiz</h3>
                             <p className="text-sm text-muted mb-md">
-                                This will create a deck with flashcards derived from the questions, plus save the quiz so it can be taken.
+                                This will create a deck with flashkards derived from the questions, plus save the quiz so it can be taken.
                             </p>
 
                             <div className="field">

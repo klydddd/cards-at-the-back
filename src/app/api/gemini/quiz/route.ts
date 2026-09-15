@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
         const { cards, questionTypeCounts } = await request.json();
 
         if (!cards || !Array.isArray(cards) || cards.length === 0) {
-            return NextResponse.json({ error: 'No cards provided.' }, { status: 400 });
+            return NextResponse.json({ error: 'No kards provided.' }, { status: 400 });
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);

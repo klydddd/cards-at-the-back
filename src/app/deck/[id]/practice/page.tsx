@@ -7,7 +7,7 @@ import { fetchDeck, fetchCards } from '@/lib/supabase';
 import FlipCard from '@/components/FlipCard';
 import { getLearnedCardIds, markCardAsLearned, markCardAsLearning, rateCard, loadSRSProgress } from '@/lib/tracking';
 import { Rating, formatInterval, previewIntervals } from '@/lib/srs';
-import { ShuffleIcon, SparklesIcon, CheckIcon, XIcon } from '@/components/Icons';
+import { ShuffleIcon, SparklesIcon, CheckIcon, XIcon, ArrowLeftIcon } from '@/components/Icons';
 import type { Deck, Card } from '@/types';
 
 const CHECK_IN_INTERVAL = 15;
@@ -36,6 +36,8 @@ export default function Practice() {
     const [swipeAction, setSwipeAction] = useState<'learned' | 'learning' | null>(null);
     const [finished, setFinished] = useState(false);
     const [srsProgress, setSrsProgress] = useState<Record<string, any>>({});
+    const [sessionLearned, setSessionLearned] = useState(0);
+    const [sessionLearning, setSessionLearning] = useState(0);
 
     // Animation states
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
@@ -119,6 +121,7 @@ export default function Practice() {
         setIsAnimatingOut(true);
         setSwipeAction('learned');
         setSwipeOffset(500); // swipe right
+        setSessionLearned((n) => n + 1);
 
         const newLearned = markCardAsLearned(id, cards[current].id);
         setLearnedIds(new Set(newLearned));
@@ -134,6 +137,7 @@ export default function Practice() {
         setIsAnimatingOut(true);
         setSwipeAction('learning');
         setSwipeOffset(-500); // swipe left
+        setSessionLearning((n) => n + 1);
 
         const newLearned = markCardAsLearning(id, cards[current].id);
         setLearnedIds(new Set(newLearned));
@@ -180,6 +184,8 @@ export default function Practice() {
         setCardsSeenSinceCheckIn(0);
         setCheckInCount(0);
         setShowCheckIn(false);
+        setSessionLearned(0);
+        setSessionLearning(0);
         reviewInsertedRef.current = new Set();
         goTo(0);
     };
@@ -189,6 +195,8 @@ export default function Practice() {
         setCardsSeenSinceCheckIn(0);
         setCheckInCount(0);
         setShowCheckIn(false);
+        setSessionLearned(0);
+        setSessionLearning(0);
         reviewInsertedRef.current = new Set();
         goTo(0);
     };
@@ -292,7 +300,7 @@ export default function Practice() {
                 <div className="container text-center">
                     <SparklesIcon size={32} style={{ marginBottom: '12px', opacity: 0.5 }} />
                     <h2 className="mb-md">You're all caught up!</h2>
-                    <p className="mb-lg">There are no more cards to learn in this mode.</p>
+                    <p className="mb-lg">There are no more kards to learn in this mode.</p>
                     <div className="flex-center gap-md">
                         <Link href={`/deck/${id}`} className="btn btn-secondary">
                             Go back
@@ -312,11 +320,11 @@ export default function Practice() {
     if (showCheckIn) {
         return (
             <div className="page">
-                <div className="container text-center" style={{ maxWidth: '480px' }}>
-
-                    <h2 className="mb-sm">Quick Check-In</h2>
+                <div className="container text-center" style={{ maxWidth: '480px', paddingTop: '48px' }}>
+                    <span className="eyebrow">Quick check-in</span>
+                    <h2 className="mb-sm mt-sm" style={{ fontSize: '2.5rem' }}>How's it going?</h2>
                     <p className="text-muted mb-lg">
-                        You've gone through {CHECK_IN_INTERVAL} cards. How are you feeling?
+                        You've gone through {CHECK_IN_INTERVAL} kards.
                     </p>
 
                     <div className="flex" style={{ flexDirection: 'column', gap: '10px' }}>
@@ -333,7 +341,7 @@ export default function Practice() {
                     </div>
 
                     <p className="text-sm text-muted mt-lg" style={{ opacity: 0.5 }}>
-                        We'll slip in a few review cards from earlier to help you remember.
+                        We'll slip in a few review kards from earlier to help you remember.
                     </p>
                 </div>
             </div>
@@ -346,46 +354,45 @@ export default function Practice() {
 
         return (
             <div className="page">
-                <div className="container text-center" style={{ maxWidth: '520px' }}>
-                    <SparklesIcon size={36} style={{ marginBottom: '16px', opacity: 0.6 }} />
-                    <h2 className="mb-sm">Practice Complete!</h2>
-                    <p className="mb-lg">
-                        You went through all {cards.length} cards.
-                    </p>
+                <div className="container">
+                    <div className="session-done">
+                        <span className="eyebrow">Session complete</span>
+                        <h2>That&apos;s the stack.</h2>
+                        <p>You went through all {cards.length} kards.</p>
 
-                    <div className="flex-center gap-md mb-lg" style={{ flexWrap: 'wrap' }}>
-                        <div className="card" style={{ padding: '16px 24px', textAlign: 'center', flex: '1 1 120px' }}>
-                            <p className="text-sm text-muted light" style={{ marginBottom: '4px' }}>Learned</p>
-                            <p style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--success)' }}>{learnedCount}</p>
+                        <div className="stat-tiles">
+                            <div className="stat-tile stat-tile-success">
+                                <span className="stat-tile-value">{learnedCount}</span>
+                                <span className="stat-tile-label">Learned</span>
+                            </div>
+                            <div className="stat-tile stat-tile-warning">
+                                <span className="stat-tile-value">{notLearnedCount}</span>
+                                <span className="stat-tile-label">Still learning</span>
+                            </div>
                         </div>
-                        <div className="card" style={{ padding: '16px 24px', textAlign: 'center', flex: '1 1 120px' }}>
-                            <p className="text-sm text-muted light" style={{ marginBottom: '4px' }}>Still Learning</p>
-                            <p style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--warning)' }}>{notLearnedCount}</p>
-                        </div>
-                    </div>
 
-                    <div className="flex" style={{ flexDirection: 'column', gap: '10px' }}>
-                        <button className="btn btn-primary btn-lg" style={{ width: '100%' }} onClick={restartPractice}>
-                            Practice Again
-                        </button>
-                        {notLearnedCount > 0 && (
-                            <Link
-                                href={`/deck/${id}/practice?filter=not-learned`}
-                                className="btn btn-secondary btn-lg"
-                                style={{ width: '100%', borderColor: 'var(--warning-border)', color: 'var(--warning-dark)' }}
-                                onClick={() => {
-                                    setFinished(false);
-                                    setLoading(true);
-                                }}
-                            >
-                                Practice Not Learned ({notLearnedCount})
+                        <div className="stack-actions">
+                            <button className="btn btn-primary btn-lg" onClick={restartPractice}>
+                                Practice Again
+                            </button>
+                            {notLearnedCount > 0 && (
+                                <Link
+                                    href={`/deck/${id}/practice?filter=not-learned`}
+                                    className="btn btn-secondary btn-lg"
+                                    onClick={() => {
+                                        setFinished(false);
+                                        setLoading(true);
+                                    }}
+                                >
+                                    Practice Not Learned ({notLearnedCount})
+                                </Link>
+                            )}
+                            <Link href={`/deck/${id}`} className="btn btn-secondary btn-lg">
+                                Back to Deck
                             </Link>
-                        )}
-                        <Link href={`/deck/${id}`} className="btn btn-secondary btn-lg" style={{ width: '100%' }}>
-                            Back to Deck
-                        </Link>
-                        <Link href="/" className="btn btn-ghost" style={{ width: '100%' }}>
-                            Browse Other Decks
+                        </div>
+                        <Link href="/" className="btn btn-ghost btn-sm">
+                            Browse other decks
                         </Link>
                     </div>
                 </div>
@@ -422,38 +429,36 @@ export default function Practice() {
 
     return (
         <div className="page">
-            <div className="container" style={{ maxWidth: '640px' }}>
-                <div className="flex-between mb-lg">
-                    <Link href={`/deck/${id}`} className="btn btn-ghost btn-sm" style={{ marginLeft: '-16px' }}>
-                        ← Back
+            <div className="container" style={{ maxWidth: '768px' }}>
+                <div className="session-bar">
+                    <Link href={`/deck/${id}`} className="session-back">
+                        <ArrowLeftIcon size={16} /> {deck.title}
                     </Link>
-                    <div className="flex gap-sm">
-                        <button className="btn btn-ghost btn-sm" onClick={shuffle}>
-                            <ShuffleIcon size={16} /> {shuffled ? 'Reshuffled' : 'Shuffle'}
+                    <div className="session-meta">
+                        <span>Kard {current + 1} of {cards.length}</span>
+                        <button className="btn btn-secondary btn-sm" onClick={shuffle}>
+                            <ShuffleIcon size={15} /> {shuffled ? 'Reshuffled' : 'Shuffle'}
                         </button>
                     </div>
                 </div>
 
-                <div className="text-center mb-md">
-                    <h2>{deck.title}</h2>
-                    <p className="text-sm text-muted mt-sm light">
-                        Card {current + 1} of {cards.length} — click or press space to flip
-                    </p>
-                    {isReplayMode && (
-                        <span className="badge badge-warning mt-sm">
-                            Replay not-learned mode
-                        </span>
-                    )}
-                    {isReviewCard && (
-                        <span className="badge badge-purple mt-sm">
-                            Review Card
-                        </span>
-                    )}
-                </div>
+                {(isReplayMode || isReviewCard) && (
+                    <div className="flex-center gap-sm mb-md" style={{ flexWrap: 'wrap' }}>
+                        {isReplayMode && (
+                            <span className="badge badge-warning">
+                                Replay not-learned mode
+                            </span>
+                        )}
+                        {isReviewCard && (
+                            <span className="badge badge-purple">
+                                Review Kard
+                            </span>
+                        )}
+                    </div>
+                )}
 
                 <div
                     ref={swipeAreaRef}
-                    className="mb-md"
                     style={{
                         position: 'relative',
                         transform: transformStyle,
@@ -490,32 +495,28 @@ export default function Practice() {
                     )}
                 </div>
 
-                <div className="flex-center gap-md mb-lg">
-                    <button
-                        className={`btn ${!isLearned ? 'btn-secondary' : 'btn-ghost'} btn-lg`}
-                        onClick={handleMarkLearning}
-                        style={{ flex: 1, borderColor: !isLearned ? 'var(--warning-border)' : '', color: !isLearned ? 'var(--warning-dark)' : '' }}
-                    >
-                        <XIcon size={18} /> Still Learning <span className="text-muted text-sm" style={{ opacity: 0.5, marginLeft: 8 }}>←</span>
+                <div className="session-actions">
+                    <button className="btn btn-secondary" onClick={handleMarkLearning}>
+                        <XIcon size={18} /> Still learning
                     </button>
-                    <button
-                        className={`btn ${isLearned ? 'btn-primary' : 'btn-secondary'} btn-lg`}
-                        onClick={handleMarkLearned}
-                        style={{ flex: 1, color: isLearned ? '#fff' : 'var(--success-dark)', background: isLearned ? 'var(--success)' : '', borderColor: isLearned ? 'var(--success)' : '' }}
-                    >
-                        <CheckIcon size={18} /> Know It <span className="text-muted text-sm" style={{ opacity: 0.5, marginLeft: 8 }}>→</span>
+                    <button className="btn btn-primary" onClick={handleMarkLearned}>
+                        <CheckIcon size={18} /> Know it
                     </button>
                 </div>
 
-                {/* <p className="text-center text-sm text-muted mb-lg" style={{ opacity: 0.5 }}>
-                    Space = flip · ← = learning · → = know it
-                </p> */}
-
-                <div className="progress-bar-track" style={{ marginTop: '12px' }}>
+                <div className="progress-bar-track">
                     <div
                         className="progress-bar-fill"
                         style={{ width: `${((current + 1) / cards.length) * 100}%` }}
                     ></div>
+                </div>
+                <div className="session-foot">
+                    <span>
+                        <span style={{ color: 'var(--success)', fontWeight: 500 }}>{sessionLearned} learned</span>
+                        {' · '}
+                        <span style={{ color: 'var(--warning)', fontWeight: 500 }}>{sessionLearning} still learning</span>
+                    </span>
+                    <span className="session-foot-hint">Space to flip, ← → to rate</span>
                 </div>
             </div>
         </div>

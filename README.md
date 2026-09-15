@@ -1,12 +1,12 @@
-# Cards at the Back
+# gokards
 
-Cards at the Back is a React-based application designed to help users learn and test their knowledge using flashcards and quizzes. It includes standard manual flashcard deck creation alongside advanced AI-powered document parsing to automatically generate study materials from PDFs, Word documents, and other files.
+gokards is a React-based application designed to help users learn and test their knowledge using flashkards and quizzes. It includes standard manual flashkard deck creation alongside advanced AI-powered document parsing to automatically generate study materials from PDFs, Word documents, and other files.
 
 ## Features
 
-* Flashcard Deck Management: Create, view, and organize custom decks of flashcards.
-* AI-Powered Deck Generation: Upload documents (PDF, Word, or ZIP) and use Google's Generative AI (Gemini) to automatically parse content and generate relevant flashcards.
-* Practice Mode: Review your flashcards with an intuitive flipping interface.
+* Flashkard Deck Management: Create, view, and organize custom decks of flashkards.
+* AI-Powered Deck Generation: Upload documents (PDF, Word, or ZIP) and use Google's Generative AI (Gemini) to automatically parse content and generate relevant flashkards.
+* Practice Mode: Review your flashkards with an intuitive flipping interface.
 * Quiz Modes: Test your knowledge with standard quizzes, multiple-choice quick quizzes, and review options.
 * Secure Data Storage: Powered by Supabase for reliable authentication and database management.
 

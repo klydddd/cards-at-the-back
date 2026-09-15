@@ -1,5 +1,5 @@
 # Zero-Trust Security & Quality Audit
-**Application:** Cards at the Back  
+**Application:** gokards  
 **Date:** 2026-04-08  
 **Auditor:** Claude (Sonnet 4.6) — Zero-Trust Senior Full-Stack / Security Reviewer  
 **Stack:** Next.js 15 (App Router) · React 19 · Supabase (Postgres + anon key) · Google Gemini API · Vercel Analytics  

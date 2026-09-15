@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500&amp;display=swap">
+  <style>
+    body { margin: 0; background: #0D1012; font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif; color: #E6E8EA; -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #B6E86E; } a:hover { color: #D4F5A4; }
+    button { font-family: inherit; cursor: pointer; }
+    .mono { font-family: 'Geist Mono', ui-monospace, Menlo, monospace; }
+  </style>
+</helmet>
+<div style="min-height: 100%; display: flex; flex-direction: column; background: #0D1012;">
+  <div style="display: flex; align-items: center; gap: 16px; padding: 14px 24px; border-bottom: 1px solid #2D3135;">
+    <button style="display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 12px 0 8px; border: none; border-radius: 8px; background: transparent; color: #9FA5AC; font-size: 14px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
+      Exit
+    </button>
+    <div style="width: 1px; height: 18px; background: #2D3135;"></div>
+    <span style="font-size: 14px; font-weight: 500;">Data Structures</span>
+    <span class="mono" style="font-size: 12px; color: #6A6F76;">practice · all cards</span>
+    <div style="flex-grow: 1;"></div>
+    <span class="mono" style="font-size: 13px; color: #9FA5AC;">{{ counter }}</span>
+  </div>
+  <div style="height: 2px; background: #1E2124;"><div style="height: 100%; width: {{ pct }}%; background: #B6E86E; transition: width .3s ease;"></div></div>
+
+  <div style="flex-grow: 1; display: grid; grid-template-columns: minmax(0, 1fr) 300px;">
+    <main style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 40px;">
+      <sc-if value="{{ active }}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 28px;">
+          <div onClick="{{ flip }}" style="width: 680px; height: 400px; border: 1px solid {{ cardBorder }}; border-radius: 14px; background: #15171A; display: flex; flex-direction: column; cursor: pointer; transition: border-color .2s ease;">
+            <div style="display: flex; justify-content: space-between; padding: 18px 22px;">
+              <span class="mono" style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: {{ labelColor }};">{{ label }}</span>
+              <span class="mono" style="font-size: 11px; color: #6A6F76;">space to flip</span>
+            </div>
+            <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 18px; padding: 0 56px 40px;">
+              <p style="margin: 0; font-size: {{ frontSize }}px; line-height: 1.4; color: {{ frontColor }}; text-wrap: pretty; transition: all .25s ease;">{{ card.front }}</p>
+              <sc-if value="{{ flipped }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size: 52px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.05; color: #B6E86E;">{{ card.back }}</div>
+              </sc-if>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 680px;">
+            <button onClick="{{ stillLearning }}" style="display: flex; align-items: center; justify-content: space-between; min-height: 56px; padding: 0 18px; border: 1px solid #2D3135; border-radius: 10px; background: #15171A; color: #E6E8EA; font-size: 15px; font-weight: 500;">
+              <span class="mono" style="padding: 2px 8px; border: 1px solid #2D3135; border-radius: 5px; font-size: 12px; color: #9FA5AC;">←</span>
+              Still learning
+              <span style="width: 34px;"></span>
+            </button>
+            <button onClick="{{ knowIt }}" style="display: flex; align-items: center; justify-content: space-between; min-height: 56px; padding: 0 18px; border: none; border-radius: 10px; background: #B6E86E; color: #0D1012; font-size: 15px; font-weight: 600;">
+              <span style="width: 34px;"></span>
+              Know it
+              <span class="mono" style="padding: 2px 8px; border: 1px solid rgba(13,16,18,.25); border-radius: 5px; font-size: 12px;">→</span>
+            </button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ done }}" hint-placeholder-val="{{ false }}">
+        <div style="width: 480px; display: flex; flex-direction: column; gap: 20px;">
+          <span class="mono" style="font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #B6E86E;">Session complete</span>
+          <h2 style="margin: 0; font-size: 36px; font-weight: 600; letter-spacing: -0.02em;">6 cards reviewed.</h2>
+          <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #9FA5AC;">Cards you marked still learning come back first next time.</p>
+          <div style="display: flex; gap: 10px;">
+            <button onClick="{{ restart }}" style="min-height: 44px; padding: 0 18px; border: none; border-radius: 8px; background: #B6E86E; color: #0D1012; font-size: 14px; font-weight: 600;">Practice again</button>
+            <button style="min-height: 44px; padding: 0 18px; border: 1px solid #2D3135; border-radius: 8px; background: transparent; color: #E6E8EA; font-size: 14px; font-weight: 500;">Back to deck</button>
+          </div>
+        </div>
+      </sc-if>
+    </main>
+
+    <aside style="border-left: 1px solid #2D3135; padding: 24px; display: flex; flex-direction: column; gap: 28px;">
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <span class="mono" style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #6A6F76;">This session</span>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;">
+          <div style="display: flex; flex-direction: column; gap: 2px; padding: 12px; border: 1px solid #2D3135; border-radius: 8px;"><span class="mono" style="font-size: 22px; color: #B6E86E;">{{ learned }}</span><span style="font-size: 12px; color: #9FA5AC;">Know</span></div>
+          <div style="display: flex; flex-direction: column; gap: 2px; padding: 12px; border: 1px solid #2D3135; border-radius: 8px;"><span class="mono" style="font-size: 22px; color: #FFC742;">{{ learning }}</span><span style="font-size: 12px; color: #9FA5AC;">Learning</span></div>
+          <div style="display: flex; flex-direction: column; gap: 2px; padding: 12px; border: 1px solid #2D3135; border-radius: 8px;"><span class="mono" style="font-size: 22px;">{{ left }}</span><span style="font-size: 12px; color: #9FA5AC;">Left</span></div>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <span class="mono" style="padding-bottom: 8px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #6A6F76;">Queue</span>
+        <sc-for list="{{ queue }}" as="c" hint-placeholder-count="6">
+          <div style="display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 0 10px; border-radius: 6px; background: {{ c.bg }};">
+            <span style="width: 6px; height: 6px; border-radius: 100px; flex-shrink: 0; background: {{ c.dot }};"></span>
+            <span style="flex-grow: 1; font-size: 13px; color: {{ c.fg }}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ c.name }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </aside>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1280,"height":820}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { i: 0, flipped: false, marks: [] }; }
+  renderVals() {
+    const cards = [
+      { front: 'A collection where the last element added is the first one removed.', back: 'Stack' },
+      { front: 'A collection where elements leave in the same order they arrived.', back: 'Queue' },
+      { front: 'Maps keys to values by hashing them into buckets, giving average O(1) lookup.', back: 'Hash table' },
+      { front: 'A binary search tree that keeps every node’s subtree heights within one of each other.', back: 'AVL tree' },
+      { front: 'A complete binary tree where every parent is ordered relative to its children.', back: 'Heap' },
+      { front: 'Visits a graph’s nodes level by level, using a queue.', back: 'Breadth-first search' }
+    ];
+    const s = this.state;
+    const done = s.i >= cards.length;
+    const learned = s.marks.filter(Boolean).length;
+    const rate = (known) => this.setState({ i: s.i + 1, flipped: false, marks: [...s.marks, known] });
+    return {
+      active: !done, done, flipped: s.flipped,
+      card: cards[Math.min(s.i, cards.length - 1)],
+      label: s.flipped ? 'Description → Term' : 'Description',
+      labelColor: s.flipped ? '#B6E86E' : '#6A6F76',
+      cardBorder: s.flipped ? '#4A5A30' : '#2D3135',
+      frontSize: s.flipped ? 17 : 26,
+      frontColor: s.flipped ? '#9FA5AC' : '#E6E8EA',
+      counter: String(Math.min(s.i + 1, cards.length)).padStart(2, '0') + ' / ' + String(cards.length).padStart(2, '0'),
+      pct: Math.round((s.i / cards.length) * 100),
+      learned, learning: s.marks.length - learned, left: cards.length - s.i,
+      queue: cards.map((c, idx) => {
+        const m = s.marks[idx];
+        const current = idx === s.i;
+        return {
+          name: idx < s.i ? c.back : (current ? 'Current card' : 'Card ' + (idx + 1)),
+          dot: m === true ? '#B6E86E' : m === false ? '#FFC742' : (current ? '#E6E8EA' : '#2D3135'),
+          fg: current ? '#E6E8EA' : '#9FA5AC',
+          bg: current ? '#1E2124' : 'transparent'
+        };
+      }),
+      flip: () => this.setState({ flipped: !s.flipped }),
+      knowIt: () => rate(true),
+      stillLearning: () => rate(false),
+      restart: () => this.setState({ i: 0, flipped: false, marks: [] })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "A · Index Card — Home", "x": 0, "y": 0, "w": 1280, "h": 1200, "is_interactive": true },
+    { "file": "IndexPractice.dc.html", "title": "A · Index Card — Practice", "x": 1400, "y": 0, "w": 1280, "h": 860, "is_interactive": true },
+    { "file": "IndexQuiz.dc.html", "title": "A · Index Card — Take challenge", "x": 2800, "y": 0, "w": 1280, "h": 860, "is_interactive": true },
+
+    { "file": "NightHome.dc.html", "title": "B · Night Desk — Library", "x": 0, "y": 1400, "w": 1280, "h": 820, "is_interactive": true },
+    { "file": "NightPractice.dc.html", "title": "B · Night Desk — Practice", "x": 1400, "y": 1400, "w": 1280, "h": 820, "is_interactive": true },
+    { "file": "NightQuiz.dc.html", "title": "B · Night Desk — Take challenge", "x": 2800, "y": 1400, "w": 1280, "h": 820, "is_interactive": true },
+
+    { "file": "PopHome.dc.html", "title": "C · Pop Quiz — Home", "x": 0, "y": 2420, "w": 1280, "h": 1240, "is_interactive": true },
+    { "file": "PopPractice.dc.html", "title": "C · Pop Quiz — Practice", "x": 1400, "y": 2420, "w": 1280, "h": 860, "is_interactive": true },
+    { "file": "PopQuiz.dc.html", "title": "C · Pop Quiz — Take challenge", "x": 2800, "y": 2420, "w": 1280, "h": 860, "is_interactive": true }
+  ],
+  "annotations": [
+    { "id": "brief", "x": -440, "y": -200, "w": 360, "text": "Three redesign directions for cards at the back, each shown on Home, Practice and Take challenge. Everything is clickable: subject filters, flipping the card, rating it, and answering questions.\n\nPick a direction (or mix parts of them) and I'll carry it to every screen." },
+    { "id": "dir-a", "x": -440, "y": 40, "w": 360, "text": "A · Index Card\nGrows out of today's look: parchment and ink, Cormorant and DM Sans, brass and ink-violet accents. Every card is a real ruled index card with the red top rule.\n\nFor: keeps the brand, calm and literary, cheap to ship.\nTradeoff: the quietest option. Decks still sit in a browse grid, and progress and due cards stay in the background." },
+    { "id": "dir-b", "x": -440, "y": 1440, "w": 360, "text": "B · Night Desk\nDark, dense, keyboard-first. A library table puts mastery and due counts up front, Practice shows a session queue, and every action has a key.\n\nFor: built for people doing daily reviews, and spaced repetition becomes the main thread.\nTradeoff: drops the literary identity, feels like a tool more than a place, and a dark-only look needs a light theme later." },
+    { "id": "dir-c", "x": -440, "y": 2460, "w": 360, "text": "C · Pop Quiz\nLoud and playful: hard shadows, thick ink outlines, one color per subject, and challenges built like a game show.\n\nFor: the most memorable and shareable option, and it suits challenge links sent to friends.\nTradeoff: the furthest from today's brand, and long card text or dense decks strain the chunky type." }
+  ],
+  "launch": { "view": "canvas" }
+}

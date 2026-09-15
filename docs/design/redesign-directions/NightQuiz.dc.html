@@ -1,0 +1,150 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500&amp;display=swap">
+  <style>
+    body { margin: 0; background: #0D1012; font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif; color: #E6E8EA; -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #B6E86E; } a:hover { color: #D4F5A4; }
+    button { font-family: inherit; cursor: pointer; }
+    .mono { font-family: 'Geist Mono', ui-monospace, Menlo, monospace; }
+  </style>
+</helmet>
+<div style="min-height: 100%; display: flex; flex-direction: column; background: #0D1012;">
+  <div style="display: flex; align-items: center; gap: 16px; padding: 14px 24px; border-bottom: 1px solid #2D3135;">
+    <button style="display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 12px 0 8px; border: none; border-radius: 8px; background: transparent; color: #9FA5AC; font-size: 14px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
+      Exit
+    </button>
+    <div style="width: 1px; height: 18px; background: #2D3135;"></div>
+    <span style="font-size: 14px; font-weight: 500;">Data Structures</span>
+    <span class="mono" style="padding: 2px 8px; border: 1px solid #3B3355; border-radius: 5px; background: #1A1726; font-size: 11px; color: #CAACFF;">AI challenge</span>
+    <div style="flex-grow: 1;"></div>
+    <span class="mono" style="font-size: 13px; color: #9FA5AC;">score <span style="color: #E6E8EA;">{{ score }}</span>/4</span>
+  </div>
+
+  <div style="flex-grow: 1; display: grid; grid-template-columns: 240px minmax(0, 1fr);">
+    <aside style="border-right: 1px solid #2D3135; padding: 24px 14px; display: flex; flex-direction: column; gap: 4px;">
+      <span class="mono" style="padding: 0 10px 8px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #6A6F76;">Questions</span>
+      <sc-for list="{{ rail }}" as="r" hint-placeholder-count="4">
+        <div style="display: flex; align-items: center; gap: 12px; min-height: 40px; padding: 0 10px; border-radius: 8px; background: {{ r.bg }};">
+          <span class="mono" style="display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 5px; border: 1px solid {{ r.color }}; color: {{ r.color }}; font-size: 11px;">{{ r.n }}</span>
+          <span style="flex-grow: 1; font-size: 13px; color: {{ r.fg }};">{{ r.status }}</span>
+        </div>
+      </sc-for>
+    </aside>
+
+    <main style="display: flex; justify-content: center; padding: 48px 56px;">
+      <sc-if value="{{ active }}" hint-placeholder-val="{{ true }}">
+        <div style="width: 720px; display: flex; flex-direction: column; gap: 24px;">
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <span class="mono" style="font-size: 12px; color: #6A6F76;">{{ counter }} · multiple choice</span>
+            <h2 style="margin: 0; font-size: 30px; font-weight: 600; line-height: 1.25; letter-spacing: -0.02em; text-wrap: pretty;">{{ q.text }}</h2>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <sc-for list="{{ options }}" as="o" hint-placeholder-count="4">
+              <button onClick="{{ o.pick }}" style="display: flex; align-items: center; gap: 14px; min-height: 56px; padding: 0 16px; text-align: left; border: 1px solid {{ o.border }}; border-radius: 10px; background: {{ o.bg }}; color: {{ o.fg }}; font-size: 15px; transition: background .2s ease, border-color .2s ease;">
+                <span class="mono" style="display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border: 1px solid {{ o.border }}; border-radius: 6px; font-size: 12px; color: {{ o.fg }};">{{ o.key }}</span>
+                <span style="flex-grow: 1;">{{ o.label }}</span>
+                <span class="mono" style="font-size: 12px; color: {{ o.fg }};">{{ o.tag }}</span>
+              </button>
+            </sc-for>
+          </div>
+          <sc-if value="{{ answered }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 16px; padding: 16px 18px; border: 1px solid #2D3135; border-radius: 10px; background: #15171A;">
+              <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #9FA5AC;"><span style="color: {{ verdictColor }}; font-weight: 600;">{{ verdict }}</span> {{ q.why }}</p>
+              <div style="display: flex; justify-content: flex-end;">
+                <button onClick="{{ next }}" style="display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 14px; border: none; border-radius: 8px; background: #B6E86E; color: #0D1012; font-size: 14px; font-weight: 600;">{{ nextLabel }} <span class="mono" style="padding: 1px 6px; border: 1px solid rgba(13,16,18,.25); border-radius: 4px; font-size: 11px;">↵</span></button>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ done }}" hint-placeholder-val="{{ false }}">
+        <div style="width: 720px; display: flex; flex-direction: column; gap: 24px;">
+          <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px;">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <span class="mono" style="font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #B6E86E;">Challenge complete</span>
+              <h2 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.02em;">You scored {{ score }} of 4</h2>
+            </div>
+            <button onClick="{{ restart }}" style="min-height: 40px; padding: 0 14px; border: 1px solid #2D3135; border-radius: 8px; background: transparent; color: #E6E8EA; font-size: 14px; font-weight: 500;">Retake</button>
+          </div>
+          <div style="border: 1px solid #2D3135; border-radius: 10px; overflow: hidden;">
+            <div class="mono" style="display: grid; grid-template-columns: 48px minmax(0, 1fr) 120px 60px; gap: 12px; padding: 10px 18px; background: #15171A; border-bottom: 1px solid #2D3135; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: #6A6F76;"><span>#</span><span>Player</span><span>Accuracy</span><span style="text-align: right;">Score</span></div>
+            <sc-for list="{{ board }}" as="r" hint-placeholder-count="4">
+              <div style="display: grid; grid-template-columns: 48px minmax(0, 1fr) 120px 60px; gap: 12px; align-items: center; min-height: 48px; padding: 0 18px; border-bottom: 1px solid #1E2124; background: {{ r.bg }};">
+                <span class="mono" style="font-size: 13px; color: #6A6F76;">{{ r.rank }}</span>
+                <span style="font-size: 14px; font-weight: {{ r.weight }};">{{ r.name }}</span>
+                <div style="height: 4px; border-radius: 100px; background: #2D3135; overflow: hidden;"><div style="height: 100%; width: {{ r.pct }}%; background: #B6E86E;"></div></div>
+                <span class="mono" style="text-align: right; font-size: 13px;">{{ r.score }}/4</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1280,"height":820}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { q: 0, picked: null, score: 0, results: [] }; }
+  renderVals() {
+    const qs = [
+      { text: 'Which structure removes the most recently added element first?', options: ['Queue', 'Stack', 'Heap', 'Linked list'], ans: 1, why: 'A stack is last-in, first-out: push and pop both happen at the top.' },
+      { text: 'What is the average-case lookup time of a hash table?', options: ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)'], ans: 0, why: 'Hashing jumps straight to a bucket, so lookups are constant time on average.' },
+      { text: 'Which traversal uses a queue to visit nodes level by level?', options: ['Depth-first search', 'In-order traversal', 'Breadth-first search', 'Post-order traversal'], ans: 2, why: 'Breadth-first search queues each level’s neighbours before going deeper.' },
+      { text: 'In a max-heap, where is the largest element stored?', options: ['At a leaf', 'At the root', 'In the rightmost node', 'Wherever it was inserted'], ans: 1, why: 'The heap property keeps every parent at least as large as its children, so the max sits at the root.' }
+    ];
+    const s = this.state;
+    const done = s.q >= qs.length;
+    const q = qs[Math.min(s.q, qs.length - 1)];
+    const answered = s.picked !== null;
+    const correct = answered && s.picked === q.ans;
+    return {
+      active: !done, done, answered, q, score: s.score,
+      counter: String(Math.min(s.q + 1, qs.length)).padStart(2, '0') + ' / 04',
+      verdict: correct ? 'Correct.' : 'Not quite.',
+      verdictColor: correct ? '#62BB78' : '#E66F62',
+      rail: qs.map((_, i) => {
+        const r = s.results[i];
+        const cur = i === s.q;
+        return {
+          n: i + 1,
+          status: r === true ? 'Correct' : r === false ? 'Missed' : cur ? 'In progress' : 'Not answered',
+          color: r === true ? '#62BB78' : r === false ? '#E66F62' : cur ? '#E6E8EA' : '#6A6F76',
+          fg: cur ? '#E6E8EA' : '#9FA5AC',
+          bg: cur ? '#1E2124' : 'transparent'
+        };
+      }),
+      options: q.options.map((label, i) => {
+        const right = answered && i === q.ans;
+        const wrong = answered && i === s.picked && i !== q.ans;
+        return {
+          label, key: i + 1,
+          tag: right ? 'answer' : wrong ? 'your pick' : '',
+          bg: right ? '#13241A' : wrong ? '#2A1614' : '#15171A',
+          border: right ? '#2F6B43' : wrong ? '#7A3A33' : '#2D3135',
+          fg: right ? '#62BB78' : wrong ? '#E66F62' : (answered ? '#6A6F76' : '#E6E8EA'),
+          pick: () => { if (s.picked === null) this.setState({ picked: i, score: s.score + (i === q.ans ? 1 : 0), results: [...s.results, i === q.ans] }); }
+        };
+      }),
+      nextLabel: s.q === qs.length - 1 ? 'See results' : 'Next',
+      next: () => this.setState({ q: s.q + 1, picked: null }),
+      board: [
+        { name: 'ana', score: 4 }, { name: 'you', score: s.score, me: true }, { name: 'marco', score: 2 }, { name: 'jules', score: 1 }
+      ].sort((a, b) => b.score - a.score).map((r, i) => ({ ...r, rank: i + 1, pct: r.score * 25, bg: r.me ? '#1E2124' : 'transparent', weight: r.me ? 600 : 400 })),
+      restart: () => this.setState({ q: 0, picked: null, score: 0, results: [] })
+    };
+  }
+}
+</script>
+</body>
+</html>

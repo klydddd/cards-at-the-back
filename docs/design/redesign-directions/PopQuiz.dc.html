@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Onest:wght@400;500;600&amp;display=swap">
+  <style>
+    body { margin: 0; background: #FAF6EE; font-family: 'Onest', 'Trebuchet MS', sans-serif; color: #1A1511; -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #1A1511; text-decoration-thickness: 2px; } a:hover { color: #6A4A2A; }
+    button { font-family: inherit; cursor: pointer; }
+    .display { font-family: 'Bricolage Grotesque', 'Arial Black', sans-serif; }
+    .press { transition: transform .12s ease, box-shadow .12s ease, background .2s ease; }
+    .press:hover { transform: translate(-2px, -2px); }
+    .press:active { transform: translate(2px, 2px); }
+  </style>
+</helmet>
+<div style="min-height: 100%; background: #FAF6EE; display: flex; flex-direction: column;">
+  <div style="display: flex; align-items: center; gap: 20px; padding: 20px 64px;">
+    <button class="press" style="display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border: 2px solid #1A1511; border-radius: 14px; background: #FFFFFF; color: #1A1511; box-shadow: 3px 3px 0 #1A1511;" aria-label="Leave challenge">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
+    </button>
+    <div style="display: flex; flex-direction: column; gap: 2px;">
+      <span style="font-size: 13px; font-weight: 500; color: #6A6058;">Challenge</span>
+      <span class="display" style="font-size: 22px; font-weight: 800; letter-spacing: -0.03em;">Data Structures</span>
+    </div>
+    <div style="flex-grow: 1;"></div>
+    <div style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 18px; border: 2px solid #1A1511; border-radius: 100px; background: #EFCE6F; box-shadow: 3px 3px 0 #1A1511;">
+      <span style="font-size: 14px; font-weight: 600;">Score</span>
+      <span class="display" style="font-size: 24px; font-weight: 800;">{{ score }}</span>
+    </div>
+  </div>
+
+  <main style="flex-grow: 1; display: flex; justify-content: center; padding: 20px 64px 48px;">
+    <sc-if value="{{ active }}" hint-placeholder-val="{{ true }}">
+      <div style="width: 1000px; display: flex; flex-direction: column; gap: 28px;">
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <span style="align-self: flex-start; padding: 5px 14px; border: 2px solid #1A1511; border-radius: 100px; background: #FFFFFF; font-size: 14px; font-weight: 600;">{{ counter }}</span>
+          <h2 class="display" style="margin: 0; font-size: 54px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; text-wrap: balance;">{{ q.text }}</h2>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+          <sc-for list="{{ options }}" as="o" hint-placeholder-count="4">
+            <button onClick="{{ o.pick }}" class="press" style="display: flex; align-items: center; gap: 16px; min-height: 96px; padding: 0 22px; text-align: left; border: 2.5px solid #1A1511; border-radius: 20px; background: {{ o.bg }}; color: #1A1511; opacity: {{ o.opacity }}; box-shadow: 4px 4px 0 #1A1511;">
+              <span class="display" style="display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; flex-shrink: 0; border: 2.5px solid #1A1511; border-radius: 14px; background: #FAF6EE; font-size: 22px; font-weight: 800;">{{ o.letter }}</span>
+              <span class="display" style="flex-grow: 1; font-size: 26px; font-weight: 700; letter-spacing: -0.025em;">{{ o.label }}</span>
+              <sc-if value="{{ o.right }}" hint-placeholder-val="{{ false }}">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#1A1511" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+              </sc-if>
+              <sc-if value="{{ o.wrong }}" hint-placeholder-val="{{ false }}">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#1A1511" stroke-width="3" stroke-linecap="round"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
+              </sc-if>
+            </button>
+          </sc-for>
+        </div>
+        <sc-if value="{{ answered }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; align-items: center; gap: 20px; padding: 18px 22px; border: 2.5px solid #1A1511; border-radius: 20px; background: #FFFFFF;">
+            <span class="display" style="flex-shrink: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.03em;">{{ verdict }}</span>
+            <p style="flex-grow: 1; margin: 0; font-size: 16px; line-height: 1.45; color: #4A433C; text-wrap: pretty;">{{ q.why }}</p>
+            <button onClick="{{ next }}" class="press" style="flex-shrink: 0; min-height: 52px; padding: 0 24px; border: 2px solid #1A1511; border-radius: 14px; background: #1A1511; color: #FAF6EE; font-size: 16px; font-weight: 600; box-shadow: 3px 3px 0 #FFA282;">{{ nextLabel }}</button>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ done }}" hint-placeholder-val="{{ false }}">
+      <div style="width: 1000px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px; align-items: center;">
+        <div style="display: flex; flex-direction: column; gap: 22px;">
+          <span style="align-self: flex-start; padding: 5px 14px; border: 2px solid #1A1511; border-radius: 100px; background: #71D6A3; font-size: 14px; font-weight: 600;">Challenge complete</span>
+          <div class="display" style="font-size: 200px; font-weight: 800; line-height: 0.8; letter-spacing: -0.07em;">{{ score }}<span style="color: #B5AA9C;">/4</span></div>
+          <div style="display: flex; gap: 14px;">
+            <button onClick="{{ restart }}" class="press" style="min-height: 56px; padding: 0 26px; border: 2px solid #1A1511; border-radius: 14px; background: #FFFFFF; color: #1A1511; font-size: 17px; font-weight: 600; box-shadow: 4px 4px 0 #1A1511;">Try again</button>
+            <button class="press" style="min-height: 56px; padding: 0 26px; border: 2px solid #1A1511; border-radius: 14px; background: #1A1511; color: #FAF6EE; font-size: 17px; font-weight: 600; box-shadow: 4px 4px 0 #FFA282;">Study this deck</button>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <span class="display" style="font-size: 28px; font-weight: 800; letter-spacing: -0.03em; padding-bottom: 4px;">Leaderboard</span>
+          <sc-for list="{{ board }}" as="r" hint-placeholder-count="4">
+            <div style="display: flex; align-items: center; gap: 16px; min-height: 64px; padding: 0 20px; border: 2.5px solid #1A1511; border-radius: 16px; background: {{ r.bg }}; box-shadow: {{ r.shadow }};">
+              <span class="display" style="width: 28px; font-size: 24px; font-weight: 800;">{{ r.rank }}</span>
+              <span style="flex-grow: 1; font-size: 17px; font-weight: 600;">{{ r.name }}</span>
+              <span class="display" style="font-size: 24px; font-weight: 800;">{{ r.score }}/4</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1280,"height":860}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { q: 0, picked: null, score: 0 }; }
+  renderVals() {
+    const qs = [
+      { text: 'Which structure removes the most recently added element first?', options: ['Queue', 'Stack', 'Heap', 'Linked list'], ans: 1, why: 'A stack is last-in, first-out: push and pop both happen at the top.' },
+      { text: 'What is the average-case lookup time of a hash table?', options: ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)'], ans: 0, why: 'Hashing jumps straight to a bucket, so lookups are constant time on average.' },
+      { text: 'Which traversal uses a queue to visit nodes level by level?', options: ['Depth-first search', 'In-order traversal', 'Breadth-first search', 'Post-order traversal'], ans: 2, why: 'Breadth-first search queues each level’s neighbours before going deeper.' },
+      { text: 'In a max-heap, where is the largest element stored?', options: ['At a leaf', 'At the root', 'In the rightmost node', 'Wherever it was inserted'], ans: 1, why: 'The heap property keeps every parent at least as large as its children, so the max sits at the root.' }
+    ];
+    const tiles = ['#6FC8FF', '#FFA282', '#CAACFF', '#EFCE6F'];
+    const s = this.state;
+    const done = s.q >= qs.length;
+    const q = qs[Math.min(s.q, qs.length - 1)];
+    const answered = s.picked !== null;
+    return {
+      active: !done, done, answered, q, score: s.score,
+      counter: 'Question ' + Math.min(s.q + 1, qs.length) + ' of ' + qs.length,
+      verdict: answered && s.picked === q.ans ? 'Nailed it.' : 'Not this time.',
+      options: q.options.map((label, i) => {
+        const right = answered && i === q.ans;
+        const wrong = answered && i === s.picked && i !== q.ans;
+        return {
+          label, letter: ['A', 'B', 'C', 'D'][i], right, wrong,
+          bg: right ? '#71D6A3' : wrong ? '#FFFFFF' : tiles[i],
+          opacity: answered && !right && !wrong ? 0.4 : 1,
+          pick: () => { if (s.picked === null) this.setState({ picked: i, score: s.score + (i === q.ans ? 1 : 0) }); }
+        };
+      }),
+      nextLabel: s.q === qs.length - 1 ? 'See results' : 'Next question',
+      next: () => this.setState({ q: s.q + 1, picked: null }),
+      board: [
+        { name: 'ana', score: 4 }, { name: 'You', score: s.score, me: true }, { name: 'marco', score: 2 }, { name: 'jules', score: 1 }
+      ].sort((a, b) => b.score - a.score).map((r, i) => ({ ...r, rank: i + 1, bg: r.me ? '#EFCE6F' : '#FFFFFF', shadow: r.me ? '4px 4px 0 #1A1511' : 'none' })),
+      restart: () => this.setState({ q: 0, picked: null, score: 0 })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&amp;family=DM+Sans:wght@300;400;500;600&amp;display=swap">
+  <style>
+    body { margin: 0; background: #F8F7F4; font-family: 'DM Sans', -apple-system, 'Helvetica Neue', sans-serif; color: #111110; -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #111110; text-decoration-color: #C4AE6A; } a:hover { color: #7A6518; }
+    button { font-family: inherit; cursor: pointer; }
+  </style>
+</helmet>
+<div style="min-height: 100%; background: #F8F7F4; display: flex; flex-direction: column;">
+  <nav style="display: flex; align-items: center; justify-content: space-between; padding: 14px 80px; border-bottom: 1px solid #E6E3DE;">
+    <div style="font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 600; font-size: 22px; letter-spacing: -0.01em;">cards at <span style="color: #6B6866;">the back</span></div>
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <button style="min-height: 36px; padding: 7px 16px; border: none; border-radius: 100px; background: transparent; color: #6B6866; font-size: 12.8px; font-weight: 500;">Create</button>
+      <button style="min-height: 36px; padding: 7px 16px; border: none; border-radius: 100px; background: #111110; color: #F8F7F4; font-size: 12.8px; font-weight: 500;">AI Parse</button>
+    </div>
+  </nav>
+
+  <main style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 28px; padding: 36px 80px 48px;">
+    <div style="width: 720px; display: flex; align-items: center; justify-content: space-between;">
+      <button style="display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 7px 14px 7px 0; border: none; background: transparent; color: #6B6866; font-size: 13px; font-weight: 500;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+        Data Structures
+      </button>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <span style="font-size: 13px; color: #9B9896;">{{ counter }}</span>
+        <button onClick="{{ restart }}" style="display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 7px 14px; border: 1px solid #E6E3DE; border-radius: 100px; background: #FFFFFF; color: #111110; font-size: 13px; font-weight: 500;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"></path><path d="M4 20L21 3"></path><path d="M21 16v5h-5"></path><path d="M15 15l6 6"></path><path d="M4 4l5 5"></path></svg>
+          Shuffle
+        </button>
+      </div>
+    </div>
+
+    <sc-if value="{{ active }}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 28px;">
+        <div onClick="{{ flip }}" style="position: relative; width: 720px; height: 420px; perspective: 1600px; cursor: pointer;">
+          <div style="position: absolute; left: 14px; right: -14px; top: 12px; bottom: -12px; background: #FFFFFF; border: 1px solid #E6E3DE; border-radius: 6px; transform: rotate(1.4deg);"></div>
+          <div style="position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.3,.7,.2,1); transform: rotateY({{ deg }}deg);">
+            <div style="position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border: 1px solid #E6E3DE; border-radius: 6px; box-shadow: 0 8px 32px rgba(17,17,16,.10); background: #FFFFFF; display: flex; flex-direction: column;">
+              <div style="height: 64px; border-bottom: 1.5px solid #D9A3A3; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 36px 12px; font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: #9B9896;"><span>Description</span><span>Tap to flip</span></div>
+              <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: 0 72px; text-align: center; font-size: 22px; line-height: 36px; color: #111110; text-wrap: pretty;">{{ card.front }}</div>
+            </div>
+            <div style="position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; transform: rotateY(180deg); border: 1px solid #E6E3DE; border-radius: 6px; box-shadow: 0 8px 32px rgba(17,17,16,.10); background: #FFFFFF; display: flex; flex-direction: column;">
+              <div style="height: 64px; border-bottom: 1.5px solid #D9A3A3; display: flex; align-items: flex-end; padding: 0 36px 12px; font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: #9B9896;">Term</div>
+              <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: 0 48px; text-align: center; font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 600; font-size: 64px; letter-spacing: -0.02em;">{{ card.back }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 8px;">
+          <button onClick="{{ stillLearning }}" style="display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 14px 30px; border: 1px solid #E6E3DE; border-radius: 100px; background: #FFFFFF; color: #111110; font-size: 15px; font-weight: 500;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
+            Still learning
+          </button>
+          <button onClick="{{ knowIt }}" style="display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 14px 34px; border: none; border-radius: 100px; background: #111110; color: #F8F7F4; font-size: 15px; font-weight: 500;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+            Know it
+          </button>
+        </div>
+
+        <div style="width: 720px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="height: 2px; background: #E6E3DE; border-radius: 100px; overflow: hidden;"><div style="height: 100%; width: {{ pct }}%; background: #111110; transition: width .3s ease;"></div></div>
+          <div style="display: flex; justify-content: space-between; font-size: 13px; color: #9B9896;">
+            <span><span style="color: #2A6A48; font-weight: 500;">{{ learned }} learned</span> · <span style="color: #8A6828; font-weight: 500;">{{ learning }} still learning</span></span>
+            <span>Keyboard: space to flip, ← →  to rate</span>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ done }}" hint-placeholder-val="{{ false }}">
+      <div style="width: 520px; display: flex; flex-direction: column; align-items: center; gap: 20px; padding-top: 48px; text-align: center;">
+        <div style="font-size: 12px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: #7A6518;">Session complete</div>
+        <h2 style="margin: 0; font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 600; font-size: 56px; line-height: 1; letter-spacing: -0.02em;">That's the stack.</h2>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 100%;">
+          <div style="background: #EFF5F2; border: 1px solid #88B8A0; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 2px;"><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 44px; font-weight: 600; color: #2A6A48;">{{ learned }}</span><span style="font-size: 13px; color: #2A6A48;">Learned</span></div>
+          <div style="background: #F5F0E8; border: 1px solid #C8A868; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 2px;"><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 44px; font-weight: 600; color: #8A6828;">{{ learning }}</span><span style="font-size: 13px; color: #8A6828;">Still learning</span></div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button onClick="{{ restart }}" style="min-height: 48px; padding: 14px 32px; border: none; border-radius: 100px; background: #111110; color: #F8F7F4; font-size: 15px; font-weight: 500;">Practice again</button>
+          <button style="min-height: 48px; padding: 14px 32px; border: 1px solid #E6E3DE; border-radius: 100px; background: #FFFFFF; color: #111110; font-size: 15px; font-weight: 500;">Back to deck</button>
+        </div>
+      </div>
+    </sc-if>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1280,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { i: 0, flipped: false, learned: 0, learning: 0 }; }
+  renderVals() {
+    const cards = [
+      { front: 'A collection where the last element added is the first one removed.', back: 'Stack' },
+      { front: 'A collection where elements leave in the same order they arrived.', back: 'Queue' },
+      { front: 'Maps keys to values by hashing them into buckets, giving average O(1) lookup.', back: 'Hash table' },
+      { front: 'A binary search tree that keeps every node’s subtree heights within one of each other.', back: 'AVL tree' },
+      { front: 'A complete binary tree where every parent is ordered relative to its children.', back: 'Heap' },
+      { front: 'Visits a graph’s nodes level by level, using a queue.', back: 'Breadth-first search' }
+    ];
+    const s = this.state;
+    const done = s.i >= cards.length;
+    const rate = (known) => this.setState({
+      i: s.i + 1, flipped: false,
+      learned: s.learned + (known ? 1 : 0), learning: s.learning + (known ? 0 : 1)
+    });
+    return {
+      active: !done, done,
+      card: cards[Math.min(s.i, cards.length - 1)],
+      deg: s.flipped ? 180 : 0,
+      counter: 'Card ' + Math.min(s.i + 1, cards.length) + ' of ' + cards.length,
+      pct: Math.round((s.i / cards.length) * 100),
+      learned: s.learned, learning: s.learning,
+      flip: () => this.setState({ flipped: !s.flipped }),
+      knowIt: () => rate(true),
+      stillLearning: () => rate(false),
+      restart: () => this.setState({ i: 0, flipped: false, learned: 0, learning: 0 })
+    };
+  }
+}
+</script>
+</body>
+</html>

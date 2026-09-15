@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CONTACT_EMAIL, CONTACT_TOPICS, type ContactTopic } from '@/lib/legal';
+import { getOnboardingId } from '@/lib/onboarding';
 
 const PLACEHOLDERS: Record<ContactTopic, string> = {
     general: 'What would you like to ask?',
@@ -23,6 +24,15 @@ export default function ContactForm({ initialTopic }: { initialTopic: ContactTop
     const [website, setWebsite] = useState('');
     const [status, setStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
     const [error, setError] = useState<string | null>(null);
+
+    // Privacy requests include the onboarding reference so we can find that visitor's answers
+    useEffect(() => {
+        if (topic !== 'privacy') return;
+        const onboardingId = getOnboardingId();
+        if (onboardingId) {
+            setMessage((current) => current || `Onboarding reference: ${onboardingId}\n\n`);
+        }
+    }, [topic]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

@@ -2,7 +2,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { Cormorant_Garamond, DM_Sans } from 'next/font/google';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import ConsentPrompt from '@/components/ConsentPrompt';
+import WelcomeGate from '@/components/WelcomeGate';
 import './globals.css';
 
 const cormorant = Cormorant_Garamond({
@@ -32,7 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Navbar />
         {children}
         <Footer />
-        <ConsentPrompt />
+        <WelcomeGate />
         <Analytics />
       </body>
     </html>

@@ -100,7 +100,16 @@ card_progress — id, card_id, deck_id, ease_factor, interval, repetitions,
 contact_messages — id, topic, name, email, link, message, created_at
                    (private: RLS on, no policies; written only by /api/contact
                    with the service role key)
+onboarding_responses — id, display_name, is_anonymous, age_range, grade_level,
+                       strand, program, created_at
+                       (private: RLS on, no policies; written only by
+                       /api/onboarding with the service role key. Allowed values
+                       live in src/lib/onboarding.ts and the table's check constraints)
 ```
+
+## Onboarding
+
+`WelcomeGate` (in the root layout) shows the consent step first, then required onboarding questions (name or Anonymous, age range, grade level, strand/program). Under-13 is blocked client- and server-side and never stored. Completion is recorded as the response id in localStorage (`gokards_onboarding_id`). Any change to the collected fields must also update the Privacy Policy and bump `LEGAL_LAST_UPDATED`.
 
 **Row Level Security:** RLS must be enabled on all tables. Without it, the public anon key grants full read/write access to the entire database. See `AUDIT.md` SECRET-02 and SEC-06.
 

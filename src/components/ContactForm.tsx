@@ -9,6 +9,7 @@ const PLACEHOLDERS: Record<ContactTopic, string> = {
     removal: 'Tell us which deck, quiz, or leaderboard name should be removed and why.',
     abuse: 'Describe what breaks the Terms and where you saw it.',
     privacy: 'Tell us what you would like to access, correct, or delete, and the name used on gokards.',
+    other: 'Tell us what’s on your mind.',
 };
 
 const NEEDS_LINK: ContactTopic[] = ['removal', 'abuse', 'privacy', 'feedback'];
@@ -74,22 +75,23 @@ export default function ContactForm({ initialTopic }: { initialTopic: ContactTop
         <form className="index-card contact-card" onSubmit={handleSubmit}>
             <div className="index-card-head">Send a message</div>
             <div className="index-card-body contact-form">
-                <fieldset className="field">
-                    <legend className="label">Topic</legend>
-                    <div className="chip-row">
-                        {CONTACT_TOPICS.map((t) => (
-                            <button
-                                key={t.value}
-                                type="button"
-                                className={`chip ${topic === t.value ? 'is-active' : ''}`}
-                                aria-pressed={topic === t.value}
-                                onClick={() => setTopic(t.value)}
-                            >
-                                {t.label}
-                            </button>
-                        ))}
+                <div className="field">
+                    <label className="label" htmlFor="contact-topic">Topic</label>
+                    <div className="select-wrap">
+                        <select
+                            id="contact-topic"
+                            className="input select"
+                            value={topic}
+                            onChange={(e) => setTopic(e.target.value as ContactTopic)}
+                        >
+                            {CONTACT_TOPICS.map((t) => (
+                                <option key={t.value} value={t.value}>
+                                    {t.label}
+                                </option>
+                            ))}
+                        </select>
                     </div>
-                </fieldset>
+                </div>
 
                 <div className="contact-row">
                     <div className="field">

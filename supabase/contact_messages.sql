@@ -4,7 +4,7 @@
 
 create table if not exists contact_messages (
   id uuid primary key default gen_random_uuid(),
-  topic text not null check (topic in ('general', 'feedback', 'removal', 'abuse', 'privacy')),
+  topic text not null check (topic in ('general', 'feedback', 'removal', 'abuse', 'privacy', 'other')),
   name text not null default '',
   email text not null,
   link text not null default '',

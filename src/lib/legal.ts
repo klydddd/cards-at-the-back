@@ -10,6 +10,7 @@ export const CONTACT_TOPICS = [
     { value: 'removal', label: 'Content removal' },
     { value: 'abuse', label: 'Report abuse' },
     { value: 'privacy', label: 'Privacy request' },
+    { value: 'other', label: 'Others' },
 ] as const;
 
 export type ContactTopic = (typeof CONTACT_TOPICS)[number]['value'];

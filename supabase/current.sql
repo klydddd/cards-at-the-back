@@ -18,7 +18,7 @@ CREATE TABLE public.card_progress (
 );
 CREATE TABLE public.contact_messages (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  topic text NOT NULL CHECK (topic = ANY (ARRAY['general'::text, 'feedback'::text, 'removal'::text, 'abuse'::text, 'privacy'::text])),
+  topic text NOT NULL CHECK (topic = ANY (ARRAY['general'::text, 'feedback'::text, 'removal'::text, 'abuse'::text, 'privacy'::text, 'other'::text])),
   name text NOT NULL DEFAULT ''::text,
   email text NOT NULL,
   link text NOT NULL DEFAULT ''::text,

@@ -16,6 +16,16 @@ CREATE TABLE public.card_progress (
   CONSTRAINT card_progress_card_id_fkey FOREIGN KEY (card_id) REFERENCES public.cards(id),
   CONSTRAINT card_progress_deck_id_fkey FOREIGN KEY (deck_id) REFERENCES public.decks(id)
 );
+CREATE TABLE public.contact_messages (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  topic text NOT NULL CHECK (topic = ANY (ARRAY['general'::text, 'feedback'::text, 'removal'::text, 'abuse'::text, 'privacy'::text])),
+  name text NOT NULL DEFAULT ''::text,
+  email text NOT NULL,
+  link text NOT NULL DEFAULT ''::text,
+  message text NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT contact_messages_pkey PRIMARY KEY (id)
+);
 CREATE TABLE public.cards (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   deck_id uuid NOT NULL,

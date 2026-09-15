@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import LegalPage from '@/components/LegalPage';
-import { CONTACT_URL } from '@/lib/legal';
+import { CONTACT_EMAIL } from '@/lib/legal';
 
 export const metadata = {
     title: 'Privacy Policy · gokards',
@@ -63,6 +63,13 @@ export default function PrivacyPage() {
                     extracted text is sent on, as described below.
                 </p>
 
+                <h3>Messages you send us</h3>
+                <p>
+                    If you use the <Link href="/contact">contact form</Link>, we store the topic, your email address, and
+                    any name, link, and message you include. These messages are private. They are never shown on the
+                    site, and we use them only to reply to you and handle your request.
+                </p>
+
                 <h3>Usage and technical data</h3>
                 <p>
                     Vercel Analytics records anonymous page-view information such as the page visited, referrer,
@@ -79,6 +86,7 @@ export default function PrivacyPage() {
                     <li>To generate kards and quiz questions with AI when you ask for them.</li>
                     <li>To schedule reviews based on your spaced-repetition progress.</li>
                     <li>To grade shared quiz attempts on the server and rank the leaderboard.</li>
+                    <li>To reply to messages and handle removal, abuse, and privacy requests.</li>
                     <li>To understand which features get used, and to find and fix problems or abuse.</li>
                 </ul>
                 <p>We don&apos;t use your content to build advertising profiles, and we don&apos;t sell or rent it to anyone.</p>
@@ -103,7 +111,7 @@ export default function PrivacyPage() {
                 <p>gokards uses a few providers to run. Each handles data under its own privacy policy.</p>
                 <dl className="legal-list">
                     <dt>Supabase</dt>
-                    <dd>Hosts the database where decks, kards, quizzes, attempts, and study progress are stored.</dd>
+                    <dd>Hosts the database where decks, kards, quizzes, attempts, study progress, and contact messages are stored.</dd>
                     <dt>Google Gemini API</dt>
                     <dd>
                         Receives the extracted text of files you parse, and the kards of a deck when you generate an AI
@@ -136,8 +144,10 @@ export default function PrivacyPage() {
                 <h2>How long we keep data</h2>
                 <p>
                     Decks, quizzes, attempts, and progress are kept until they are deleted. Because there are no
-                    accounts, you can&apos;t delete content yourself from inside the app. Contact us and we&apos;ll remove
-                    it. Analytics and server logs are kept for the periods set by Vercel.
+                    accounts, you can&apos;t delete content yourself from inside the app.{' '}
+                    <Link href="/contact?topic=removal">Send a removal request</Link> and we&apos;ll remove it. Contact
+                    messages are kept only as long as needed to handle your request. Analytics and server logs are
+                    kept for the periods set by Vercel.
                 </p>
             </section>
 
@@ -145,8 +155,9 @@ export default function PrivacyPage() {
                 <h2>Your choices and rights</h2>
                 <p>
                     Depending on where you live, you may have the right to access, correct, or delete information about
-                    you, or to object to how it&apos;s used. Since gokards doesn&apos;t link content to accounts, please send us
-                    the link to the deck or quiz, and the name that was used, so we can find it.
+                    you, or to object to how it&apos;s used. To make a request, use the{' '}
+                    <Link href="/contact?topic=privacy">contact form</Link>. Since gokards doesn&apos;t link content to
+                    accounts, include the link to the deck or quiz, and the name that was used, so we can find it.
                 </p>
                 <p>You can also simply choose not to use AI features, and use a nickname instead of your name.</p>
             </section>
@@ -155,8 +166,8 @@ export default function PrivacyPage() {
                 <h2>Children</h2>
                 <p>
                     gokards isn&apos;t directed at children under 13, and we don&apos;t knowingly collect personal information
-                    from them. If you believe a child has shared personal information on gokards, contact us and
-                    we&apos;ll remove it.
+                    from them. If you believe a child has shared personal information on gokards,{' '}
+                    <Link href="/contact?topic=privacy">contact us</Link> and we&apos;ll remove it.
                 </p>
             </section>
 
@@ -180,10 +191,10 @@ export default function PrivacyPage() {
             <section id="contact">
                 <h2>Contact</h2>
                 <p>
-                    For questions or removal requests, open an issue on the{' '}
-                    <a href={CONTACT_URL} target="_blank" rel="noopener noreferrer">gokards GitHub repository</a>.
-                    Please don&apos;t post private information in a public issue. Mention that you need to share details
-                    privately and we&apos;ll follow up. You can also read our <Link href="/terms">Terms of Service</Link>.
+                    For questions, removal requests, or privacy requests, use our{' '}
+                    <Link href="/contact">contact page</Link> or email{' '}
+                    <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. You can also read our{' '}
+                    <Link href="/terms">Terms of Service</Link>.
                 </p>
             </section>
         </LegalPage>

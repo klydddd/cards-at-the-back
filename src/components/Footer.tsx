@@ -7,9 +7,10 @@ export default function Footer() {
                 <span>
                     go<span className="brand-accent">kards</span>
                 </span>
-                <nav className="footer-links" aria-label="Legal">
+                <nav className="footer-links" aria-label="Footer">
                     <Link href="/privacy">Privacy</Link>
                     <Link href="/terms">Terms</Link>
+                    <Link href="/contact">Contact</Link>
                 </nav>
             </div>
         </footer>

@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { acceptTerms, hasAcceptedTerms } from '@/lib/legal';
 
-// Pages the visitor must be able to read before agreeing
-const LEGAL_PATHS = ['/privacy', '/terms'];
+// Pages the visitor must be able to use before agreeing
+const LEGAL_PATHS = ['/privacy', '/terms', '/contact'];
 
 export default function ConsentPrompt() {
     const pathname = usePathname();

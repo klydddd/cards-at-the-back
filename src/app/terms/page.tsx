@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import LegalPage from '@/components/LegalPage';
-import { CONTACT_URL } from '@/lib/legal';
+import { CONTACT_EMAIL } from '@/lib/legal';
 
 export const metadata = {
     title: 'Terms of Service · gokards',
@@ -116,7 +116,7 @@ export default function TermsPage() {
                 <p>
                     We may remove any content, or limit access to gokards, at our discretion, including when we believe
                     it breaks these terms or the law. If you think content on gokards infringes your rights or should be
-                    taken down, <a href={CONTACT_URL} target="_blank" rel="noopener noreferrer">contact us</a> with a
+                    taken down, <Link href="/contact?topic=removal">contact us</Link> with a
                     link to it and a short explanation.
                 </p>
             </section>
@@ -162,8 +162,9 @@ export default function TermsPage() {
             <section id="contact">
                 <h2>Contact</h2>
                 <p>
-                    Questions about these terms? Open an issue on the{' '}
-                    <a href={CONTACT_URL} target="_blank" rel="noopener noreferrer">gokards GitHub repository</a>.
+                    Questions about these terms? Use our <Link href="/contact">contact page</Link> or email{' '}
+                    <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. To report content that breaks these terms,
+                    choose <Link href="/contact?topic=abuse">Report abuse</Link>.
                 </p>
             </section>
         </LegalPage>

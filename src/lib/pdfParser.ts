@@ -11,8 +11,16 @@ export async function extractTextFromPDF(file: any) {
 
     for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
-        const content = await page.getTextContent();
-        const pageText = content.items.map((item: any) => item.str).join(' ');
+        // Read the stream manually: getTextContent() uses `for await` over a
+        // ReadableStream, which older iOS Safari doesn't support.
+        const reader = page.streamTextContent().getReader();
+        const items: any[] = [];
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            items.push(...value.items);
+        }
+        const pageText = items.map((item: any) => item.str).join(' ');
         fullText += pageText + '\n\n';
     }
 

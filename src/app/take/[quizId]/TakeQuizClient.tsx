@@ -42,7 +42,8 @@ export default function TakeQuiz({ quizId }: { quizId: string }) {
                 const challenge = await fetchQuiz(quizId);
                 const [deckRecord, attempts] = await Promise.all([
                     fetchDeck(challenge.deck_id),
-                    fetchQuizAttempts(quizId),
+                    // The board is decorative next to taking the quiz — never block on it
+                    fetchQuizAttempts(quizId).catch(() => []),
                 ]);
 
                 setQuiz(challenge);

@@ -6,6 +6,47 @@ type RouteContext = {
   params: Promise<{ quizId: string }>;
 };
 
+// Fields the leaderboard renders. Deliberately excludes `answers` so one
+// player's submission is never exposed to another.
+const LEADERBOARD_FIELDS = 'id, quiz_id, player_name, score, question_count, elapsed_ms, created_at';
+
+// Ranked best-first, then fastest, then earliest — the order the
+// idx_quiz_attempts_quiz_score_time index is built for.
+async function fetchRankedAttempts(
+  supabase: ReturnType<typeof createServiceRoleSupabaseClient>,
+  quizId: string,
+  fields: string
+) {
+  const { data, error } = await supabase
+    .from('quiz_attempts')
+    .select(fields)
+    .eq('quiz_id', quizId)
+    .order('score', { ascending: false })
+    .order('elapsed_ms', { ascending: true })
+    .order('created_at', { ascending: true });
+
+  if (error) throw error;
+  return data || [];
+}
+
+// The leaderboard has to be read server-side: RLS on `quiz_attempts` returns
+// zero rows to the anon key — silently, with no error — so a browser-side
+// query always renders an empty board.
+export async function GET(request: NextRequest, context: RouteContext) {
+  try {
+    const { quizId } = await context.params;
+    const supabase = createServiceRoleSupabaseClient();
+    const attempts = await fetchRankedAttempts(supabase, quizId, LEADERBOARD_FIELDS);
+
+    return NextResponse.json({ leaderboard: attempts.slice(0, 10) });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error?.message || 'Failed to load the leaderboard.' },
+      { status: 500 }
+    );
+  }
+}
+
 function parseAttemptTime(value: unknown) {
   if (typeof value !== 'string') {
     return null;
@@ -65,20 +106,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       throw insertError || new Error('Failed to save quiz attempt.');
     }
 
-    const { data: rankedAttempts, error: leaderboardError } = await supabase
-      .from('quiz_attempts')
-      .select('*')
-      .eq('quiz_id', quizId)
-      .order('score', { ascending: false })
-      .order('elapsed_ms', { ascending: true })
-      .order('created_at', { ascending: true });
+    const rankedAttempts = await fetchRankedAttempts(supabase, quizId, LEADERBOARD_FIELDS);
 
-    if (leaderboardError) {
-      throw leaderboardError;
-    }
-
-    const leaderboard = (rankedAttempts || []).slice(0, 10);
-    const rank = (rankedAttempts || []).findIndex((attempt) => attempt.id === savedAttempt.id) + 1;
+    const leaderboard = rankedAttempts.slice(0, 10);
+    const rank = rankedAttempts.findIndex((attempt: any) => attempt.id === savedAttempt.id) + 1;
 
     return NextResponse.json({
       attempt: savedAttempt,

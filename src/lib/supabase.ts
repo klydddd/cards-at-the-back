@@ -175,20 +175,18 @@ export async function fetchQuiz(quizId) {
   return data;
 }
 
+// Read through the API route, not the anon client: RLS on `quiz_attempts`
+// returns zero rows to the anon key silently, so querying it here rendered an
+// empty leaderboard on every challenge until the visitor submitted their own.
 export async function fetchQuizAttempts(quizId, limit = 10): Promise<QuizAttempt[]> {
-  if (!supabase) return [];
+  const response = await fetch(`/api/quizzes/${quizId}/attempts`);
 
-  const { data, error } = await supabase
-    .from('quiz_attempts')
-    .select('*')
-    .eq('quiz_id', quizId)
-    .order('score', { ascending: false })
-    .order('elapsed_ms', { ascending: true })
-    .order('created_at', { ascending: true })
-    .limit(limit);
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to load the leaderboard.');
+  }
 
-  if (error) throw error;
-  return data || [];
+  return (data.leaderboard || []).slice(0, limit);
 }
 
 export async function submitQuizAttempt(

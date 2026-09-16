@@ -8,6 +8,7 @@ import { getLearnedCardIds, loadSRSProgress, getDueCount } from '@/lib/tracking'
 import { WandIcon, ArrowLeftIcon } from '@/components/Icons';
 import ShareButton from '@/components/ShareButton';
 import PracticeMenu from '@/components/PracticeMenu';
+import { formatDate } from '@/lib/formatDate';
 import type { Card, CardProgress, Deck, Quiz } from '@/types';
 
 export default function DeckView({ id }: { id: string }) {
@@ -71,11 +72,6 @@ export default function DeckView({ id }: { id: string }) {
         );
 
     const notLearnedCount = cards.length - learnedCount;
-
-    const formatDate = (dateStr) => {
-        const d = new Date(dateStr);
-        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-    };
 
     const copyChallengeLink = async (quizId) => {
         const shareUrl = `${window.location.origin}/take/${quizId}`;

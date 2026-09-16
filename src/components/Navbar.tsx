@@ -35,6 +35,9 @@ export default function Navbar() {
                         {theme === 'light' ? <MoonIcon size={18} /> : <SunIcon size={18} />}
                     </button>
                     <div style={{ width: '1px', height: '20px', background: 'var(--border)', margin: '0 6px' }}></div>
+                    <Link href="/challenges" className="btn btn-ghost btn-sm">
+                        Challenges
+                    </Link>
                     <Link href="/create" className="btn btn-ghost btn-sm">
                         Create
                     </Link>

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { fetchQuiz, fetchDeck, fetchQuizAttempts, submitQuizAttempt, type SubmittedQuizAttempt } from '@/lib/supabase';
 import ShareButton from '@/components/ShareButton';
 import { gradeQuizAttempt, isAnswerCorrect } from '@/lib/quizGrading';
+import { markChallengeCompleted } from '@/lib/challengeHistory';
 import { ArrowLeftIcon } from '@/components/Icons';
 import QuizQuestionView, { formatAnswer } from '@/components/QuizQuestionView';
 import type { Deck, Quiz, QuizAttempt, QuizQuestion } from '@/types';
@@ -41,7 +42,8 @@ export default function TakeQuiz({ quizId }: { quizId: string }) {
                 const challenge = await fetchQuiz(quizId);
                 const [deckRecord, attempts] = await Promise.all([
                     fetchDeck(challenge.deck_id),
-                    fetchQuizAttempts(quizId),
+                    // The board is decorative next to taking the quiz — never block on it
+                    fetchQuizAttempts(quizId).catch(() => []),
                 ]);
 
                 setQuiz(challenge);
@@ -89,6 +91,10 @@ export default function TakeQuiz({ quizId }: { quizId: string }) {
                 attemptStartedAt || new Date().toISOString(),
                 new Date().toISOString()
             );
+
+            // Only after the attempt is actually recorded — a failed submit
+            // leaves the answer key locked, which is what we want.
+            markChallengeCompleted(quizId);
 
             setSubmission(result);
             setLeaderboard(result.leaderboard || []);

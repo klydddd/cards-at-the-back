@@ -46,6 +46,28 @@ export interface Quiz {
   created_at: string;
 }
 
+// A published challenge as listed on /challenges, with its deck embedded.
+// Not `extends Quiz` — the list query omits `answers` and `score` on purpose.
+export interface ChallengeListItem {
+  id: string;
+  deck_id: string;
+  creator_name: string;
+  source_kind: QuizSourceKind;
+  questions: QuizQuestion[];
+  question_types: QuizQuestionType[];
+  subject?: string;
+  created_at: string;
+  decks?: { title: string; subject?: string } | null;
+}
+
+export interface ChallengeStats {
+  players: number;
+  attempts: number;
+  topPercent: number | null;
+}
+
+export type ChallengeSort = 'recent' | 'played' | 'questions';
+
 export interface QuizAttempt {
   id: string;
   quiz_id: string;

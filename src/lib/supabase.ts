@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import type { QuizAttempt, QuizSourceKind } from '@/types';
+import type { ChallengeListItem, ChallengeStats, QuizAttempt, QuizSourceKind } from '@/types';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -123,6 +123,43 @@ export async function fetchQuizChallengesByDeck(deckId) {
 
   if (error) throw error;
   return data;
+}
+
+// Challenge browsing (across every deck) — powers /challenges
+
+const CHALLENGE_LIST_LIMIT = 200;
+
+// `questions` is selected only so a card can show its question count: PostgREST
+// can't compute jsonb_array_length in a select list, and `question_types` holds
+// the kinds of question, not how many. If the payload ever matters, add a stored
+// generated `question_count` column to `quizzes` and drop `questions` here.
+export async function fetchQuizChallenges(limit = CHALLENGE_LIST_LIMIT) {
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from('quizzes')
+    .select('id, deck_id, creator_name, source_kind, question_types, subject, created_at, questions, decks(title, subject)')
+    .is('answers', null)
+    .is('score', null)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return (data || []) as unknown as ChallengeListItem[];
+}
+
+// Play counts come from an API route, not from here: RLS on `quiz_attempts`
+// returns zero rows to the anon key — silently, with no error — so aggregating
+// in the browser would always report "no attempts".
+export async function fetchChallengeStats(): Promise<Record<string, ChallengeStats>> {
+  const response = await fetch('/api/challenges/stats');
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to load challenge stats.');
+  }
+
+  return data.stats || {};
 }
 
 export async function fetchQuiz(quizId) {

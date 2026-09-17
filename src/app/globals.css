@@ -1530,8 +1530,8 @@ p {
   color: var(--text);
 }
 
-/* ─── Consent Prompt ─── */
-.consent-backdrop {
+/* ─── Modal ─── */
+.modal-backdrop {
   position: fixed;
   inset: 0;
   z-index: 1000;
@@ -1545,12 +1545,16 @@ p {
   animation: fadeIn 0.2s ease both;
 }
 
-.consent-dialog {
+.modal-dialog {
   width: 100%;
   max-width: 440px;
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
   box-shadow: var(--shadow-lg);
   animation: fadeInUp 0.25s ease both;
 }
+
+/* ─── Consent Prompt ─── */
 
 .consent-body {
   gap: 12px;
@@ -1566,7 +1570,7 @@ p {
   line-height: 1.65;
 }
 
-.consent-body a {
+.consent-body a:not(.btn) {
   color: var(--text);
   text-decoration: underline;
   text-decoration-color: var(--rule);
@@ -1619,6 +1623,48 @@ p {
 .onboarding-actions .btn-primary {
   margin-left: auto;
   min-width: 120px;
+}
+
+/* ─── What's New ─── */
+.whats-new-close {
+  margin-bottom: -4px;
+}
+
+.whats-new-date {
+  font-size: 0.8rem;
+  color: var(--text-faint);
+}
+
+.whats-new-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.whats-new-list li {
+  padding-left: 14px;
+  border-left: 2px solid var(--rule);
+}
+
+.whats-new-list strong {
+  display: block;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.whats-new-list span {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.whats-new-group + .whats-new-group {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
 }
 
 /* ─── Contact Page ─── */

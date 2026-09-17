@@ -3,6 +3,7 @@ import { Cormorant_Garamond, DM_Sans } from 'next/font/google';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import WelcomeGate from '@/components/WelcomeGate';
+import WhatsNew from '@/components/WhatsNew';
 import './globals.css';
 
 const cormorant = Cormorant_Garamond({
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="app-main">{children}</div>
         <Footer />
         <WelcomeGate />
+        <WhatsNew />
         <Analytics />
       </body>
     </html>

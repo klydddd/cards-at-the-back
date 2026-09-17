@@ -6,17 +6,19 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { fetchDeck, fetchCards } from '@/lib/supabase';
 import FlipCard from '@/components/FlipCard';
 import { getLearnedCardIds, markCardAsLearned, markCardAsLearning, rateCard, loadSRSProgress } from '@/lib/tracking';
-import { Rating, formatInterval, previewIntervals } from '@/lib/srs';
+import { Rating } from '@/lib/srs';
 import { ShuffleIcon, SparklesIcon, CheckIcon, XIcon, ArrowLeftIcon } from '@/components/Icons';
 import type { Deck, Card } from '@/types';
 
 const CHECK_IN_INTERVAL = 15;
 const REVIEW_INSERT_COUNT = 3; // how many review cards to slip in after check-in
 
+// `hue` names a token in globals.css (see src/lib/subjectHue.ts for the same
+// pattern). The old `color` field held raw hex that nothing ever read.
 const FEELINGS = [
-    { label: 'Great', color: '#10b981' },
-    { label: 'Okay', color: '#f59e0b' },
-    { label: 'Struggling', color: '#ef4444' },
+    { label: 'Great', hue: 'mint' },
+    { label: 'Okay', hue: 'yellow' },
+    { label: 'Struggling', hue: 'coral' },
 ];
 
 export default function Practice() {
@@ -298,7 +300,7 @@ export default function Practice() {
         return (
             <div className="page">
                 <div className="container text-center">
-                    <SparklesIcon size={32} style={{ marginBottom: '12px', opacity: 0.5 }} />
+                    <SparklesIcon size={32} style={{ marginBottom: 'var(--space-sm)', opacity: 0.5 }} />
                     <h2 className="mb-md">You're all caught up!</h2>
                     <p className="mb-lg">There are no more kards to learn in this mode.</p>
                     <div className="flex-center gap-md">
@@ -320,19 +322,19 @@ export default function Practice() {
     if (showCheckIn) {
         return (
             <div className="page">
-                <div className="container text-center" style={{ maxWidth: '480px', paddingTop: '48px' }}>
+                <div className="container container-sm text-center" style={{ paddingTop: 'var(--space-2xl)' }}>
                     <span className="eyebrow">Quick check-in</span>
                     <h2 className="mb-sm mt-sm" style={{ fontSize: '2.5rem' }}>How's it going?</h2>
                     <p className="text-muted mb-lg">
                         You've gone through {CHECK_IN_INTERVAL} kards.
                     </p>
 
-                    <div className="flex" style={{ flexDirection: 'column', gap: '10px' }}>
+                    <div className="flex" style={{ flexDirection: 'column', gap: 'var(--space-xs)' }}>
                         {FEELINGS.map(f => (
                             <button
                                 key={f.label}
-                                className="btn btn-secondary btn-lg"
-                                style={{ width: '100%', justifyContent: 'center', gap: '10px' }}
+                                className="btn btn-lg checkin-btn"
+                                data-hue={f.hue}
                                 onClick={() => handleCheckInContinue(f.label)}
                             >
                                 {f.label}
@@ -429,7 +431,7 @@ export default function Practice() {
 
     return (
         <div className="page">
-            <div className="container" style={{ maxWidth: '768px' }}>
+            <div className="container container-lg">
                 <div className="session-bar">
                     <Link href={`/deck/${id}`} className="session-back">
                         <ArrowLeftIcon size={16} /> {deck.title}
@@ -467,29 +469,13 @@ export default function Practice() {
                     }}
                 >
                     {swipeAction && (
-                        <div
-                            style={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                                zIndex: 10,
-                                background: swipeAction === 'learned' ? 'var(--success)' : 'var(--warning)',
-                                color: '#fff',
-                                padding: '8px 20px',
-                                borderRadius: '100px',
-                                fontWeight: 700,
-                                fontSize: '0.85rem',
-                                pointerEvents: 'none',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                            }}
-                        >
+                        <div className={`swipe-verdict ${swipeAction === 'learned' ? 'is-learned' : ''}`}>
                             {swipeAction === 'learned' ? 'Know It →' : '← Still Learning'}
                         </div>
                     )}
                     <FlipCard key={flipKey} ref={flipCardRef} front={card.front} back={card.back} />
                     {isLearned && (
-                        <div style={{ position: 'absolute', top: -12, right: -12, background: 'var(--success)', color: '#fff', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-sm)' }}>
+                        <div className="learned-tick">
                             <CheckIcon size={16} />
                         </div>
                     )}

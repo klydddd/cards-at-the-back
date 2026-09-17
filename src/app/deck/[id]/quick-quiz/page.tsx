@@ -160,12 +160,12 @@ export default function MCQuiz() {
     if (questions.length === 0) {
         return (
             <div className="page">
-                <div className="container" style={{ maxWidth: '520px' }}>
-                    <Link href={`/deck/${id}`} className="session-back" style={{ marginBottom: '20px' }}>
+                <div className="container container-sm">
+                    <Link href={`/deck/${id}`} className="session-back" style={{ marginBottom: 'var(--space-md)' }}>
                         <ArrowLeftIcon size={16} /> {deck?.title}
                     </Link>
 
-                    <span className="eyebrow" style={{ display: 'block', marginBottom: '10px' }}>{cards.length} kards · no AI</span>
+                    <span className="eyebrow" style={{ display: 'block', marginBottom: 'var(--space-xs)' }}>{cards.length} kards · no AI</span>
                     <h1 className="deck-title mb-lg">Quick quiz</h1>
 
                     <div className="index-card mb-lg" style={{ padding: '20px 22px' }}>
@@ -210,12 +210,12 @@ export default function MCQuiz() {
     if (!started) {
         return (
             <div className="page">
-                <div className="container" style={{ maxWidth: '640px' }}>
-                    <Link href={`/deck/${id}`} className="session-back" style={{ marginBottom: '20px' }}>
+                <div className="container container-md">
+                    <Link href={`/deck/${id}`} className="session-back" style={{ marginBottom: 'var(--space-md)' }}>
                         <ArrowLeftIcon size={16} /> {deck?.title}
                     </Link>
 
-                    <span className="eyebrow" style={{ display: 'block', marginBottom: '10px' }}>
+                    <span className="eyebrow" style={{ display: 'block', marginBottom: 'var(--space-xs)' }}>
                         {questions.length} questions · {(selectedType || 'quick quiz').replace('_', ' ')}
                     </span>
                     <h1 className="deck-title mb-lg">Quiz ready</h1>
@@ -223,7 +223,7 @@ export default function MCQuiz() {
                     {error && <div className="error-box mb-md">{error}</div>}
 
                     {publishedQuiz ? (
-                        <div className="card mb-lg" style={{ padding: '24px', background: 'var(--success-light)' }}>
+                        <div className="card mb-lg" style={{ padding: 'var(--space-lg)', background: 'var(--success-light)' }}>
                             <p className="bold mb-sm">Challenge published</p>
                             <p className="text-sm text-muted mb-md">This fixed quick quiz is now shareable before you start taking it.</p>
                             <div className="flex gap-sm" style={{ flexWrap: 'wrap' }}>
@@ -236,7 +236,7 @@ export default function MCQuiz() {
                             </div>
                         </div>
                     ) : (
-                        <div className="card mb-lg" style={{ padding: '24px' }}>
+                        <div className="card mb-lg" style={{ padding: 'var(--space-lg)' }}>
                             <p className="bold mb-sm">Publish this quick quiz as a challenge</p>
                             <p className="text-sm text-muted mb-md">Publish the generated question set now, then start taking the same quiz locally.</p>
                             <button className="btn btn-primary" onClick={publishChallenge} disabled={publishing}>
@@ -258,7 +258,7 @@ export default function MCQuiz() {
 
         return (
             <div className="page">
-                <div className="container" style={{ maxWidth: '680px' }}>
+                <div className="container container-md">
                     <div className="quiz-score mb-lg">
                         <span className="eyebrow">Quiz complete · {deck?.title}</span>
                         <div className="quiz-score-value">
@@ -270,7 +270,7 @@ export default function MCQuiz() {
                     {error && <div className="error-box mb-md">{error}</div>}
 
                     {publishedQuiz ? (
-                        <div className="card mb-lg" style={{ padding: '24px', background: 'var(--success-light)' }}>
+                        <div className="card mb-lg" style={{ padding: 'var(--space-lg)', background: 'var(--success-light)' }}>
                             <p className="bold mb-sm">Challenge published</p>
                             <p className="text-sm text-muted mb-md">Share this fixed quick quiz so other players can compete on the same question set.</p>
                             <div className="flex gap-sm" style={{ flexWrap: 'wrap' }}>
@@ -283,7 +283,7 @@ export default function MCQuiz() {
                             </div>
                         </div>
                     ) : (
-                        <div className="card mb-lg" style={{ padding: '24px' }}>
+                        <div className="card mb-lg" style={{ padding: 'var(--space-lg)' }}>
                             <p className="bold mb-sm">Publish this quick quiz as a challenge</p>
                             <p className="text-sm text-muted mb-md">Publishing saves this exact shuffled question set and creates a public competition link.</p>
                             <button className="btn btn-primary" onClick={publishChallenge} disabled={publishing}>
@@ -292,7 +292,7 @@ export default function MCQuiz() {
                         </div>
                     )}
 
-                    <div className="flex" style={{ flexDirection: 'column', gap: '10px', marginBottom: '32px' }}>
+                    <div className="flex" style={{ flexDirection: 'column', gap: 'var(--space-xs)', marginBottom: 'var(--space-xl)' }}>
                         {questions.map((question, index) => {
                             const userAnswer = answers[index];
                             const correct = isAnswerCorrect(question, userAnswer);
@@ -326,7 +326,7 @@ export default function MCQuiz() {
                         })}
                     </div>
 
-                    <div className="flex" style={{ flexDirection: 'column', gap: '10px' }}>
+                    <div className="flex" style={{ flexDirection: 'column', gap: 'var(--space-xs)' }}>
                         <button className="btn btn-primary btn-lg" style={{ width: '100%' }} onClick={retryWithSameType}>
                             Try Again (Reshuffled)
                         </button>

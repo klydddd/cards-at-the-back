@@ -196,7 +196,7 @@ export default function Review() {
 
     return (
         <div className="page">
-            <div className="container" style={{ maxWidth: '768px' }}>
+            <div className="container container-lg">
                 {/* Header */}
                 <div className="session-bar">
                     <Link href={`/deck/${id}`} className="session-back">
@@ -218,23 +218,7 @@ export default function Review() {
                     }}
                 >
                     {swipeAction && (
-                        <div
-                            style={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                                zIndex: 10,
-                                background: swipeAction === 'learned' ? 'var(--success)' : 'var(--warning)',
-                                color: '#fff',
-                                padding: '8px 20px',
-                                borderRadius: '100px',
-                                fontWeight: 700,
-                                fontSize: '0.85rem',
-                                pointerEvents: 'none',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                            }}
-                        >
+                        <div className={`swipe-verdict ${swipeAction === 'learned' ? 'is-learned' : ''}`}>
                             {swipeAction === 'learned' ? 'Know It →' : '← Still Learning'}
                         </div>
                     )}

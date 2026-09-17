@@ -100,14 +100,14 @@ export default function Home() {
                         <div className="hero-stack-card"></div>
                         <div className="hero-stack-card"></div>
                         <div className="hero-stack-card">
-                            <div className="index-card-head">Term</div>
+                            <div className="index-card-head"><span>Term</span></div>
                             <div className="hero-stack-term">Hash table</div>
                         </div>
                     </div>
                 </header>
 
                 {/* Deck List */}
-                <section ref={listRef} style={{ marginTop: '24px', scrollMarginTop: '96px' }}>
+                <section ref={listRef} style={{ marginTop: 'var(--space-lg)', scrollMarginTop: '96px' }}>
                     <div className="section-head">
                         <h2>Public decks</h2>
                         {renderFilterTabs(subjects, activeSubject, setActiveSubject)}

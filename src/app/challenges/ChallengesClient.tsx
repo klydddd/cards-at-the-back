@@ -156,7 +156,7 @@ export default function ChallengesClient() {
                     {renderFilterTabs(subjects, activeSubject, setActiveSubject)}
                 </div>
 
-                <p className="text-muted" style={{ marginTop: '-12px', marginBottom: '24px' }}>
+                <p className="text-muted" style={{ marginTop: '-12px', marginBottom: 'var(--space-lg)' }}>
                     Published quizzes from every deck. Pick one and test what you know.
                 </p>
 

@@ -111,7 +111,7 @@ export default function QuizQuestionView({
             <h2 className="quiz-question">{question.question}</h2>
 
             {question.type === 'multiple_choice' && (
-                <div className="option-list">
+                <div className="option-grid">
                     {uniqueOptions(question.options ?? [], question.answer).map((option, index) =>
                         renderOption(option, LETTERS[index], option, `${currentQ}-${index}`)
                     )}

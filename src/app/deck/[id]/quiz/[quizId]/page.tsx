@@ -50,17 +50,17 @@ export default function QuizReview() {
 
     return (
         <div className="page">
-            <div className="container" style={{ maxWidth: '720px' }}>
-                <Link href={`/deck/${deckId}`} className="session-back" style={{ marginBottom: '20px' }}>
+            <div className="container container-lg">
+                <Link href={`/deck/${deckId}`} className="session-back" style={{ marginBottom: 'var(--space-md)' }}>
                     <ArrowLeftIcon size={16} /> {deck?.title}
                 </Link>
 
                 <div className="mb-lg">
-                    <span className="eyebrow eyebrow-purple" style={{ display: 'block', marginBottom: '10px' }}>
+                    <span className="eyebrow eyebrow-purple" style={{ display: 'block', marginBottom: 'var(--space-xs)' }}>
                         {quiz?.source_kind === 'quick' ? 'Quick challenge' : 'AI challenge'} · by {quiz?.creator_name}
                     </span>
                     <h1 className="deck-title">Challenge review</h1>
-                    <div className="flex gap-sm" style={{ flexWrap: 'wrap', marginTop: '16px' }}>
+                    <div className="flex gap-sm" style={{ flexWrap: 'wrap', marginTop: 'var(--space-md)' }}>
                         <span className="badge">{questions.length} questions</span>
                         {(quiz?.question_types || []).map((type) => (
                             <span key={type} className="badge">
@@ -70,25 +70,25 @@ export default function QuizReview() {
                     </div>
                 </div>
 
-                <div className="flex" style={{ flexDirection: 'column', gap: '16px' }}>
+                <div className="flex" style={{ flexDirection: 'column', gap: 'var(--space-md)' }}>
                     {questions.map((question, index) => (
                         <div key={index} className="index-card">
                             <div className="index-card-head">
                                 <span>{index + 1} · {question.type.replace('_', ' ')}</span>
                             </div>
-                            <div className="index-card-body" style={{ gap: '12px' }}>
+                            <div className="index-card-body" style={{ gap: 'var(--space-sm)' }}>
                                 {question.scenario && <p className="quiz-scenario">{question.scenario}</p>}
-                                <p style={{ color: 'var(--text)', fontSize: '1.0625rem' }}>{question.question}</p>
+                                <p className="quiz-question-text">{question.question}</p>
 
                                 {question.type === 'multiple_choice' && question.options ? (
-                                    <div className="option-list" style={{ gap: '6px' }}>
+                                    <div className="option-grid">
                                         {question.options.map((option, optionIndex) => {
                                             const correct = option === question.answer;
                                             return (
                                                 <div
                                                     key={optionIndex}
-                                                    className={`option-row ${correct ? 'is-correct' : ''}`}
-                                                    style={{ minHeight: '48px', cursor: 'default', boxShadow: 'none' }}
+                                                    className={`option-row is-static ${correct ? 'is-correct' : ''}`}
+                                                    
                                                 >
                                                     <span className="option-letter">{LETTERS[optionIndex]}</span>
                                                     <span className="option-label">{option}</span>

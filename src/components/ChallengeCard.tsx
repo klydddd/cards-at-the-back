@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { formatDate } from '@/lib/formatDate';
+import { subjectHue } from '@/lib/subjectHue';
 import type { ChallengeListItem, ChallengeStats } from '@/types';
 
 export default function ChallengeCard({
@@ -39,7 +40,10 @@ export default function ChallengeCard({
     };
 
     return (
-        <div className="index-card challenge-card">
+        <div
+            className="index-card challenge-card"
+            data-hue={subjectHue(subject === 'General' ? deckTitle : subject)}
+        >
             <div className="index-card-head">
                 <span>{subject}</span>
                 <span>{questionCount} questions</span>

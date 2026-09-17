@@ -725,6 +725,38 @@ p {
   gap: 24px;
 }
 
+/* ─── Pagination ─── */
+.pagination {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 32px;
+}
+
+.pagination-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-controls .chip {
+  min-width: 36px;
+  padding: 6px 12px;
+}
+
+.pagination-gap {
+  color: var(--text-faint);
+  padding: 0 2px;
+}
+
+.pagination-summary {
+  font-size: 0.8125rem;
+  margin: 0;
+}
+
 .deck-card {
   min-height: 212px;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;

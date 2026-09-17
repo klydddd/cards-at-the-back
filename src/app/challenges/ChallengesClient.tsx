@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { fetchQuizChallenges, fetchChallengeStats } from '@/lib/supabase';
 import { getCompletedChallengeSet } from '@/lib/challengeHistory';
 import ChallengeCard from '@/components/ChallengeCard';
+import Pagination, { pageCount, paginate } from '@/components/Pagination';
 import type { ChallengeListItem, ChallengeSort, ChallengeStats } from '@/types';
 
 const SORT_LABELS: { value: ChallengeSort; label: string }[] = [
@@ -20,9 +21,25 @@ export default function ChallengesClient() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const [activeSubject, setActiveSubject] = useState('All');
-    const [query, setQuery] = useState('');
-    const [sort, setSort] = useState<ChallengeSort>('recent');
+    const [activeSubject, setActiveSubjectRaw] = useState('All');
+    const [query, setQueryRaw] = useState('');
+    const [sort, setSortRaw] = useState<ChallengeSort>('recent');
+    const [page, setPage] = useState(1);
+    const listRef = useRef<HTMLDivElement>(null);
+
+    // Any change to what's shown starts back at page 1
+    const setActiveSubject = (subject: string) => {
+        setActiveSubjectRaw(subject);
+        setPage(1);
+    };
+    const setQuery = (value: string) => {
+        setQueryRaw(value);
+        setPage(1);
+    };
+    const setSort = (value: ChallengeSort) => {
+        setSortRaw(value);
+        setPage(1);
+    };
 
     useEffect(() => {
         fetchQuizChallenges()
@@ -97,6 +114,15 @@ export default function ChallengesClient() {
         });
     }, [visible, sort, stats]);
 
+    // Clamp so a shrinking list never leaves us on an empty page
+    const currentPage = Math.min(page, pageCount(sorted.length));
+    const paged = useMemo(() => paginate(sorted, currentPage), [sorted, currentPage]);
+
+    const goToPage = (next: number) => {
+        setPage(next);
+        listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
     const clearFilters = () => {
         setActiveSubject('All');
         setQuery('');
@@ -125,7 +151,7 @@ export default function ChallengesClient() {
     return (
         <div className="page">
             <div className="container container-wide">
-                <div className="section-head">
+                <div className="section-head" ref={listRef} style={{ scrollMarginTop: '96px' }}>
                     <h2>Challenges</h2>
                     {renderFilterTabs(subjects, activeSubject, setActiveSubject)}
                 </div>
@@ -201,16 +227,23 @@ export default function ChallengesClient() {
                 )}
 
                 {!loading && !error && sorted.length > 0 && (
-                    <div className="deck-grid">
-                        {sorted.map((challenge) => (
-                            <ChallengeCard
-                                key={challenge.id}
-                                challenge={challenge}
-                                stats={stats[challenge.id]}
-                                completed={completed.has(challenge.id)}
-                            />
-                        ))}
-                    </div>
+                    <>
+                        <div className="deck-grid">
+                            {paged.map((challenge) => (
+                                <ChallengeCard
+                                    key={challenge.id}
+                                    challenge={challenge}
+                                    stats={stats[challenge.id]}
+                                    completed={completed.has(challenge.id)}
+                                />
+                            ))}
+                        </div>
+                        <Pagination
+                            page={currentPage}
+                            totalItems={sorted.length}
+                            onPageChange={goToPage}
+                        />
+                    </>
                 )}
             </div>
         </div>

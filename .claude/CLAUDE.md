@@ -115,6 +115,10 @@ onboarding_responses — id, display_name, is_anonymous, age_range, grade_level,
 
 **Row Level Security:** RLS must be enabled on all tables. Without it, the public anon key grants full read/write access to the entire database. See `AUDIT.md` SECRET-02 and SEC-06.
 
+## Announcements ("What's new")
+
+`WhatsNew` (in the root layout) shows unseen entries from `ANNOUNCEMENTS` in `src/lib/announcements.ts`. To post an update, add an entry at the top of that list with a new, unique id; never reuse or rename an id. Seen ids are kept in localStorage (`gokards_seen_announcements`). The modal only opens after WelcomeGate is done, and finishing onboarding marks every current announcement as seen, so only returning visitors get updates. Entries can be limited with `paths`, `startsAt`, and `endsAt`. Both modals use the shared `src/components/Modal.tsx`.
+
 ## Flashcard Convention
 
 `front` = description or definition of the concept  

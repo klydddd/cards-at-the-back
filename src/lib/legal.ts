@@ -36,3 +36,6 @@ export function acceptTerms() {
         // Storage blocked (private mode, etc.) — the prompt will show again next visit
     }
 }
+
+// Pages a visitor must be able to read without a modal in the way
+export const LEGAL_PATHS = ['/privacy', '/terms', '/contact'];

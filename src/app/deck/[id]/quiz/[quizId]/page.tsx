@@ -81,7 +81,7 @@ export default function QuizReview() {
                                 <p className="quiz-question-text">{question.question}</p>
 
                                 {question.type === 'multiple_choice' && question.options ? (
-                                    <div className="option-list" style={{ gap: 'var(--space-xs)' }}>
+                                    <div className="option-grid">
                                         {question.options.map((option, optionIndex) => {
                                             const correct = option === question.answer;
                                             return (

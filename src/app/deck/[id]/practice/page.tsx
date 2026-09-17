@@ -6,17 +6,19 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { fetchDeck, fetchCards } from '@/lib/supabase';
 import FlipCard from '@/components/FlipCard';
 import { getLearnedCardIds, markCardAsLearned, markCardAsLearning, rateCard, loadSRSProgress } from '@/lib/tracking';
-import { Rating, formatInterval, previewIntervals } from '@/lib/srs';
+import { Rating } from '@/lib/srs';
 import { ShuffleIcon, SparklesIcon, CheckIcon, XIcon, ArrowLeftIcon } from '@/components/Icons';
 import type { Deck, Card } from '@/types';
 
 const CHECK_IN_INTERVAL = 15;
 const REVIEW_INSERT_COUNT = 3; // how many review cards to slip in after check-in
 
+// `hue` names a token in globals.css (see src/lib/subjectHue.ts for the same
+// pattern). The old `color` field held raw hex that nothing ever read.
 const FEELINGS = [
-    { label: 'Great', color: '#10b981' },
-    { label: 'Okay', color: '#f59e0b' },
-    { label: 'Struggling', color: '#ef4444' },
+    { label: 'Great', hue: 'mint' },
+    { label: 'Okay', hue: 'yellow' },
+    { label: 'Struggling', hue: 'coral' },
 ];
 
 export default function Practice() {
@@ -331,8 +333,8 @@ export default function Practice() {
                         {FEELINGS.map(f => (
                             <button
                                 key={f.label}
-                                className="btn btn-secondary btn-lg"
-                                style={{ width: '100%', justifyContent: 'center', gap: '10px' }}
+                                className="btn btn-lg checkin-btn"
+                                data-hue={f.hue}
                                 onClick={() => handleCheckInContinue(f.label)}
                             >
                                 {f.label}
@@ -467,29 +469,13 @@ export default function Practice() {
                     }}
                 >
                     {swipeAction && (
-                        <div
-                            style={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                                zIndex: 10,
-                                background: swipeAction === 'learned' ? 'var(--success)' : 'var(--warning)',
-                                color: '#fff',
-                                padding: '8px 20px',
-                                borderRadius: '100px',
-                                fontWeight: 700,
-                                fontSize: '0.85rem',
-                                pointerEvents: 'none',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                            }}
-                        >
+                        <div className={`swipe-verdict ${swipeAction === 'learned' ? 'is-learned' : ''}`}>
                             {swipeAction === 'learned' ? 'Know It →' : '← Still Learning'}
                         </div>
                     )}
                     <FlipCard key={flipKey} ref={flipCardRef} front={card.front} back={card.back} />
                     {isLearned && (
-                        <div style={{ position: 'absolute', top: -12, right: -12, background: 'var(--success)', color: '#fff', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-sm)' }}>
+                        <div className="learned-tick">
                             <CheckIcon size={16} />
                         </div>
                     )}

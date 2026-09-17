@@ -10,138 +10,217 @@
 }
 
 /* ─── Design Tokens ─── */
+/*
+ * "Pop Quiz" — see docs/design/redesign-directions/Pop*.dc.html
+ *
+ * Two ink tokens, and the difference between them is the whole trick:
+ *
+ *   --ink         borders and text. An element filled with a subject hue
+ *                 re-declares it locally (see .on-hue) so its outline stays
+ *                 dark against the bright fill, in both themes.
+ *   --shadow-ink  what hard shadows are cast in. Follows the PAGE GROUND and
+ *                 is never overridden locally — a dark shadow on the dark
+ *                 ground would simply disappear.
+ *
+ * Custom properties resolve at use time, so redefining these two in the dark
+ * block re-casts every border and shadow in the app without restating a
+ * single offset.
+ */
 :root {
+  --ink: #1A1511;
+  --shadow-ink: #1A1511;
+
   /* Backgrounds */
-  --bg: #F8F7F4;
+  --bg: #FAF6EE;
   --surface: #FFFFFF;
 
+  /* Subject hues. Identical in both themes — they carry dark ink at 9:1 or
+     better, so in dark mode they read as bright cards laid on a dark board
+     rather than inverting into mud. */
+  --hue-sky: #6FC8FF;
+  --hue-coral: #FFA282;
+  --hue-mint: #71D6A3;
+  --hue-yellow: #EFCE6F;
+  --hue-lilac: #CAACFF;
+  --hue-paper: #FFFFFF;
+
+  /* Text on a hue fill. Theme-independent, because the fill is. */
+  --text-on-hue: #1A1511;
+  /* Muted text on a hue fill. --text-faint fails AA on every hue (3.1–4.0:1);
+     this clears 7.4:1 on the worst of them. */
+  --on-hue-secondary: #2E2823;
+
   /* Text */
-  --text: #111110;
-  --text-secondary: #6B6866;
-  --text-faint: #9B9896;
+  --text: var(--ink);
+  --text-secondary: #4A433C;
+  --text-faint: #6A6058;
 
-  /* Borders */
-  --border: #E6E3DE;
-  --border-hover: #CBC8C2;
+  /* Borders. Emphasis is carried by weight, not colour — every structural
+     border is ink. --border-soft exists for low-emphasis separators (list
+     rows, footers, rules) which look violent at full ink. */
+  --border: var(--ink);
+  --border-hover: var(--ink);
+  --border-soft: #E0D6C6;
+  --border-w: 2px;
+  --border-w-thick: 3px;
 
-  /* Primary — ink black */
-  --primary: #111110;
-  --primary-hover: #000000;
-  --primary-light: #EEECEA;
-  --primary-border: #B8B5B0;
+  /* Primary */
+  --primary: var(--ink);
+  --primary-hover: var(--ink);
+  --primary-light: #EFE5D2;
+  --primary-border: var(--ink);
 
-  /* Accent — neutral (no loud color) */
-  --accent: #111110;
-  --accent-hover: #000000;
-  --accent-light: #EEECEA;
+  /* Gold → yellow. Yellow is reserved for meta/system chrome (brand, score,
+     "me" row), so it never reads as a subject colour. */
+  --gold: var(--ink);
+  --gold-bg: var(--hue-yellow);
+  --gold-border: var(--ink);
 
-  /* Gold — muted, like aged brass */
-  --gold: #7A6518;
-  --gold-bg: #F5F2E8;
-  --gold-border: #C4AE6A;
+  /* Purple → lilac */
+  --purple: var(--ink);
+  --purple-light: var(--hue-lilac);
+  --purple-border: var(--ink);
+  --purple-dark: var(--ink);
 
-  /* Index card top rule — faded red ink */
-  --rule: #D9A3A3;
+  /* Semantics. -light is the hue fill, -dark is the ink that sits on it. */
+  --success: var(--hue-mint);
+  --success-dark: var(--ink);
+  --success-light: var(--hue-mint);
+  --success-border: var(--ink);
 
-  /* Purple — desaturated, ink violet */
-  --purple: #4E3F68;
-  --purple-hover: #3E3058;
-  --purple-light: #F0EDF6;
-  --purple-border: #C0B0D8;
-  --purple-dark: #3A2A50;
+  --warning: var(--hue-yellow);
+  --warning-dark: var(--ink);
+  --warning-light: var(--hue-yellow);
+  --warning-border: var(--ink);
 
-  /* Semantic — muted success */
-  --success: #2A6A48;
-  --success-dark: #1E5038;
-  --success-light: #EFF5F2;
-  --success-border: #88B8A0;
+  --error: #FF8A8A;
+  --error-dark: var(--ink);
+  --error-light: #FF8A8A;
+  --error-border: var(--ink);
 
-  /* Semantic — muted warning */
-  --warning: #8A6828;
-  --warning-dark: #6A5018;
-  --warning-light: #F5F0E8;
-  --warning-border: #C8A868;
+  /* Scrim behind modals */
+  --scrim: rgba(26, 21, 17, 0.55);
 
-  /* Semantic — muted error */
-  --error: #8A3838;
-  --error-dark: #6A2828;
-  --error-light: #F5EEEE;
-  --error-border: #C88888;
-
-  /* Radius — slightly formal */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
+  /* Radius — generous, the artboards run 12–28px */
+  --radius-sm: 12px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
   --radius-pill: 100px;
 
   /* Fonts */
-  --font-display: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
-  --font: var(--font-dm-sans), 'DM Sans', -apple-system, sans-serif;
+  --font-display: var(--font-bricolage), 'Bricolage Grotesque', 'Arial Black', sans-serif;
+  --font: var(--font-onest), 'Onest', -apple-system, sans-serif;
 
-  /* Shadows — colorless, architectural */
-  --shadow-sm: 0 1px 3px rgba(17, 17, 16, 0.06);
-  --shadow-md: 0 4px 16px rgba(17, 17, 16, 0.08);
-  --shadow-lg: 0 8px 32px rgba(17, 17, 16, 0.10);
-  --shadow-card: 0 1px 4px rgba(17, 17, 16, 0.05), 0 0 0 1px rgba(17, 17, 16, 0.04);
+  /* Hard offset shadows — no blur. The signature of the direction. */
+  --shadow-hard-sm: 3px 3px 0 var(--shadow-ink);
+  --shadow-hard: 4px 4px 0 var(--shadow-ink);
+  --shadow-hard-lg: 8px 8px 0 var(--shadow-ink);
+  --shadow-hard-hover: 6px 6px 0 var(--shadow-ink);
+  --shadow-hard-active: 1px 1px 0 var(--shadow-ink);
 
-  --transition: 0.2s ease;
+  /* Legacy shadow names, re-pointed so the rules this pass does not touch
+     pick up the new language for free instead of staying blurry. */
+  --shadow-sm: var(--shadow-hard-sm);
+  --shadow-md: var(--shadow-hard);
+  --shadow-lg: var(--shadow-hard-lg);
+  --shadow-card: var(--shadow-hard-sm);
+
+  --transition: 0.15s ease;
+
+  color-scheme: light;
 }
 
 /* ─── Dark Mode ─── */
+/*
+ * Ground and ink swap; the hues do not (see the note above). No shadow offset
+ * is restated here — flipping --shadow-ink re-casts all five.
+ */
 [data-theme="dark"] {
-  --bg: #111110;
-  --surface: #1C1B19;
+  --ink: #FAF6EE;
+  --shadow-ink: #FAF6EE;
 
-  --text: #EDEAE5;
-  --text-secondary: #9B9896;
-  --text-faint: #6B6866;
+  --bg: #16130F;
+  --surface: #221D18;
 
-  --border: #2C2B28;
-  --border-hover: #3C3B38;
+  --text-secondary: #B8AFA4;
+  --text-faint: #8B8177;
 
-  /* Primary — cream/parchment in dark (inverts elegantly) */
-  --primary: #EDEAE5;
-  --primary-hover: #FFFFFF;
-  --primary-light: rgba(237, 234, 229, 0.08);
-  --primary-border: #3C3B38;
+  --border-soft: #3A332B;
+  --primary-light: #2A2419;
 
-  --accent: #EDEAE5;
-  --accent-hover: #FFFFFF;
-  --accent-light: rgba(237, 234, 229, 0.08);
+  --scrim: rgba(0, 0, 0, 0.7);
 
-  --gold: #C8A838;
-  --gold-bg: rgba(200, 168, 56, 0.12);
-  --gold-border: #8A7820;
-
-  --rule: #6E4040;
-
-  --purple: #9A88C8;
-  --purple-hover: #B4A4D8;
-  --purple-light: rgba(78, 63, 104, 0.2);
-  --purple-border: rgba(78, 63, 104, 0.5);
-  --purple-dark: #7868A8;
-
-  --success: #3A8A5A;
-  --success-dark: #2A6A48;
-  --success-light: rgba(42, 106, 72, 0.16);
-  --success-border: #2A6A48;
-
-  --warning: #B88038;
-  --warning-dark: #9A6828;
-  --warning-light: rgba(138, 104, 40, 0.16);
-  --warning-border: #8A6828;
-
-  --error: #C05050;
-  --error-dark: #A03838;
-  --error-light: rgba(138, 56, 56, 0.16);
-  --error-border: #903838;
-
-  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
-  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  color-scheme: dark;
 }
+
+/*
+ * Anything filled with a subject hue: dark outline and dark text, in both
+ * themes.
+ *
+ * Every derived token has to be restated, not just --ink. A custom property
+ * whose value contains var() is substituted ONCE, on the element that declares
+ * it — :root here — and descendants inherit the already-resolved colour. So
+ * redefining --ink alone changes only the rules that spell out var(--ink);
+ * --text, --border and friends would keep the theme's cream and vanish against
+ * a bright tile.
+ *
+ * --shadow-ink is deliberately NOT reset: the tile casts its shadow onto the
+ * page ground, so it must follow the ground, not the tile.
+ */
+.on-hue,
+[data-hue],
+.eyebrow-purple,
+.flip-card-back,
+.hero-title em,
+.hero-stack-card,
+.session-actions .btn-secondary,
+.session-actions .btn-primary,
+.stat-tile,
+.quiz-scenario,
+.option-row.is-correct,
+.option-row.is-wrong,
+.answer-cell.is-correct,
+.answer-cell.is-wrong,
+.quiz-verdict-correct,
+.quiz-verdict-wrong,
+.board-row.is-me,
+.badge,
+.navbar-brand .brand-accent,
+.footer .brand-accent,
+.swipe-verdict,
+.learned-tick,
+.checkin-btn[data-hue],
+.error-box {
+  --ink: #1A1511;
+  --text: #1A1511;
+  --text-secondary: var(--on-hue-secondary);
+  --text-faint: var(--on-hue-secondary);
+  --border: #1A1511;
+  --border-hover: #1A1511;
+  --border-soft: rgba(26, 21, 17, 0.25);
+  --primary: #1A1511;
+  --primary-border: #1A1511;
+  --gold: #1A1511;
+  --purple: #1A1511;
+  --purple-border: #1A1511;
+  --purple-dark: #1A1511;
+  --success-dark: #1A1511;
+  --success-border: #1A1511;
+  --warning-dark: #1A1511;
+  --warning-border: #1A1511;
+  --error-dark: #1A1511;
+  --error-border: #1A1511;
+  color: var(--text-on-hue);
+}
+
+/* Subject hue → fill. Set by data-hue from src/lib/subjectHue.ts. */
+[data-hue="sky"] { --card-hue: var(--hue-sky); }
+[data-hue="coral"] { --card-hue: var(--hue-coral); }
+[data-hue="mint"] { --card-hue: var(--hue-mint); }
+[data-hue="yellow"] { --card-hue: var(--hue-yellow); }
+[data-hue="lilac"] { --card-hue: var(--hue-lilac); }
+[data-hue="paper"] { --card-hue: var(--hue-paper); }
 
 /* ─── Base ─── */
 html {
@@ -179,40 +258,44 @@ a {
 }
 
 /* ─── Typography ─── */
+/* Bricolage Grotesque wants tight tracking and heavy weight to read as the
+   artboards do; the old serif scale was set for Cormorant and is too timid. */
 h1, h2, h3 {
   font-family: var(--font-display);
   color: var(--text);
+  text-wrap: balance;
 }
 
 h1 {
-  font-weight: 700;
-  font-size: 2.75rem;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
+  font-weight: 800;
+  font-size: 3.25rem;
+  line-height: 0.95;
+  letter-spacing: -0.045em;
 }
 
 h2 {
-  font-weight: 600;
-  font-size: 1.875rem;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  font-weight: 800;
+  font-size: 2.125rem;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
 }
 
 h3 {
-  font-weight: 600;
-  font-size: 1.25rem;
-  line-height: 1.3;
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  font-size: 1.4rem;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
 }
 
 p {
   font-weight: 400;
   font-size: 1rem;
   color: var(--text-secondary);
+  text-wrap: pretty;
 }
 
 .light {
-  font-weight: 300;
+  font-weight: 400;
 }
 
 .bold {
@@ -254,6 +337,18 @@ p {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+
+  /* The press moves on hover; zeroing the duration makes it snap rather than
+     not happen. Cancel the transform, keep the shadow cue. */
+  .btn:hover,
+  .press:hover,
+  .chip:hover,
+  .card-clickable:hover,
+  .deck-card:hover,
+  .option-row:hover,
+  .navbar-toggle:hover {
+    transform: none !important;
+  }
 }
 
 /* ─── Layout ─── */
@@ -271,79 +366,108 @@ p {
 }
 
 /* ─── Buttons ─── */
+/*
+ * Every button is an ink-outlined tile that physically presses: hover lifts
+ * it up-left and lengthens the shadow, active shoves it down-right and
+ * collapses the shadow. Offsets are shared with .press (see Utilities).
+ */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 11px 24px;
-  border-radius: var(--radius-pill);
+  padding: 11px 22px;
+  border: var(--border-w) solid var(--ink);
+  border-radius: var(--radius-md);
   font-family: var(--font);
-  font-weight: 500;
-  font-size: 0.875rem;
+  font-weight: 600;
+  font-size: 0.9375rem;
   cursor: pointer;
-  transition: all 0.18s ease;
-  border: none;
   outline: none;
   white-space: nowrap;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
   min-height: 44px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-hard-sm);
+  transition: transform var(--transition), box-shadow var(--transition),
+    background-color var(--transition);
+}
+
+.btn:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-hard-hover);
+}
+
+.btn:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-hard-active);
 }
 
 .btn:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: var(--border-w-thick) solid var(--ink);
   outline-offset: 3px;
 }
 
 .btn-primary {
-  background: var(--primary);
+  background: var(--ink);
   color: var(--bg);
-  box-shadow: none;
+  box-shadow: 4px 4px 0 var(--hue-coral);
 }
 
-.btn-primary:hover {
-  background: var(--primary-hover);
-  box-shadow: var(--shadow-sm);
+.btn-primary:hover:not(:disabled) {
+  box-shadow: 6px 6px 0 var(--hue-coral);
+}
+
+.btn-primary:active:not(:disabled) {
+  box-shadow: 1px 1px 0 var(--hue-coral);
 }
 
 .btn-secondary {
   background: var(--surface);
   color: var(--text);
-  border: 1px solid var(--border);
 }
 
-.btn-secondary:hover {
-  border-color: var(--border-hover);
-  background: var(--bg);
-}
-
+/* Ghost keeps the press feel but drops the frame until you touch it, so the
+   navbar does not turn into a row of competing boxes. */
 .btn-ghost {
   background: transparent;
+  border-color: transparent;
+  box-shadow: none;
   color: var(--text-secondary);
   padding: 8px 14px;
 }
 
-.btn-ghost:hover {
+.btn-ghost:hover:not(:disabled) {
   color: var(--text);
-  background: var(--border);
+  border-color: var(--ink);
+  background: var(--surface);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.btn-ghost:active:not(:disabled) {
+  box-shadow: var(--shadow-hard-active);
 }
 
 .btn-sm {
-  padding: 7px 16px;
-  font-size: 0.8rem;
-  min-height: 36px;
+  padding: 7px 14px;
+  font-size: 0.85rem;
+  min-height: 38px;
+  border-radius: var(--radius-sm);
 }
 
 .btn-lg {
-  padding: 14px 32px;
-  font-size: 0.9375rem;
+  min-height: 56px;
+  padding: 14px 28px;
+  font-size: 1.0625rem;
+  border-radius: var(--radius-md);
 }
 
 .btn:disabled {
-  opacity: 0.38;
+  opacity: 0.4;
   cursor: not-allowed;
   transform: none !important;
-  box-shadow: none !important;
+  box-shadow: var(--shadow-hard-active) !important;
 }
 
 /* ─── Inputs ─── */
@@ -351,11 +475,11 @@ p {
 .textarea {
   width: 100%;
   padding: 11px 16px;
-  border: 1px solid var(--border);
+  border: var(--border-w) solid var(--ink);
   border-radius: var(--radius-md);
   font-family: var(--font);
-  font-size: 0.875rem;
-  font-weight: 400;
+  font-size: 0.9375rem;
+  font-weight: 500;
   color: var(--text);
   background: var(--surface);
   transition: border-color var(--transition), box-shadow var(--transition);
@@ -365,14 +489,15 @@ p {
 
 .input:focus,
 .textarea:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-light);
+  outline: var(--border-w) solid var(--ink);
+  outline-offset: 2px;
+  box-shadow: var(--shadow-hard-sm);
 }
 
 .input::placeholder,
 .textarea::placeholder {
   color: var(--text-faint);
-  font-weight: 300;
+  font-weight: 400;
 }
 
 .textarea {
@@ -384,12 +509,12 @@ p {
 .label {
   display: block;
   font-family: var(--font);
-  font-weight: 500;
+  font-weight: 700;
   font-size: 0.75rem;
   margin-bottom: 6px;
   color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.06em;
 }
 
 .field {
@@ -399,15 +524,11 @@ p {
 /* ─── Cards ─── */
 .card {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: var(--border-w) solid var(--ink);
   border-radius: var(--radius-lg);
   padding: 24px;
-  transition: border-color var(--transition), box-shadow 0.2s ease, transform 0.2s ease;
-  box-shadow: var(--shadow-card);
-}
-
-.card:hover {
-  border-color: var(--border-hover);
+  box-shadow: var(--shadow-hard);
+  transition: transform var(--transition), box-shadow var(--transition);
 }
 
 .card-clickable {
@@ -415,86 +536,145 @@ p {
 }
 
 .card-clickable:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--border-hover);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-hard-hover);
+}
+
+.card-clickable:active {
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-hard-active);
 }
 
 .card-clickable:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
+  outline: var(--border-w-thick) solid var(--ink);
+  outline-offset: 3px;
 }
 
 /* ─── Index Card ─── */
-/* A plain white card with a faded red rule under its header strip */
+/*
+ * Was a white card with a faded red rule under its header, echoing a paper
+ * index card. In Pop Quiz it becomes an ink-outlined tile with a hard shadow;
+ * the header strip is now a pill-badge row over a solid ink divider.
+ * Still the app's most-composed primitive — DeckCard, ChallengeCard, Modal,
+ * CardForm, FlipCard, ContactForm, LegalPage and WelcomeGate all build on it.
+ */
 .index-card {
   display: flex;
   flex-direction: column;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-card);
+  background: var(--card-hue, var(--surface));
+  border: var(--border-w) solid var(--ink);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-hard);
 }
 
 .index-card-head {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
-  min-height: 44px;
-  padding: 0 22px 8px;
-  border-bottom: 1.5px solid var(--rule);
+  min-height: 46px;
+  padding: 10px 20px;
+  border-bottom: var(--border-w) solid var(--ink);
   font-family: var(--font);
-  font-size: 0.66rem;
-  font-weight: 500;
-  letter-spacing: 0.12em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--text-faint);
+  color: var(--text);
+}
+
+/* First label in the strip reads as a pill, the way the artboards tag a card
+   "Term" or "Description". */
+.index-card-head > span:first-child {
+  padding: 3px 12px;
+  border: var(--border-w) solid var(--ink);
+  border-radius: var(--radius-pill);
+  background: var(--pill-bg, var(--bg));
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+}
+
+/* On a coloured tile the pill is always cream, in both themes. */
+.on-hue,
+[data-hue],
+.eyebrow-purple,
+.flip-card-back,
+.hero-title em,
+.hero-stack-card,
+.session-actions .btn-secondary,
+.session-actions .btn-primary,
+.stat-tile,
+.quiz-scenario,
+.option-row.is-correct,
+.option-row.is-wrong,
+.answer-cell.is-correct,
+.answer-cell.is-wrong,
+.quiz-verdict-correct,
+.quiz-verdict-wrong,
+.board-row.is-me,
+.badge,
+.navbar-brand .brand-accent,
+.footer .brand-accent,
+.swipe-verdict,
+.learned-tick,
+.checkin-btn[data-hue],
+.error-box {
+  --pill-bg: #FAF6EE;
 }
 
 .index-card-body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 16px 22px 18px;
+  gap: 10px;
+  padding: 18px 20px 20px;
 }
 
 /* Card whose fields sit directly inside it (editable card lists) */
 .index-card.is-padded {
-  padding: 0 22px 18px;
+  padding: 0 20px 20px;
 }
 
 .index-card.is-padded > .index-card-head {
-  margin: 0 -22px 16px;
+  margin: 0 -20px 18px;
 }
 
 .index-card-head-action {
   min-height: 0;
-  margin: 0 -8px -2px 0;
-  padding: 2px 8px;
+  margin: -2px -6px -2px 0;
+  padding: 3px 10px;
   font-size: 0.75rem;
   letter-spacing: 0;
   text-transform: none;
 }
 
 .eyebrow {
+  display: inline-block;
   font-family: var(--font);
   font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.12em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--text-secondary);
 }
 
 .eyebrow-purple {
-  color: var(--purple);
+  /* Now that this is a filled pill, it must not stretch: its parents are
+     flex columns, whose default align-items: stretch would span it edge to
+     edge. Invisible back when the eyebrow was bare text. */
+  align-self: flex-start;
+  width: fit-content;
+  padding: 2px 10px;
+  border: var(--border-w) solid var(--ink);
+  border-radius: var(--radius-pill);
+  background: var(--hue-lilac);
+  color: var(--text-on-hue);
 }
 
 /* ─── Flip Card ─── */
 .flip-card-container {
   position: relative;
-  perspective: 1600px;
+  perspective: 1800px;
   width: 100%;
   max-width: 720px;
   height: 420px;
@@ -502,28 +682,29 @@ p {
   cursor: pointer;
 }
 
-/* The next card peeking out from underneath */
+/* The next card peeking out from underneath, rotated like a real stack */
 .flip-card-container::before {
   content: '';
   position: absolute;
-  inset: 12px -14px -12px 14px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  transform: rotate(1.4deg);
+  inset: 10px -16px -10px 16px;
+  background: var(--hue-lilac);
+  border: var(--border-w-thick) solid var(--ink);
+  border-radius: var(--radius-xl);
+  transform: rotate(3deg);
 }
 
 .flip-card-container:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 4px;
-  border-radius: var(--radius-sm);
+  outline: var(--border-w-thick) solid var(--ink);
+  outline-offset: 6px;
+  border-radius: var(--radius-xl);
 }
 
 .flip-card-inner {
   position: relative;
   width: 100%;
   height: 100%;
-  transition: transform 0.55s cubic-bezier(0.3, 0.7, 0.2, 1);
+  /* Slight overshoot so the flip lands with a bit of snap */
+  transition: transform 0.5s cubic-bezier(0.34, 1.4, 0.5, 1);
   transform-style: preserve-3d;
 }
 
@@ -539,19 +720,22 @@ p {
   display: flex;
   flex-direction: column;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-lg);
+  border: var(--border-w-thick) solid var(--ink);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-hard-lg);
+}
+
+/* The answer side is a solid hue — the reveal should feel like a prize. */
+.flip-card-back {
+  transform: rotateY(180deg);
+  background: var(--hue-sky);
+  color: var(--text-on-hue);
 }
 
 .flip-card-face .index-card-head {
-  min-height: 64px;
-  padding: 0 36px 12px;
-  font-size: 0.6875rem;
-}
-
-.flip-card-back {
-  transform: rotateY(180deg);
+  min-height: 60px;
+  padding: 14px 30px;
+  font-size: 0.75rem;
 }
 
 .flip-card-body {
@@ -559,31 +743,32 @@ p {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px 72px;
+  padding: 24px 64px;
   text-align: center;
   overflow: hidden;
 }
 
 .flip-card-front .flip-card-text {
-  font-family: var(--font);
-  font-weight: 400;
-  font-size: 1.375rem;
-  line-height: 1.64;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2rem;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
   color: var(--text);
   text-wrap: pretty;
 }
 
 .flip-card-back .flip-card-body {
-  padding: 24px 48px;
+  padding: 24px 44px;
 }
 
 .flip-card-back .flip-card-text {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 4rem;
-  letter-spacing: -0.02em;
-  line-height: 1.05;
-  color: var(--text);
+  font-weight: 800;
+  font-size: 4.5rem;
+  letter-spacing: -0.05em;
+  line-height: 0.95;
+  color: var(--text-on-hue);
   text-wrap: balance;
 }
 
@@ -594,10 +779,10 @@ p {
 
 .hero {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 48px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 32px;
   align-items: center;
-  padding: 32px 0 56px;
+  padding: 28px 0 56px;
 }
 
 .hero-copy {
@@ -608,62 +793,76 @@ p {
 }
 
 .hero-title {
-  font-weight: 700;
-  font-size: 6rem;
-  line-height: 0.92;
-  letter-spacing: -0.03em;
+  font-weight: 800;
+  font-size: 6.5rem;
+  line-height: 0.86;
+  letter-spacing: -0.05em;
 }
 
+/* The accent half of the wordmark sits in a rotated outlined chip — the
+   direction's most recognisable gesture. */
 .hero-title em {
-  font-weight: 500;
-  color: var(--text-secondary);
+  display: inline-block;
+  padding: 0 18px 8px;
+  border: var(--border-w-thick) solid var(--ink);
+  border-radius: var(--radius-xl);
+  background: var(--hue-mint);
+  color: var(--text-on-hue);
+  box-shadow: 5px 5px 0 var(--ink);
+  font-style: normal;
+  font-weight: 800;
+  transform: rotate(-3deg);
 }
 
 .hero-lede {
-  max-width: 420px;
-  font-size: 1.125rem;
-  line-height: 1.55;
+  max-width: 440px;
+  font-size: 1.1875rem;
+  line-height: 1.5;
 }
 
 .hero-stack {
   position: relative;
-  height: 340px;
+  height: 380px;
 }
 
 .hero-stack-card {
   position: absolute;
-  width: 420px;
-  height: 250px;
+  width: 360px;
+  height: 240px;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-card);
+  border: var(--border-w-thick) solid var(--ink);
+  border-radius: var(--radius-xl);
 }
 
-.hero-stack-card:nth-child(1) { left: 70px; top: 40px; transform: rotate(-7deg); }
-.hero-stack-card:nth-child(2) { left: 50px; top: 30px; transform: rotate(-3deg); }
+.hero-stack-card:nth-child(1) { left: 90px; top: 10px; background: var(--hue-lilac); transform: rotate(9deg); }
+.hero-stack-card:nth-child(2) { left: 30px; top: 50px; background: var(--hue-sky); transform: rotate(-6deg); }
 .hero-stack-card:nth-child(3) {
-  left: 30px;
-  top: 30px;
+  left: 60px;
+  top: 110px;
+  background: var(--hue-coral);
   transform: rotate(2deg);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-hard-lg);
 }
 
+/* No divider here — the hero card is a single coloured face with a floating
+   tag, as in PopHome. */
 .hero-stack-card .index-card-head {
-  min-height: 56px;
-  padding: 0 28px 10px;
+  min-height: 52px;
+  padding: 18px 24px 0;
+  border-bottom: none;
+  color: var(--text-on-hue);
 }
 
 .hero-stack-term {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: calc(100% - 56px);
+  height: calc(100% - 52px);
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 3rem;
-  letter-spacing: -0.01em;
-  color: var(--text);
+  font-weight: 800;
+  font-size: 3.25rem;
+  letter-spacing: -0.04em;
+  color: var(--text-on-hue);
 }
 
 /* ─── Section Header ─── */
@@ -675,11 +874,11 @@ p {
   flex-wrap: wrap;
   padding-bottom: 20px;
   margin-bottom: 24px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: var(--border-w-thick) solid var(--ink);
 }
 
 .section-head h2 {
-  font-size: 2.5rem;
+  font-size: 2.75rem;
 }
 
 .chip-row {
@@ -689,33 +888,40 @@ p {
 }
 
 .chip {
-  min-height: 36px;
+  min-height: 40px;
   padding: 6px 16px;
   border-radius: var(--radius-pill);
-  border: 1.5px solid var(--border);
-  background: transparent;
-  color: var(--text-secondary);
+  border: var(--border-w) solid var(--ink);
+  background: var(--bg);
+  color: var(--text);
   font-family: var(--font);
-  font-size: 0.8125rem;
-  font-weight: 500;
+  font-size: 0.875rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.18s ease;
+  box-shadow: none;
+  transition: transform var(--transition), box-shadow var(--transition),
+    background-color var(--transition);
 }
 
 .chip:hover {
-  color: var(--text);
-  border-color: var(--border-hover);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.chip:active {
+  transform: translate(1px, 1px);
+  box-shadow: var(--shadow-hard-active);
 }
 
 .chip.is-active {
-  background: var(--primary);
-  border-color: var(--primary);
+  background: var(--ink);
   color: var(--bg);
+  box-shadow: 2px 2px 0 var(--hue-coral);
 }
 
 .chip:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
+  outline: var(--border-w) solid var(--ink);
+  outline-offset: 3px;
 }
 
 /* ─── Grid ─── */
@@ -759,18 +965,22 @@ p {
 
 .deck-card {
   min-height: 212px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: transform var(--transition), box-shadow var(--transition);
 }
 
 .deck-card:hover {
-  transform: translateY(-3px) rotate(-0.4deg);
-  box-shadow: var(--shadow-md);
-  border-color: var(--border-hover);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-hard-hover);
+}
+
+.deck-card:active {
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-hard-active);
 }
 
 .deck-card:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
+  outline: var(--border-w-thick) solid var(--ink);
+  outline-offset: 3px;
 }
 
 .deck-card h3 {
@@ -779,8 +989,9 @@ p {
 }
 
 .deck-card p {
-  font-size: 0.875rem;
-  line-height: 1.6;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--on-hue-secondary);
   text-wrap: pretty;
 }
 
@@ -788,8 +999,8 @@ p {
   margin-top: auto;
   padding-top: 4px;
   font-size: 0.8125rem;
-  font-weight: 300;
-  color: var(--text-faint);
+  font-weight: 500;
+  color: var(--on-hue-secondary);
 }
 
 /* ─── Challenge browse ─── */
@@ -827,16 +1038,17 @@ p {
 
 /* ─── Deck Detail ─── */
 .deck-title {
-  font-size: 3.5rem;
-  line-height: 1;
+  font-size: 4rem;
+  line-height: 0.92;
+  letter-spacing: -0.05em;
 }
 
 .term-card-body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 14rem);
   align-items: stretch;
-  min-height: 160px;
-  padding: 0 22px;
+  min-height: 150px;
+  padding: 0 20px;
 }
 
 .term-card-front,
@@ -846,20 +1058,21 @@ p {
 }
 
 .term-card-front {
-  padding: 28px 28px 28px 0;
+  padding: 26px 26px 26px 0;
   font-size: 0.9375rem;
-  line-height: 1.6;
+  line-height: 1.55;
   text-wrap: pretty;
 }
 
 /* Vertical rule: [ definition | term ] */
 .term-card-back {
-  padding: 28px 0 28px 28px;
-  border-left: 1px solid var(--border);
+  padding: 26px 0 26px 26px;
+  border-left: var(--border-w) solid var(--ink);
   font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 600;
-  line-height: 1.15;
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
   color: var(--text);
   text-wrap: balance;
 }
@@ -940,10 +1153,10 @@ p {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 36px;
+  min-height: 40px;
   padding: 7px 14px 7px 0;
-  font-size: 0.8125rem;
-  font-weight: 500;
+  font-size: 0.875rem;
+  font-weight: 600;
   color: var(--text-secondary);
   transition: color var(--transition);
 }
@@ -958,6 +1171,7 @@ p {
   background: none;
   border: none;
   font-family: var(--font);
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -965,29 +1179,53 @@ p {
   display: flex;
   align-items: center;
   gap: 16px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   color: var(--text-faint);
 }
 
 .session-actions {
   display: flex;
   justify-content: center;
-  gap: 12px;
-  margin: 36px 0 28px;
+  gap: 16px;
+  margin: 40px 0 28px;
 }
 
 .session-actions .btn {
-  min-height: 52px;
-  padding: 14px 32px;
-  font-size: 0.9375rem;
+  min-height: 60px;
+  padding: 14px 30px;
+  font-size: 1.125rem;
+  border-width: 2.5px;
+  border-radius: var(--radius-md);
+}
+
+/* Still learning / Know it read as a pair of coloured game buttons */
+.session-actions .btn-secondary {
+  background: var(--hue-coral);
+  color: var(--text-on-hue);
+}
+
+.session-actions .btn-primary {
+  background: var(--hue-mint);
+  color: var(--text-on-hue);
+  box-shadow: var(--shadow-hard);
+}
+
+.session-actions .btn-primary:hover:not(:disabled) {
+  box-shadow: var(--shadow-hard-hover);
+}
+
+.session-actions .btn-primary:active:not(:disabled) {
+  box-shadow: var(--shadow-hard-active);
 }
 
 .session-foot {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 10px;
-  font-size: 0.8125rem;
+  margin-top: 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
   color: var(--text-faint);
 }
 
@@ -998,61 +1236,64 @@ p {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: 24px;
   text-align: center;
 }
 
 .session-done h2 {
-  font-size: 3.5rem;
-  line-height: 1;
+  font-size: 3.75rem;
+  line-height: 0.95;
+  letter-spacing: -0.05em;
 }
 
 .stat-tiles {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 16px;
   width: 100%;
 }
 
+/* Rotated slightly, like two cards tossed onto the table */
 .stat-tile {
   display: flex;
   flex-direction: column;
   gap: 2px;
   padding: 18px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border: var(--border-w-thick) solid var(--ink);
+  border-radius: var(--radius-lg);
   background: var(--surface);
+  color: var(--text-on-hue);
   text-align: center;
 }
 
 .stat-tile-value {
   font-family: var(--font-display);
-  font-size: 2.75rem;
-  font-weight: 600;
-  line-height: 1.1;
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
 }
 
 .stat-tile-label {
   font-size: 0.8125rem;
+  font-weight: 600;
 }
 
 .stat-tile-success {
-  background: var(--success-light);
-  border-color: var(--success-border);
-  color: var(--success);
+  background: var(--hue-mint);
+  transform: rotate(-3deg);
 }
 
 .stat-tile-warning {
-  background: var(--warning-light);
-  border-color: var(--warning-border);
-  color: var(--warning);
+  background: var(--hue-coral);
+  transform: rotate(2deg);
 }
 
 .stack-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 /* ─── Quiz ─── */
@@ -1075,10 +1316,12 @@ p {
   align-items: baseline;
   justify-content: space-between;
   gap: 16px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   color: var(--text-faint);
 }
 
+/* Progress pips, as in the artboards: outlined capsules that fill in */
 .quiz-segments {
   display: flex;
   gap: 6px;
@@ -1086,40 +1329,48 @@ p {
 
 .quiz-segment {
   flex: 1;
-  height: 3px;
+  height: 14px;
+  border: var(--border-w) solid var(--ink);
   border-radius: var(--radius-pill);
-  background: var(--border);
+  background: var(--surface);
   transition: background var(--transition);
 }
 
-.quiz-segment.is-current { background: var(--primary); }
-.quiz-segment.is-correct { background: var(--success); }
-.quiz-segment.is-wrong { background: var(--error); }
+.quiz-segment.is-current { background: var(--hue-yellow); }
+.quiz-segment.is-correct { background: var(--hue-mint); }
+.quiz-segment.is-wrong { background: var(--hue-coral); }
 
 .quiz-question {
-  font-size: 2.625rem;
-  line-height: 1.1;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2.75rem;
+  line-height: 1;
+  letter-spacing: -0.045em;
   text-wrap: pretty;
 }
 
+/* Was an italic serif pull-quote; Bricolage has no italic, so it becomes an
+   ink-outlined inset block instead of synthesised oblique. */
 .quiz-scenario {
   font-size: 1.0625rem;
-  font-style: italic;
-  line-height: 1.6;
-  padding-left: 14px;
-  border-left: 1.5px solid var(--rule);
+  line-height: 1.55;
+  padding: 14px 18px;
+  border: var(--border-w) solid var(--ink);
+  border-radius: var(--radius-md);
+  background: var(--hue-lilac);
+  color: var(--on-hue-secondary);
 }
 
 .option-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .option-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 
 .option-row {
@@ -1127,47 +1378,54 @@ p {
   align-items: center;
   gap: 16px;
   width: 100%;
-  min-height: 60px;
+  min-height: 62px;
   padding: 12px 20px;
   text-align: left;
   font-family: var(--font);
   font-size: 1rem;
+  font-weight: 500;
   color: var(--text);
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: var(--border-w) solid var(--ink);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-hard-sm);
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition: transform var(--transition), box-shadow var(--transition),
+    background-color var(--transition);
 }
 
 .option-row:hover:not(:disabled) {
-  border-color: var(--border-hover);
-  background: var(--bg);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-hard-hover);
+}
+
+.option-row:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-hard-active);
 }
 
 .option-row:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
+  outline: var(--border-w-thick) solid var(--ink);
+  outline-offset: 3px;
 }
 
 .option-row:disabled {
   cursor: default;
+  transform: none;
 }
 
 .option-letter {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   flex-shrink: 0;
-  border: 1px solid currentColor;
+  border: var(--border-w) solid currentColor;
   border-radius: var(--radius-pill);
   font-family: var(--font-display);
   font-size: 1.0625rem;
-  font-weight: 600;
-  opacity: 0.7;
+  font-weight: 800;
 }
 
 .option-label {
@@ -1176,29 +1434,26 @@ p {
 
 .option-tag {
   font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
+/* Answered states are hue fills with dark ink — no separate dark-mode rules
+   needed, because the fill does not change between themes. */
 .option-row.is-correct {
-  background: var(--success-light);
-  border-color: var(--success-border);
-  color: var(--success-dark);
+  background: var(--hue-mint);
+  color: var(--text-on-hue);
 }
 
 .option-row.is-wrong {
-  background: var(--error-light);
-  border-color: var(--error-border);
-  color: var(--error-dark);
+  background: var(--hue-coral);
+  color: var(--text-on-hue);
 }
 
 .option-row.is-dim {
-  color: var(--text-faint);
+  opacity: 0.45;
 }
-
-[data-theme="dark"] .option-row.is-correct { color: var(--success); }
-[data-theme="dark"] .option-row.is-wrong { color: var(--error); }
 
 .quiz-feedback {
   display: flex;
@@ -1206,12 +1461,14 @@ p {
   justify-content: space-between;
   gap: 24px;
   padding-top: 20px;
-  border-top: 1px solid var(--border);
+  border-top: var(--border-w) solid var(--border-soft);
 }
 
 .quiz-feedback p {
-  font-size: 0.9375rem;
-  line-height: 1.55;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--text);
 }
 
 .quiz-feedback .btn {
@@ -1221,7 +1478,7 @@ p {
 .answer-pair {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 
 .answer-cell {
@@ -1229,9 +1486,9 @@ p {
   flex-direction: column;
   gap: 2px;
   padding: 12px 16px;
-  border: 1px solid var(--border);
+  border: var(--border-w) solid var(--ink);
   border-radius: var(--radius-md);
-  background: var(--bg);
+  background: var(--surface);
   color: var(--text);
 }
 
@@ -1240,49 +1497,60 @@ p {
 }
 
 .answer-cell.is-correct {
-  background: var(--success-light);
-  border-color: var(--success-border);
+  background: var(--hue-mint);
+  color: var(--text-on-hue);
 }
 
 .answer-cell.is-wrong {
-  background: var(--error-light);
-  border-color: var(--error-border);
+  background: var(--hue-coral);
+  color: var(--text-on-hue);
 }
 
-.answer-cell.is-correct .option-tag { color: var(--success); }
-.answer-cell.is-wrong .option-tag { color: var(--error); }
+.answer-cell.is-correct .option-tag,
+.answer-cell.is-wrong .option-tag { color: var(--on-hue-secondary); }
 
-.quiz-verdict-correct { color: var(--success); font-weight: 600; }
-.quiz-verdict-wrong { color: var(--error); font-weight: 600; }
+/* Verdicts are ink text on a hue highlight — mint or coral text on cream
+   would sit around 2:1. */
+.quiz-verdict-correct,
+.quiz-verdict-wrong {
+  padding: 1px 10px;
+  border: var(--border-w) solid var(--ink);
+  border-radius: var(--radius-pill);
+  color: var(--text-on-hue);
+  font-weight: 700;
+}
+
+.quiz-verdict-correct { background: var(--hue-mint); }
+.quiz-verdict-wrong { background: var(--hue-coral); }
 
 .quiz-score {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   text-align: center;
 }
 
 .quiz-score-value {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 800;
   font-size: 8rem;
   line-height: 1;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.06em;
   color: var(--text);
 }
 
 .quiz-score-value span {
-  font-weight: 500;
+  font-weight: 700;
   color: var(--text-faint);
 }
 
 /* ─── Leaderboard ─── */
 .board {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: var(--border-w) solid var(--ink);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-hard);
   overflow: hidden;
 }
 
@@ -1292,11 +1560,11 @@ p {
   justify-content: space-between;
   gap: 12px;
   padding: 16px 24px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: var(--border-w) solid var(--ink);
 }
 
 .board-head h2 {
-  font-size: 1.5rem;
+  font-size: 1.625rem;
 }
 
 .board-row {
@@ -1304,28 +1572,39 @@ p {
   align-items: center;
   gap: 16px;
   padding: 14px 24px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: var(--border-w) solid var(--ink);
 }
 
 .board-row:last-child {
   border-bottom: none;
 }
 
+/* Your own row, called out like a game show scoreboard */
 .board-row.is-me {
-  background: var(--gold-bg);
+  background: var(--hue-yellow);
+  color: var(--text-on-hue);
+}
+
+.board-row.is-me .board-rank,
+.board-row.is-me .board-time,
+.board-row.is-me .board-name,
+.board-row.is-me .board-score {
+  color: var(--text-on-hue);
 }
 
 .board-rank {
-  width: 24px;
+  width: 28px;
   font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.375rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   color: var(--text-faint);
 }
 
 .board-name {
   flex: 1;
   font-size: 0.9375rem;
+  font-weight: 500;
   color: var(--text);
 }
 
@@ -1335,8 +1614,10 @@ p {
 }
 
 .board-score {
-  font-size: 0.9375rem;
-  font-weight: 500;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   color: var(--text);
 }
 
@@ -1350,41 +1631,22 @@ p {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 10px;
+  padding: 3px 12px;
   border-radius: var(--radius-pill);
   font-family: var(--font);
-  font-size: 0.72rem;
-  font-weight: 500;
-  background: var(--gold-bg);
-  color: var(--gold);
-  border: 1px solid var(--gold-border);
-  letter-spacing: 0.02em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--hue-yellow);
+  color: var(--text-on-hue);
+  border: var(--border-w) solid var(--ink);
+  letter-spacing: 0.01em;
   white-space: nowrap;
 }
 
-.badge-purple {
-  background: var(--purple-light);
-  color: var(--purple-dark);
-  border-color: var(--purple-border);
-}
-
-.badge-success {
-  background: var(--success-light);
-  color: var(--success-dark);
-  border-color: var(--success-border);
-}
-
-.badge-warning {
-  background: var(--warning-light);
-  color: var(--warning-dark);
-  border-color: var(--warning-border);
-}
-
-.badge-error {
-  background: var(--error-light);
-  color: var(--error-dark);
-  border-color: var(--error-border);
-}
+.badge-purple { background: var(--hue-lilac); }
+.badge-success { background: var(--hue-mint); }
+.badge-warning { background: var(--hue-yellow); }
+.badge-error { background: var(--error); }
 
 /* ─── Empty State ─── */
 .empty-state {
@@ -1394,7 +1656,7 @@ p {
 
 .empty-state h2 {
   margin-bottom: 8px;
-  color: var(--text-faint);
+  color: var(--text);
 }
 
 .empty-state p {
@@ -1406,8 +1668,8 @@ p {
 .spinner {
   width: 22px;
   height: 22px;
-  border: 1.5px solid var(--border);
-  border-top-color: var(--primary);
+  border: var(--border-w-thick) solid var(--border-soft);
+  border-top-color: var(--ink);
   border-radius: 50%;
   animation: spin 0.65s linear infinite;
   flex-shrink: 0;
@@ -1427,7 +1689,7 @@ p {
 
 /* ─── File Upload ─── */
 .file-drop-zone {
-  border: 1px dashed var(--border-hover);
+  border: var(--border-w-thick) dashed var(--ink);
   border-radius: var(--radius-lg);
   padding: 48px;
   text-align: center;
@@ -1438,8 +1700,9 @@ p {
 
 .file-drop-zone:hover,
 .file-drop-zone.dragover {
-  border-color: var(--primary);
-  background: var(--primary-light);
+  background: var(--hue-yellow);
+  color: var(--text-on-hue);
+  box-shadow: var(--shadow-hard);
 }
 
 .file-drop-zone p {
@@ -1456,7 +1719,7 @@ p {
 /* ─── Navbar ─── */
 .navbar {
   padding: 14px 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: var(--border-w) solid var(--ink);
   position: sticky;
   top: 0;
   /* Solid, not a translucent backdrop-filter: blurring the content behind a
@@ -1473,28 +1736,79 @@ p {
 }
 
 .navbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1.15rem;
-  letter-spacing: -0.01em;
+  font-weight: 800;
+  font-size: 1.35rem;
+  letter-spacing: -0.03em;
   color: var(--text);
 }
 
+/* The wordmark's accent half sits in an outlined chip, the same gesture the
+   artboards use on the hero's last word. */
 .navbar-brand .brand-accent {
-  color: var(--text-secondary);
+  padding: 1px 10px 3px;
+  border: var(--border-w) solid var(--ink);
+  border-radius: var(--radius-pill);
+  background: var(--hue-yellow);
+  color: var(--text-on-hue);
+  box-shadow: 2px 2px 0 var(--ink);
+  transform: rotate(-2deg);
 }
 
 .navbar-links {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   align-items: center;
+}
+
+.navbar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px;
+  border: var(--border-w) solid var(--ink);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text);
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--shadow-hard-sm);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.navbar-toggle:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+.navbar-toggle:active {
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-hard-active);
+}
+
+/* The blocking script in layout.tsx sets data-theme before paint, so the
+   correct icon is chosen in CSS. No React state, so nothing flashes or
+   mismatches on hydration. */
+.theme-icon-sun { display: none; }
+[data-theme="dark"] .theme-icon-moon { display: none; }
+[data-theme="dark"] .theme-icon-sun { display: block; }
+
+.navbar-links .divider {
+  align-self: center;
+  height: 22px;
+  margin: 0 4px;
 }
 
 /* ─── Footer ─── */
 .footer {
   padding: 24px 0 32px;
-  border-top: 1px solid var(--border);
-  font-size: 0.85rem;
+  border-top: var(--border-w) solid var(--ink);
+  font-size: 0.875rem;
   color: var(--text-faint);
 }
 
@@ -1506,14 +1820,22 @@ p {
 }
 
 .footer-inner > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 600;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   color: var(--text);
 }
 
 .footer .brand-accent {
-  color: var(--text-secondary);
+  padding: 0 8px 2px;
+  border: var(--border-w) solid var(--ink);
+  border-radius: var(--radius-pill);
+  background: var(--hue-yellow);
+  color: var(--text-on-hue);
 }
 
 .footer-links {
@@ -1523,11 +1845,15 @@ p {
 
 .footer-links a {
   color: var(--text-secondary);
+  font-weight: 500;
   transition: color var(--transition);
 }
 
 .footer-links a:hover {
   color: var(--text);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
 }
 
 /* ─── Modal ─── */
@@ -1539,9 +1865,7 @@ p {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(17, 17, 16, 0.45);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: var(--scrim);
   animation: fadeIn 0.2s ease both;
 }
 
@@ -1918,115 +2242,18 @@ p {
 
 /* ─── Progress Bar ─── */
 .progress-bar-track {
-  height: 2px;
-  background: var(--border);
+  height: 14px;
+  background: var(--surface);
+  border: var(--border-w) solid var(--ink);
   border-radius: var(--radius-pill);
   overflow: hidden;
 }
 
 .progress-bar-fill {
   height: 100%;
-  background: var(--primary);
+  background: var(--hue-mint);
   border-radius: var(--radius-pill);
   transition: width 0.3s ease;
-}
-
-/* ─── SRS Rating Buttons ─── */
-.srs-rating-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-}
-
-.srs-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  padding: 10px 8px;
-  border-radius: var(--radius-md);
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  min-height: 58px;
-  font-family: var(--font);
-}
-
-.srs-btn:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-
-.srs-btn-label {
-  font-weight: 600;
-  font-size: 0.85rem;
-  letter-spacing: 0;
-}
-
-.srs-btn-interval {
-  font-size: 0.68rem;
-  opacity: 0.65;
-  font-weight: 400;
-}
-
-.srs-again {
-  background: var(--error-light);
-  color: var(--error-dark);
-  border-color: var(--error-border);
-}
-
-.srs-again:hover {
-  background: var(--error);
-  color: var(--surface);
-  border-color: var(--error);
-  box-shadow: var(--shadow-sm);
-}
-
-.srs-hard {
-  background: var(--warning-light);
-  color: var(--warning-dark);
-  border-color: var(--warning-border);
-}
-
-.srs-hard:hover {
-  background: var(--warning);
-  color: var(--surface);
-  border-color: var(--warning);
-  box-shadow: var(--shadow-sm);
-}
-
-.srs-good {
-  background: var(--success-light);
-  color: var(--success-dark);
-  border-color: var(--success-border);
-}
-
-.srs-good:hover {
-  background: var(--success);
-  color: var(--surface);
-  border-color: var(--success);
-  box-shadow: var(--shadow-sm);
-}
-
-.srs-easy {
-  background: var(--primary-light);
-  color: var(--primary);
-  border-color: var(--primary-border);
-}
-
-.srs-easy:hover {
-  background: var(--primary);
-  color: var(--bg);
-  border-color: var(--primary);
-  box-shadow: var(--shadow-sm);
-}
-
-/* ─── SRS Stats Grid ─── */
-.srs-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
 }
 
 /* ─── Deck card stagger ─── */
@@ -2085,78 +2312,136 @@ p {
   border: 0;
 }
 
+/* Swipe verdict badge + learned tick. Were duplicated inline in both
+   practice/page.tsx and review/page.tsx with hardcoded #fff and a blurred
+   shadow; shared here so they stay in step. */
+.swipe-verdict {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  padding: 8px 20px;
+  border: var(--border-w) solid var(--ink);
+  border-radius: var(--radius-pill);
+  background: var(--hue-coral);
+  color: var(--text-on-hue);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  pointer-events: none;
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.swipe-verdict.is-learned {
+  background: var(--hue-mint);
+}
+
+.learned-tick {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--border-w) solid var(--ink);
+  border-radius: 50%;
+  background: var(--hue-mint);
+  color: var(--text-on-hue);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+/* Check-in interstitial: one hue per answer, ink text on all three. */
+.checkin-btn[data-hue] {
+  width: 100%;
+  justify-content: center;
+  background: var(--card-hue);
+  color: var(--text-on-hue);
+}
+
+/* Shared press interaction — the direction's signature motion. */
+.press {
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.press:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-hard-hover);
+}
+
+.press:active {
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-hard-active);
+}
+
 /* ─── Error Box ─── */
 .error-box {
   background: var(--error-light);
-  border: 1px solid var(--error-border);
-  color: var(--error-dark);
+  border: var(--border-w) solid var(--ink);
+  color: var(--text-on-hue);
   padding: 12px 16px;
   border-radius: var(--radius-md);
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
   margin-bottom: 16px;
+  box-shadow: var(--shadow-hard-sm);
 }
 
 /* ─── Divider ─── */
 .divider {
-  width: 1px;
-  background: var(--border);
+  width: var(--border-w);
+  background: var(--border-soft);
   align-self: stretch;
 }
 
 /* ─── Responsive ─── */
 @media (max-width: 640px) {
-  h1 { font-size: 2.25rem; }
-  h2 { font-size: 1.5rem; }
+  h1 { font-size: 2.5rem; }
+  h2 { font-size: 1.75rem; }
 
   .container { padding: 0 16px; }
-  .flip-card-container { height: 320px; }
-  .flip-card-container::before { inset: 8px -6px -8px 6px; }
-  .flip-card-face .index-card-head { min-height: 48px; padding: 0 20px 10px; }
+  .flip-card-container { height: 340px; }
+  .flip-card-container::before { inset: 10px -8px -10px 8px; }
+  .flip-card-face .index-card-head { min-height: 48px; padding: 10px 18px; }
   .flip-card-body,
   .flip-card-back .flip-card-body { padding: 20px 24px; }
-  .flip-card-front .flip-card-text { font-size: 1.125rem; }
-  .flip-card-back .flip-card-text { font-size: 2.5rem; }
-  .btn-lg { padding: 13px 26px; }
+  .flip-card-front .flip-card-text { font-size: 1.25rem; }
+  .flip-card-back .flip-card-text { font-size: 2.75rem; }
+  .btn-lg { padding: 13px 24px; font-size: 1rem; }
 
-  .hero { grid-template-columns: minmax(0, 1fr); gap: 32px; padding: 8px 0 32px; }
-  .hero-title { font-size: 3.75rem; }
+  .hero { grid-template-columns: minmax(0, 1fr); gap: 28px; padding: 8px 0 32px; }
+  .hero-title { font-size: 3.5rem; }
   .hero-stack { display: none; }
-  .section-head h2 { font-size: 2rem; }
-  .deck-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .section-head h2 { font-size: 2.25rem; }
+  .deck-grid { grid-template-columns: minmax(0, 1fr); gap: 18px; }
   .browse-search, .browse-sort { flex: 1 1 100%; max-width: none; }
 
   /* There is no mobile menu, so let the links wrap onto a second row rather
      than overflow once "Challenges" joins them. */
-  .navbar-inner { flex-wrap: wrap; row-gap: 6px; }
-  .navbar-links { flex-wrap: wrap; justify-content: flex-end; gap: 2px; }
-  .deck-title { font-size: 2.5rem; }
+  .navbar-inner { flex-wrap: wrap; row-gap: 8px; }
+  .navbar-links { flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+  .deck-title { font-size: 2.75rem; }
   .term-card-body { grid-template-columns: minmax(0, 1fr); min-height: 0; }
-  .term-card-front { padding: 20px 0; }
+  .term-card-front { padding: 18px 0; }
   .term-card-back {
-    padding: 20px 0;
+    padding: 18px 0;
     border-left: none;
-    border-top: 1px solid var(--border);
+    border-top: var(--border-w) solid var(--ink);
   }
 
   .session-actions { margin: 28px 0 20px; }
-  .session-actions .btn { flex: 1; padding: 14px 16px; }
+  .session-actions .btn { flex: 1; padding: 14px 14px; }
   .session-foot-hint { display: none; }
   .session-done h2 { font-size: 2.5rem; }
 
-  .quiz-question { font-size: 1.875rem; }
+  .quiz-question { font-size: 2rem; }
   .option-grid,
   .answer-pair { grid-template-columns: minmax(0, 1fr); }
   .quiz-feedback { flex-direction: column; align-items: stretch; }
   .quiz-score-value { font-size: 5.5rem; }
 
-  .srs-rating-row { gap: 6px; }
-  .srs-btn { padding: 8px 4px; min-height: 52px; }
-  .srs-btn-label { font-size: 0.78rem; }
-  .srs-btn-interval { font-size: 0.62rem; }
-
-  .srs-stats-grid { grid-template-columns: repeat(2, 1fr); }
-
-  .legal-header h1 { font-size: 2.75rem; }
+  .legal-header h1 { font-size: 2.5rem; }
   .legal-toc ol { grid-template-columns: minmax(0, 1fr); }
   .legal-body h2 { font-size: 1.625rem; }
 

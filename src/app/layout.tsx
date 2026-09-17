@@ -1,23 +1,22 @@
 import { Analytics } from '@vercel/analytics/react';
-import { Cormorant_Garamond, DM_Sans } from 'next/font/google';
+import { Bricolage_Grotesque, Onest } from 'next/font/google';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import WelcomeGate from '@/components/WelcomeGate';
 import WhatsNew from '@/components/WhatsNew';
 import './globals.css';
 
-const cormorant = Cormorant_Garamond({
+const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],
-  weight: ['500', '600', '700'],
-  style: ['normal', 'italic'],
-  variable: '--font-cormorant',
+  weight: ['500', '700', '800'],
+  variable: '--font-bricolage',
   display: 'swap',
 });
 
-const dmSans = DM_Sans({
+const onest = Onest({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600'],
-  variable: '--font-dm-sans',
+  weight: ['400', '500', '600'],
+  variable: '--font-onest',
   display: 'swap',
 });
 
@@ -26,9 +25,17 @@ export const metadata = {
   description: 'AI-generated flashkards and spaced repetition learning',
 };
 
+// Stamps data-theme before first paint. Without this the attribute is only set
+// in Navbar's effect after hydration, so dark-mode users see a full cream page
+// flash on every load. Must mirror getInitialTheme() in src/lib/theme.ts.
+const themeScript = `(function(){try{var t=localStorage.getItem('cards_theme');if(!t){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${dmSans.variable}`}>
+    <html lang="en" className={`${bricolage.variable} ${onest.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body>
         <Navbar />
         <div className="app-main">{children}</div>

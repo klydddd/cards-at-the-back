@@ -244,7 +244,7 @@ export default function DeckView({ id }: { id: string }) {
                     style={{
                         position: 'fixed',
                         inset: 0,
-                        background: 'rgba(0,0,0,0.5)',
+                        background: 'var(--scrim)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',

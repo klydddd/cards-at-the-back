@@ -570,8 +570,9 @@ export default function AIParse() {
                                                             justifyContent: 'center',
                                                             flexShrink: 0,
                                                             fontSize: '0.7rem',
-                                                            background: opt === q.answer ? 'var(--success)' : 'var(--border)',
-                                                            color: opt === q.answer ? '#fff' : 'var(--text-secondary)',
+                                                            background: opt === q.answer ? 'var(--hue-mint)' : 'var(--bg)',
+                                                            color: opt === q.answer ? 'var(--text-on-hue)' : 'var(--text-secondary)',
+                                                            border: '2px solid var(--ink)',
                                                         }}
                                                     >
                                                         {String.fromCharCode(65 + oi)}

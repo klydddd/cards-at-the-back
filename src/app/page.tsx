@@ -100,7 +100,7 @@ export default function Home() {
                         <div className="hero-stack-card"></div>
                         <div className="hero-stack-card"></div>
                         <div className="hero-stack-card">
-                            <div className="index-card-head">Term</div>
+                            <div className="index-card-head"><span>Term</span></div>
                             <div className="hero-stack-term">Hash table</div>
                         </div>
                     </div>

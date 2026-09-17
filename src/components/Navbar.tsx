@@ -1,20 +1,20 @@
 "use client";
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getInitialTheme, toggleTheme, setTheme } from '@/lib/theme';
+import { toggleTheme } from '@/lib/theme';
 import { MoonIcon, SunIcon } from './Icons';
 
 export default function Navbar() {
-    const [theme, setCurrentTheme] = useState(getInitialTheme());
-
-    useEffect(() => {
-        setTheme(theme);
-    }, [theme]);
-
+    // No theme state here on purpose. The blocking script in app/layout.tsx
+    // stamps data-theme before first paint, and CSS picks the right icon off
+    // that attribute — so there is nothing to hydrate and nothing to flash.
+    //
+    // The previous version ran setTheme(theme) in an effect on every mount,
+    // which wrote localStorage unconditionally and so froze an implicit OS
+    // preference into an explicit stored one: a user on OS-dark who never
+    // touched this button could never follow their OS back to light.
     const handleToggle = () => {
-        const newTheme = toggleTheme();
-        setCurrentTheme(newTheme);
+        toggleTheme();
     };
 
     return (
@@ -26,15 +26,15 @@ export default function Navbar() {
                 <div className="navbar-links">
                     <button
                         type="button"
-                        className="btn btn-ghost"
+                        className="navbar-toggle"
                         onClick={handleToggle}
-                        aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-                        title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-                        style={{ padding: '8px', borderRadius: '50%', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '44px', minHeight: '44px' }}
+                        aria-label="Toggle dark mode"
+                        title="Toggle dark mode"
                     >
-                        {theme === 'light' ? <MoonIcon size={18} /> : <SunIcon size={18} />}
+                        <MoonIcon size={18} className="theme-icon theme-icon-moon" />
+                        <SunIcon size={18} className="theme-icon theme-icon-sun" />
                     </button>
-                    <div style={{ width: '1px', height: '20px', background: 'var(--border)', margin: '0 6px' }}></div>
+                    <div className="divider" />
                     <Link href="/challenges" className="btn btn-ghost btn-sm">
                         Challenges
                     </Link>

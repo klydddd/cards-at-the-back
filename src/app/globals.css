@@ -1626,6 +1626,10 @@ p {
 }
 
 /* ─── What's New ─── */
+.whats-new-dialog {
+  max-width: 520px;
+}
+
 .whats-new-close {
   margin-bottom: -4px;
 }
@@ -1642,11 +1646,6 @@ p {
   margin: 4px 0 0;
   padding: 0;
   list-style: none;
-}
-
-.whats-new-list li {
-  padding-left: 14px;
-  border-left: 2px solid var(--rule);
 }
 
 .whats-new-list strong {

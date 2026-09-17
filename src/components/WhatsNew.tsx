@@ -59,6 +59,7 @@ export default function WhatsNew() {
         <Modal
             open
             onClose={dismiss}
+            className="whats-new-dialog"
             labelledBy="whats-new-title"
             describedBy="whats-new-desc"
             head="What's new"

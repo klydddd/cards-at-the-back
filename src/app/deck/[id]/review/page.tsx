@@ -196,7 +196,7 @@ export default function Review() {
 
     return (
         <div className="page">
-            <div className="container" style={{ maxWidth: '768px' }}>
+            <div className="container container-lg">
                 {/* Header */}
                 <div className="session-bar">
                     <Link href={`/deck/${id}`} className="session-back">

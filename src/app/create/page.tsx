@@ -73,8 +73,8 @@ export default function CreateDeck() {
 
     return (
         <div className="page">
-            <div className="container" style={{ maxWidth: '680px' }}>
-                <span className="eyebrow" style={{ display: 'block', marginBottom: '10px' }}>New deck</span>
+            <div className="container container-md">
+                <span className="eyebrow" style={{ display: 'block', marginBottom: 'var(--space-xs)' }}>New deck</span>
                 <h1 className="deck-title mb-sm">Create a deck</h1>
                 <p className="mb-lg">Build your flashkard deck manually. Add as many kards as you need.</p>
 
@@ -134,7 +134,7 @@ export default function CreateDeck() {
                         </div>
                     </div>
 
-                    <div className="flex" style={{ flexDirection: 'column', gap: '12px' }}>
+                    <div className="flex" style={{ flexDirection: 'column', gap: 'var(--space-sm)' }}>
                         {cards.map((card, i) => (
                             <CardForm
                                 key={i}

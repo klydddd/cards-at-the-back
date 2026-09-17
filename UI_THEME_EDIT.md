@@ -97,46 +97,100 @@ the movement snap rather than not happen.
 
 ---
 
-## Not done — pass 2
+## Done in pass 2
 
-### Screens not composed
-Styled only by inherited primitives. Checked and coherent, but not designed:
-`/create`, `/ai-parse` (both better than expected), `/challenges`, `/contact`,
-`/privacy`, `/terms`, `/deck/[id]/edit`, the AI quiz builder, and the quiz
-result review.
+**A spacing scale.** `--space-2xs` … `--space-3xl` on a 4px grid, ratifying the
+rhythm the file already had (12/8/24/16 were its four most common values) rather
+than imposing a new one. 200 declarations in `globals.css` and 65 inline styles
+in TSX migrated; only 1–3px optical offsets stay literal. Off-grid strays
+(14/18/22/26/30) snapped to the nearest step.
 
-### CSS sections not rewritten
-Pagination, Challenge browse, Dropdown Menu, Consent Prompt, Onboarding,
-What's New, Contact Page, Legal Pages, Deck card stagger, Utilities.
+The large steps shrink at each breakpoint, so density follows the viewport
+without per-rule overrides:
 
-### Specific follow-ups
+```css
+@media (max-width: 1024px) { :root { --space-xl: 28px; --space-2xl: 36px; --space-3xl: 48px; } }
+@media (max-width:  640px) { :root { --space-lg: 20px; --space-xl: 24px; --space-2xl: 28px; --space-3xl: 36px; } }
+```
 
-- **Modals.** `Modal.tsx`, `WelcomeGate` and `WhatsNew` inherit `.index-card`
-  and look right, but none got a composition pass. `WelcomeGate` is the first
-  thing a new user sees — worth a look before any public share.
-- **`ChallengeCard`** does not use `data-hue` yet, so `/challenges` is
-  monochrome where the home grid is not.
-- **The hand-rolled delete modal** in `DeckViewClient.tsx` duplicates
-  `Modal.tsx`. Replacing it removes ~20 lines and one class of leak.
-- **Obsolete tokens still aliased** for one pass so untouched rules keep
-  working: `--rule` (5 consumers), `--border-hover`, `--primary-hover`. Delete
-  and retarget when those sections are rewritten. `--accent`, `--accent-hover`,
-  `--accent-light` and `--purple-hover` had **zero** consumers and are gone.
-- **`--border-soft`** exists for low-emphasis separators but is only used by
-  the spinner and `.quiz-feedback`. Dense stacked rules on the legal and
-  contact pages are still full ink and may want it.
-- **Spacing rhythm is unchanged.** There is no spacing or type-scale token
-  layer — 404 raw `px` literals and 89 `font-size` declarations, against a
-  single `max-width: 640px` breakpoint. This pass deliberately changed colour,
-  type, border and shadow only. If the layout feels cramped against the heavier
-  borders, retuning that is its own piece of work.
-- **Mobile** was re-clamped but not walked on a device.
+**A container scale.** `--container-sm/md/lg/xl` with matching `.container-*`
+classes replaced 16 inline `maxWidth` overrides across nine files.
 
-### Pre-existing, unrelated
+**Breakpoints.** The app had exactly one (`640px`), so 641–1167px rendered with
+desktop rules. Added tiers at **1024px** (type scale, two-column gaps),
+**860px** (smaller hero card stack, contact goes one-column) and **700px**
+(hero goes one-column, stack hidden).
+
+**Fixed a bug pass 1 introduced.** Pass 1 deleted `--rule` but left three
+consumers. An undeclared `var()` makes the property invalid at computed-value
+time, so `text-decoration-color` fell back to its initial `currentcolor` — every
+consent, contact and legal link was drawing a **full-ink** underline. It read as
+a deliberate hairline, which is why it survived review. The three byte-identical
+rules are now one shared `.prose-link`-style selector using `--underline`
+(`color-mix(in srgb, var(--ink) 45%, transparent)`, ~3.3:1 — `--border-soft`
+would have been 1.33:1, too faint to signal a link).
+
+**Zero strokes below 2px.** Of the nine that remained, five became 2px
+`--border-soft` (the repeated `.legal-list dd` ladder and its cap,
+`.whats-new-group`, `.contact-legal`, `.legal-crosslink`) and four became ink at
+2–3px (`.menu-list`, which was carrying an `8px 8px 0` shadow off a **1px**
+frame; the select caret; `.legal-header`).
+
+**Other fixes**
+
+| Site | Was |
+|---|---|
+| `.legal-body code` | `--primary-light` on cream = **1.16:1**, effectively invisible. Now an ink-framed yellow chip on the new `--radius-xs`. |
+| `.onboarding-check input` | `accent-color: var(--primary)` flipped per theme. Pinned to a fixed hue. |
+| `.pagination-controls .chip` | `min-width: 36px` against `.chip`'s 40px min-height → 36×40 page numbers. |
+| `.menu-count` | The only pill in the app with no frame. |
+| `.pagination-summary` | The only small meta line with no colour, so it inherited full ink. |
+| `.challenge-card` | Had no base rule at all, and its comment described a hover pass 1 had already replaced. |
+| 10 font sizes | `0.8/0.9/0.92/0.95rem` normalised onto the existing `0.75/0.8125/0.875/0.9375` ladder. |
+
+**Components**
+
+- `ChallengeCard` now carries `data-hue`, so `/challenges` varies like the home grid.
+- The quiz builder's steppers were inline `borderRadius: 50%` + `1.5px` borders
+  overriding `.btn-ghost`; now `.stepper-btn` / `.stepper-value` / `.stepper-total`
+  (the total was an unclassed div with a fill and radius but no frame).
+- `.quiz-question-text` replaces a style duplicated in two files, and
+  `.option-row.is-static` replaces a `boxShadow: 'none'` that was killing the
+  hard shadow on every answer-key row.
+- `.btn-danger` replaces an inline `background`/`borderColor` pair that never
+  picked up the press.
+- `PracticeMenu`'s hardcoded `0.18s ease` → `var(--transition)`.
+
+**The delete modal** in `DeckViewClient` now uses the shared `Modal`. It was
+missing Esc, focus trap, focus restore, scroll lock and every ARIA attribute.
+Verified in-browser: `role="dialog"`, `aria-modal`, labelling, `body` scroll
+locked, focus lands on the password field and returns on close. Passing
+`onClose={deleting ? undefined : …}` preserves the old "can't cancel mid-delete"
+guard, because `Modal` treats a missing `onClose` as mandatory.
+
+---
+
+## Not done — pass 3
+
+- **Type scale.** 88 `font-size` declarations, still literal. Sizes are now on a
+  consistent ladder but there are no `--text-*` tokens. This is the obvious next
+  foundation, and the same responsive-token trick would apply.
+- **Composition.** Pass 2 was structural — spacing, strokes, tokens, classes.
+  `/create`, `/ai-parse`, `/deck/:id/edit`, `/contact` and the legal pages are
+  now consistent and correct, but none has been *designed* the way Home and
+  Practice were against the artboards.
+- **WelcomeGate** got its CSS tuned but was not walked step by step. It is the
+  first thing a new user sees; worth a pass before any public share.
+- **Artboards only cover three screens.** Home, Practice and Take-challenge.
+  Everything else is extrapolation from the language.
+- **Real devices.** Verified at 390px and 768px via iframes — `resize_window`
+  does not take effect in this environment, so nothing was seen on actual
+  hardware.
+
+## Pre-existing, unrelated
 - `public/` holds only `pdf.worker.min.mjs` — no favicon, OG image or manifest.
 - No `not-found.tsx`, `error.tsx` or `loading.tsx`.
 - 17 TypeScript errors predate this work (`next.config.mjs` sets
-  `typescript.ignoreBuildErrors: true`). None are in files touched here; the
-  count is identical before and after.
+  `typescript.ignoreBuildErrors: true`). Count unchanged across both passes.
 - `tsconfig.tsbuildinfo` is committed and churns on every build. It belongs in
   `.gitignore`.

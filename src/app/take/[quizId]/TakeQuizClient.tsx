@@ -171,7 +171,7 @@ export default function TakeQuiz({ quizId }: { quizId: string }) {
                                 <span>{quiz?.source_kind === 'quick' ? 'Quick challenge' : 'AI challenge'}</span>
                                 <span>{questions.length} questions</span>
                             </div>
-                            <div className="index-card-body" style={{ padding: '28px 32px 32px', gap: '16px' }}>
+                            <div className="index-card-body" style={{ padding: '28px 32px 32px', gap: 'var(--space-md)' }}>
                                 <span className="eyebrow eyebrow-purple">Challenge by {quiz?.creator_name}</span>
                                 <h1 style={{ fontSize: '3rem' }}>{deck?.title}</h1>
 
@@ -185,7 +185,7 @@ export default function TakeQuiz({ quizId }: { quizId: string }) {
 
                                 {error && <div className="error-box" style={{ marginBottom: 0 }}>{error}</div>}
 
-                                <div className="field" style={{ marginBottom: 0, marginTop: '8px' }}>
+                                <div className="field" style={{ marginBottom: 0, marginTop: 'var(--space-xs)' }}>
                                     <label className="label" htmlFor="player-name">Your Name</label>
                                     <input
                                         id="player-name"
@@ -219,7 +219,7 @@ export default function TakeQuiz({ quizId }: { quizId: string }) {
         return (
             <div className="page">
                 <div className="container">
-                    <div className="quiz-shell" style={{ gap: '32px' }}>
+                    <div className="quiz-shell" style={{ gap: 'var(--space-xl)' }}>
                         <div className="quiz-score">
                             <span className="eyebrow eyebrow-purple">Challenge complete</span>
                             <div className="quiz-score-value">
@@ -236,7 +236,7 @@ export default function TakeQuiz({ quizId }: { quizId: string }) {
 
                         {renderLeaderboard('Top 10', submission?.attempt?.id)}
 
-                        <section className="flex" style={{ flexDirection: 'column', gap: '16px' }}>
+                        <section className="flex" style={{ flexDirection: 'column', gap: 'var(--space-md)' }}>
                             <h2 style={{ fontSize: '1.5rem' }}>Your answers</h2>
                             {questions.map((question, index) => {
                                 const userAnswer = answers[index];
@@ -250,7 +250,7 @@ export default function TakeQuiz({ quizId }: { quizId: string }) {
                                                 {correct ? 'Correct' : 'Missed'}
                                             </span>
                                         </div>
-                                        <div className="index-card-body" style={{ gap: '12px' }}>
+                                        <div className="index-card-body" style={{ gap: 'var(--space-sm)' }}>
                                             {question.scenario && <p className="quiz-scenario">{question.scenario}</p>}
                                             <p style={{ color: 'var(--text)', fontSize: '1.0625rem' }}>{question.question}</p>
                                             <div className="answer-pair">
@@ -286,7 +286,7 @@ export default function TakeQuiz({ quizId }: { quizId: string }) {
     if (submitting) {
         return (
             <div className="page">
-                <div className="loading-center" style={{ flexDirection: 'column', gap: '12px' }}>
+                <div className="loading-center" style={{ flexDirection: 'column', gap: 'var(--space-sm)' }}>
                     <div className="spinner spinner-lg"></div>
                     <p className="text-muted">Submitting your score…</p>
                 </div>

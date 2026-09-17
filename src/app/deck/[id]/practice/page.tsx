@@ -300,7 +300,7 @@ export default function Practice() {
         return (
             <div className="page">
                 <div className="container text-center">
-                    <SparklesIcon size={32} style={{ marginBottom: '12px', opacity: 0.5 }} />
+                    <SparklesIcon size={32} style={{ marginBottom: 'var(--space-sm)', opacity: 0.5 }} />
                     <h2 className="mb-md">You're all caught up!</h2>
                     <p className="mb-lg">There are no more kards to learn in this mode.</p>
                     <div className="flex-center gap-md">
@@ -322,14 +322,14 @@ export default function Practice() {
     if (showCheckIn) {
         return (
             <div className="page">
-                <div className="container text-center" style={{ maxWidth: '480px', paddingTop: '48px' }}>
+                <div className="container container-sm text-center" style={{ paddingTop: 'var(--space-2xl)' }}>
                     <span className="eyebrow">Quick check-in</span>
                     <h2 className="mb-sm mt-sm" style={{ fontSize: '2.5rem' }}>How's it going?</h2>
                     <p className="text-muted mb-lg">
                         You've gone through {CHECK_IN_INTERVAL} kards.
                     </p>
 
-                    <div className="flex" style={{ flexDirection: 'column', gap: '10px' }}>
+                    <div className="flex" style={{ flexDirection: 'column', gap: 'var(--space-xs)' }}>
                         {FEELINGS.map(f => (
                             <button
                                 key={f.label}
@@ -431,7 +431,7 @@ export default function Practice() {
 
     return (
         <div className="page">
-            <div className="container" style={{ maxWidth: '768px' }}>
+            <div className="container container-lg">
                 <div className="session-bar">
                     <Link href={`/deck/${id}`} className="session-back">
                         <ArrowLeftIcon size={16} /> {deck.title}

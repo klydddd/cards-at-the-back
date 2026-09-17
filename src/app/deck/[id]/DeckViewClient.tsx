@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { fetchDeck, fetchCards, fetchQuizChallengesByDeck } from '@/lib/supabase';
@@ -8,6 +8,7 @@ import { getLearnedCardIds, loadSRSProgress, getDueCount } from '@/lib/tracking'
 import { WandIcon, ArrowLeftIcon } from '@/components/Icons';
 import ShareButton from '@/components/ShareButton';
 import PracticeMenu from '@/components/PracticeMenu';
+import Modal from '@/components/Modal';
 import { formatDate } from '@/lib/formatDate';
 import type { Card, CardProgress, Deck, Quiz } from '@/types';
 
@@ -28,6 +29,13 @@ export default function DeckView({ id }: { id: string }) {
     const [adminPassword, setAdminPassword] = useState('');
     const [deleting, setDeleting] = useState(false);
     const [deleteError, setDeleteError] = useState<string | null>(null);
+    const passwordRef = useRef<HTMLInputElement | null>(null);
+
+    // Modal's own effect focuses nothing, and autoFocus does not fire reliably
+    // inside it, so restore the password field's focus explicitly.
+    useEffect(() => {
+        if (showDeleteModal) passwordRef.current?.focus();
+    }, [showDeleteModal]);
 
     useEffect(() => {
         async function load() {
@@ -112,20 +120,20 @@ export default function DeckView({ id }: { id: string }) {
 
     return (
         <div className="page">
-            <div className="container" style={{ maxWidth: '768px' }}>
+            <div className="container container-lg">
                 <div className="mb-lg">
-                    <Link href="/" className="session-back" style={{ marginBottom: '20px' }}>
+                    <Link href="/" className="session-back" style={{ marginBottom: 'var(--space-md)' }}>
                         <ArrowLeftIcon size={16} /> All decks
                     </Link>
-                    <span className="eyebrow" style={{ display: 'block', marginBottom: '10px' }}>
+                    <span className="eyebrow" style={{ display: 'block', marginBottom: 'var(--space-xs)' }}>
                         {[deck?.subject?.trim(), `${cards.length} ${cards.length === 1 ? 'kard' : 'kards'}`].filter(Boolean).join(' · ')}
                     </span>
                     <div className="flex gap-md" style={{ alignItems: 'flex-start' }}>
                         <h1 className="deck-title" style={{ flex: 1 }}>{deck?.title}</h1>
                         <ShareButton url={`/deck/${id}`} title={deck?.title || ''} />
                     </div>
-                    {deck?.description && <p style={{ marginTop: '12px', fontSize: '1.0625rem', maxWidth: '560px' }}>{deck.description}</p>}
-                    <div className="flex gap-sm" style={{ alignItems: 'center', flexWrap: 'wrap', marginTop: '16px' }}>
+                    {deck?.description && <p style={{ marginTop: 'var(--space-sm)', fontSize: '1.0625rem', maxWidth: '560px' }}>{deck.description}</p>}
+                    <div className="flex gap-sm" style={{ alignItems: 'center', flexWrap: 'wrap', marginTop: 'var(--space-md)' }}>
                         {cards.length > 0 && (
                             <span className="badge badge-success">
                                 {learnedCount} learned · {notLearnedCount} learning
@@ -155,7 +163,7 @@ export default function DeckView({ id }: { id: string }) {
                 <div className="section-head">
                     <h2>All kards</h2>
                 </div>
-                <div className="flex" style={{ flexDirection: 'column', gap: '12px' }}>
+                <div className="flex" style={{ flexDirection: 'column', gap: 'var(--space-sm)' }}>
                     {cards.map((card, index) => {
                         const isLearned = getLearnedCardIds(id).has(card.id);
                         const progress = srsProgress[card.id];
@@ -179,16 +187,16 @@ export default function DeckView({ id }: { id: string }) {
                 </div>
 
                 {challenges.length > 0 && (
-                    <div style={{ marginTop: '56px' }}>
+                    <div style={{ marginTop: 'var(--space-3xl)' }}>
                         <div className="section-head">
                             <h2>Published challenges</h2>
                         </div>
-                        <div className="flex" style={{ flexDirection: 'column', gap: '12px' }}>
+                        <div className="flex" style={{ flexDirection: 'column', gap: 'var(--space-sm)' }}>
                             {challenges.map((quiz) => (
                                 <div key={quiz.id} className="index-card" style={{ padding: '16px 22px' }}>
                                     <div className="flex-between gap-md" style={{ alignItems: 'flex-start' }}>
                                         <div style={{ flex: 1 }}>
-                                            <p style={{ fontWeight: 600, marginBottom: '4px' }}>
+                                            <p style={{ fontWeight: 600, marginBottom: 'var(--space-2xs)' }}>
                                                 {quiz.questions?.length || 0} questions
                                             </p>
                                             <div className="flex gap-sm" style={{ flexWrap: 'wrap' }}>
@@ -201,7 +209,7 @@ export default function DeckView({ id }: { id: string }) {
                                                     </span>
                                                 ))}
                                             </div>
-                                            <p className="text-sm text-muted light" style={{ marginTop: '8px' }}>
+                                            <p className="text-sm text-muted light" style={{ marginTop: 'var(--space-xs)' }}>
                                                 {quiz.creator_name} · {formatDate(quiz.created_at)}
                                             </p>
                                         </div>
@@ -224,13 +232,13 @@ export default function DeckView({ id }: { id: string }) {
                 )}
 
                 {/* Admin: Edit / Delete Deck */}
-                <div style={{ marginTop: '48px', borderTop: '1px solid var(--border)', paddingTop: '24px' }} className="flex gap-sm">
+                <div className="flex gap-sm admin-row">
                     <Link href={`/deck/${id}/edit`} className="btn btn-ghost btn-sm">
                         Edit Deck
                     </Link>
                     <button
                         className="btn btn-ghost btn-sm"
-                        style={{ color: 'var(--error)', opacity: 0.7 }}
+                        style={{ color: 'var(--error)' }}
                         onClick={() => { setShowDeleteModal(true); setDeleteError(null); setAdminPassword(''); }}
                     >
                         Delete Deck
@@ -238,43 +246,39 @@ export default function DeckView({ id }: { id: string }) {
                 </div>
             </div>
 
-            {/* Admin delete modal */}
+            {/* Admin delete modal. Modal supplies the backdrop, scroll lock,
+                focus trap, focus restore and dialog semantics that the
+                hand-rolled version here was missing. Passing no onClose while
+                a delete is in flight keeps the old "can't cancel mid-delete"
+                behaviour: Modal treats a missing onClose as mandatory. */}
             {showDeleteModal && (
-                <div
-                    style={{
-                        position: 'fixed',
-                        inset: 0,
-                        background: 'var(--scrim)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        zIndex: 1000,
-                        padding: '20px',
-                    }}
-                    onClick={() => !deleting && setShowDeleteModal(false)}
+                <Modal
+                    open
+                    onClose={deleting ? undefined : () => setShowDeleteModal(false)}
+                    labelledBy="delete-deck-title"
+                    describedBy="delete-deck-desc"
+                    head="Delete deck"
+                    className="delete-dialog"
                 >
-                    <div
-                        className="card"
-                        style={{ padding: '32px', maxWidth: '420px', width: '100%' }}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <h2 className="mb-sm" style={{ color: 'var(--error)' }}>Delete Deck</h2>
-                        <p className="text-sm text-muted mb-md">
+                    <div className="index-card-body">
+                        <h2 id="delete-deck-title" className="delete-dialog-title">Delete deck</h2>
+                        <p id="delete-deck-desc" className="text-sm text-muted">
                             This will permanently delete <strong>{deck?.title}</strong> and all its kards, quizzes, and progress. This cannot be undone.
                         </p>
 
-                        {deleteError && <div className="error-box mb-md">{deleteError}</div>}
+                        {deleteError && <div className="error-box">{deleteError}</div>}
 
                         <div className="field">
-                            <label className="label">Admin Password</label>
+                            <label className="label" htmlFor="delete-deck-password">Admin Password</label>
                             <input
+                                id="delete-deck-password"
+                                ref={passwordRef}
                                 type="password"
                                 className="input"
                                 placeholder="Enter admin password"
                                 value={adminPassword}
                                 onChange={(e) => setAdminPassword(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && !deleting && deleteDeck()}
-                                autoFocus
                             />
                         </div>
 
@@ -287,8 +291,7 @@ export default function DeckView({ id }: { id: string }) {
                                 Cancel
                             </button>
                             <button
-                                className="btn btn-primary"
-                                style={{ background: 'var(--error)', borderColor: 'var(--error)' }}
+                                className="btn btn-danger"
                                 onClick={deleteDeck}
                                 disabled={deleting}
                             >
@@ -296,7 +299,7 @@ export default function DeckView({ id }: { id: string }) {
                             </button>
                         </div>
                     </div>
-                </div>
+                </Modal>
             )}
         </div>
     );

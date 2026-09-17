@@ -192,11 +192,11 @@ export default function Quiz() {
     if (questions.length === 0) {
         return (
             <div className="page">
-                <div className="container" style={{ maxWidth: '640px' }}>
-                    <Link href={`/deck/${id}`} className="session-back" style={{ marginBottom: '20px' }}>
+                <div className="container container-md">
+                    <Link href={`/deck/${id}`} className="session-back" style={{ marginBottom: 'var(--space-md)' }}>
                         <ArrowLeftIcon size={16} /> {deck?.title}
                     </Link>
-                    <span className="eyebrow eyebrow-purple" style={{ display: 'block', marginBottom: '10px' }}>AI quiz</span>
+                    <span className="eyebrow eyebrow-purple" style={{ display: 'block', marginBottom: 'var(--space-xs)' }}>AI quiz</span>
                     <h1 className="deck-title mb-sm">Build a quiz</h1>
                     <p className="mb-lg">Set how many questions you want per type.</p>
 
@@ -204,29 +204,29 @@ export default function Quiz() {
 
                     <div className="card mb-lg">
                         <h3 className="mb-md">Questions per Type</h3>
-                        <div className="flex" style={{ flexDirection: 'column', gap: '12px' }}>
+                        <div className="flex" style={{ flexDirection: 'column', gap: 'var(--space-sm)' }}>
                             {QUESTION_TYPES.map(type => (
-                                <div key={type.id} className="flex-between" style={{ padding: '8px 0' }}>
+                                <div key={type.id} className="flex-between stepper-row">
                                     <span style={{ fontWeight: 500 }}>{type.label}</span>
                                     <div className="flex-center gap-sm">
                                         <button
                                             type="button"
-                                            className="btn btn-ghost btn-sm"
+                                            className="btn stepper-btn"
                                             onClick={() => updateCount(type.id, -1)}
                                             disabled={typeCounts[type.id] === 0}
-                                            style={{ width: '36px', height: '36px', padding: 0, borderRadius: '50%', border: '1.5px solid var(--border)', fontWeight: 700, fontSize: '1.1rem' }}
+                                            aria-label={`One fewer ${type.label} question`}
                                         >
                                             −
                                         </button>
-                                        <span style={{ minWidth: '28px', textAlign: 'center', fontWeight: 700, fontSize: '1.1rem' }}>
+                                        <span className="stepper-value" aria-live="polite">
                                             {typeCounts[type.id]}
                                         </span>
                                         <button
                                             type="button"
-                                            className="btn btn-ghost btn-sm"
+                                            className="btn stepper-btn"
                                             onClick={() => updateCount(type.id, 1)}
                                             disabled={typeCounts[type.id] >= 50 || totalQuestions >= TOTAL_LIMIT}
-                                            style={{ width: '36px', height: '36px', padding: 0, borderRadius: '50%', border: '1.5px solid var(--border)', fontWeight: 700, fontSize: '1.1rem' }}
+                                            aria-label={`One more ${type.label} question`}
                                         >
                                             +
                                         </button>
@@ -234,10 +234,10 @@ export default function Quiz() {
                                 </div>
                             ))}
                         </div>
-                        <div style={{ marginTop: '16px', padding: '12px 16px', background: 'var(--bg)', borderRadius: 'var(--radius-md)' }}>
+                        <div className="stepper-total">
                             <span className="text-sm text-muted">Total questions: </span>
                             <span className="bold">{totalQuestions}</span>
-                            <span className="text-sm text-muted" style={{ marginLeft: '8px' }}>/ {TOTAL_LIMIT} max ({remaining} remaining)</span>
+                            <span className="text-sm text-muted" style={{ marginLeft: 'var(--space-xs)' }}>/ {TOTAL_LIMIT} max ({remaining} remaining)</span>
                         </div>
                     </div>
 
@@ -277,7 +277,7 @@ export default function Quiz() {
 
         return (
             <div className="page">
-                <div className="container" style={{ maxWidth: '720px' }}>
+                <div className="container container-lg">
                     <div className="quiz-score mb-lg">
                         <span className="eyebrow eyebrow-purple">Quiz complete · {deck?.title}</span>
                         <div className="quiz-score-value">
@@ -289,7 +289,7 @@ export default function Quiz() {
                     {error && <div className="error-box mb-md">{error}</div>}
 
                     {publishedQuiz ? (
-                        <div className="card mb-lg" style={{ padding: '24px', background: 'var(--success-light)' }}>
+                        <div className="card mb-lg" style={{ padding: 'var(--space-lg)', background: 'var(--success-light)' }}>
                             <p className="bold mb-sm">Challenge published</p>
                             <p className="text-sm text-muted mb-md">Players can now compete for the best score on this fixed quiz.</p>
                             <div className="flex gap-sm" style={{ flexWrap: 'wrap' }}>
@@ -302,7 +302,7 @@ export default function Quiz() {
                             </div>
                         </div>
                     ) : (
-                        <div className="card mb-lg" style={{ padding: '24px' }}>
+                        <div className="card mb-lg" style={{ padding: 'var(--space-lg)' }}>
                             <p className="bold mb-sm">Publish this quiz as a challenge</p>
                             <p className="text-sm text-muted mb-md">Publishing creates a shareable link where other players can join the leaderboard on this exact question set.</p>
                             <button className="btn btn-primary" onClick={publishChallenge} disabled={publishing}>
@@ -311,7 +311,7 @@ export default function Quiz() {
                         </div>
                     )}
 
-                    <div className="flex" style={{ flexDirection: 'column', gap: '16px' }}>
+                    <div className="flex" style={{ flexDirection: 'column', gap: 'var(--space-md)' }}>
                         {questions.map((question, index) => {
                             const userAnswer = answers[index];
                             const isCorrect = isAnswerCorrect(question, userAnswer);
@@ -322,9 +322,9 @@ export default function Quiz() {
                                         <span>{index + 1} · {question.type.replace('_', ' ')}</span>
                                         <span className={isCorrect ? 'quiz-verdict-correct' : 'quiz-verdict-wrong'}>{isCorrect ? 'Correct' : 'Missed'}</span>
                                     </div>
-                                    <div className="index-card-body" style={{ gap: '12px' }}>
+                                    <div className="index-card-body" style={{ gap: 'var(--space-sm)' }}>
                                         {question.scenario && <p className="quiz-scenario">{question.scenario}</p>}
-                                        <p style={{ color: 'var(--text)', fontSize: '1.0625rem' }}>{question.question}</p>
+                                        <p className="quiz-question-text">{question.question}</p>
                                         <div className="answer-pair">
                                             <div className={`answer-cell ${isCorrect ? 'is-correct' : 'is-wrong'}`}>
                                                 <span className="option-tag">Your answer</span>
@@ -357,17 +357,17 @@ export default function Quiz() {
     if (!started) {
         return (
             <div className="page">
-                <div className="container" style={{ maxWidth: '720px' }}>
-                    <Link href={`/deck/${id}`} className="session-back" style={{ marginBottom: '20px' }}>
+                <div className="container container-lg">
+                    <Link href={`/deck/${id}`} className="session-back" style={{ marginBottom: 'var(--space-md)' }}>
                         <ArrowLeftIcon size={16} /> {deck?.title}
                     </Link>
-                    <span className="eyebrow eyebrow-purple" style={{ display: 'block', marginBottom: '10px' }}>AI quiz · {questions.length} questions</span>
+                    <span className="eyebrow eyebrow-purple" style={{ display: 'block', marginBottom: 'var(--space-xs)' }}>AI quiz · {questions.length} questions</span>
                     <h1 className="deck-title mb-lg">Quiz ready</h1>
 
                     {error && <div className="error-box mb-md">{error}</div>}
 
                     {publishedQuiz ? (
-                        <div className="card mb-lg" style={{ padding: '24px', background: 'var(--success-light)' }}>
+                        <div className="card mb-lg" style={{ padding: 'var(--space-lg)', background: 'var(--success-light)' }}>
                             <p className="bold mb-sm">Challenge published</p>
                             <p className="text-sm text-muted mb-md">This exact quiz is now shareable before you start taking it.</p>
                             <div className="flex gap-sm" style={{ flexWrap: 'wrap' }}>
@@ -380,7 +380,7 @@ export default function Quiz() {
                             </div>
                         </div>
                     ) : (
-                        <div className="card mb-lg" style={{ padding: '24px' }}>
+                        <div className="card mb-lg" style={{ padding: 'var(--space-lg)' }}>
                             <p className="bold mb-sm">Publish this quiz as a challenge</p>
                             <p className="text-sm text-muted mb-md">Publish the fixed question set now, then start taking the same quiz locally.</p>
                             <button className="btn btn-primary" onClick={publishChallenge} disabled={publishing}>
@@ -389,8 +389,8 @@ export default function Quiz() {
                         </div>
                     )}
 
-                    <div className="card mb-lg" style={{ padding: '24px' }}>
-                        <div className="flex-between" style={{ flexWrap: 'wrap', gap: '12px' }}>
+                    <div className="card mb-lg" style={{ padding: 'var(--space-lg)' }}>
+                        <div className="flex-between" style={{ flexWrap: 'wrap', gap: 'var(--space-sm)' }}>
                             <div>
                                 <p className="text-sm text-muted">Question Count</p>
                                 <p style={{ fontSize: '2rem', fontWeight: 800 }}>{questions.length}</p>

@@ -107,7 +107,7 @@ export default function Home() {
                 </header>
 
                 {/* Deck List */}
-                <section ref={listRef} style={{ marginTop: '24px', scrollMarginTop: '96px' }}>
+                <section ref={listRef} style={{ marginTop: 'var(--space-lg)', scrollMarginTop: '96px' }}>
                     <div className="section-head">
                         <h2>Public decks</h2>
                         {renderFilterTabs(subjects, activeSubject, setActiveSubject)}

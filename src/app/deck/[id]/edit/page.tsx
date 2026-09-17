@@ -182,15 +182,15 @@ export default function EditDeck() {
 
     return (
         <div className="page">
-            <div className="container" style={{ maxWidth: '680px' }}>
-                <Link href={`/deck/${id}`} className="session-back" style={{ marginBottom: '20px' }}>
+            <div className="container container-md">
+                <Link href={`/deck/${id}`} className="session-back" style={{ marginBottom: 'var(--space-md)' }}>
                     <ArrowLeftIcon size={16} /> Back to deck
                 </Link>
-                <span className="eyebrow" style={{ display: 'block', marginBottom: '10px' }}>Admin</span>
+                <span className="eyebrow" style={{ display: 'block', marginBottom: 'var(--space-xs)' }}>Admin</span>
                 <h1 className="deck-title mb-lg">Edit deck</h1>
 
                 {/* Admin unlock */}
-                <div className="card mb-lg" style={{ padding: '20px' }}>
+                <div className="card mb-lg" style={{ padding: 'var(--space-md)' }}>
                     <p className="text-sm text-muted mb-sm">Admin access required to edit this deck.</p>
                     {unlockError && <div className="error-box mb-sm">{unlockError}</div>}
                     <div className="flex gap-sm" style={{ alignItems: 'flex-end' }}>
@@ -265,7 +265,7 @@ export default function EditDeck() {
                     </div>
                 </div>
 
-                <div className="flex" style={{ flexDirection: 'column', gap: '12px' }}>
+                <div className="flex" style={{ flexDirection: 'column', gap: 'var(--space-sm)' }}>
                     {cards.map((card, i) => (
                         <CardForm
                             key={card.id ?? `new-${i}`}

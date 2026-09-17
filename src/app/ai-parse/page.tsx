@@ -263,8 +263,8 @@ export default function AIParse() {
 
     return (
         <div className="page">
-            <div className="container" style={{ maxWidth: '720px' }}>
-                <span className="eyebrow eyebrow-purple" style={{ display: 'block', marginBottom: '10px' }}>New deck from your notes</span>
+            <div className="container container-lg">
+                <span className="eyebrow eyebrow-purple" style={{ display: 'block', marginBottom: 'var(--space-xs)' }}>New deck from your notes</span>
                 <h1 className="deck-title mb-sm">AI Parse</h1>
                 <p className="mb-lg">
                     Upload a document or image file and let AI extract flashkards or quiz questions automatically.
@@ -286,13 +286,13 @@ export default function AIParse() {
                             onDrop={handleDrop}
                             id="file-drop-zone"
                         >
-                            <div style={{ marginBottom: '8px' }}>
+                            <div style={{ marginBottom: 'var(--space-xs)' }}>
                                 <FileTextIcon size={32} style={{ opacity: 0.5 }} />
                             </div>
                             <p>
                                 <strong>Drop your file here</strong> or click to browse
                             </p>
-                            <p className="text-sm" style={{ marginTop: '4px' }}>
+                            <p className="text-sm" style={{ marginTop: 'var(--space-2xs)' }}>
                                 Documents: .md, .pdf, .docx, .pptx
                             </p>
                             <p className="text-sm" style={{ marginTop: '2px', opacity: 0.7 }}>
@@ -312,7 +312,7 @@ export default function AIParse() {
 
                         {/* OCR Progress Indicator */}
                         {ocrProcessing && (
-                            <div className="card mt-md" style={{ padding: '20px' }}>
+                            <div className="card mt-md" style={{ padding: 'var(--space-md)' }}>
                                 <div className="flex-center gap-sm mb-sm">
                                     <span className="spinner"></span>
                                     <span className="text-sm bold">Performing OCR... {ocrProgress}%</span>
@@ -424,7 +424,7 @@ export default function AIParse() {
                             </button>
                         </div>
 
-                        <div className="flex" style={{ flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
+                        <div className="flex" style={{ flexDirection: 'column', gap: 'var(--space-xs)', marginBottom: 'var(--space-lg)' }}>
                             {cards.map((card, i) => (
                                 <div key={i} className="index-card is-padded">
                                     <div className="index-card-head">
@@ -460,7 +460,7 @@ export default function AIParse() {
                         </div>
 
                         {/* Save section */}
-                        <div className="card" style={{ padding: '24px' }}>
+                        <div className="card" style={{ padding: 'var(--space-lg)' }}>
                             <h3 className="mb-md">Save as Deck</h3>
 
                             <div className="field">
@@ -527,7 +527,7 @@ export default function AIParse() {
                             </button>
                         </div>
 
-                        <div className="flex" style={{ flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
+                        <div className="flex" style={{ flexDirection: 'column', gap: 'var(--space-xs)', marginBottom: 'var(--space-lg)' }}>
                             {questions.map((q, i) => (
                                 <div key={i} className="index-card is-padded">
                                     <div className="index-card-head">
@@ -633,7 +633,7 @@ export default function AIParse() {
                         </div>
 
                         {/* Save section for quiz */}
-                        <div className="card" style={{ padding: '24px' }}>
+                        <div className="card" style={{ padding: 'var(--space-lg)' }}>
                             <h3 className="mb-md">Save as Deck + Quiz</h3>
                             <p className="text-sm text-muted mb-md">
                                 This will create a deck with flashkards derived from the questions, plus save the quiz so it can be taken.

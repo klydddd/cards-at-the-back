@@ -37,7 +37,7 @@ export default function PracticeMenu({ deckId, dueCount }: { deckId: string, due
             >
                 Practice
                 {dueCount > 0 && <span className="menu-count">{dueCount} due</span>}
-                <ChevronDownIcon size={16} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.18s ease' }} />
+                <ChevronDownIcon size={16} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform var(--transition)' }} />
             </button>
 
             {open && (

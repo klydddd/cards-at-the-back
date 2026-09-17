@@ -4,6 +4,38 @@ import { AI_MODELS } from '@/lib/aiModels';
 
 const apiKey = process.env.GEMINI_API_KEY;
 
+function shuffle<T>(items: T[]): T[] {
+    const result = [...items];
+    for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+}
+
+const normalize = (value: unknown) => String(value ?? '').trim().toLowerCase();
+
+// Models tend to list the correct answer first, so randomize option order here
+// and make sure the answer matches one of the options exactly.
+function shuffleMultipleChoice(question: any) {
+    if (question?.type !== 'multiple_choice' || !Array.isArray(question.options) || question.options.length === 0) {
+        return question;
+    }
+
+    const options: string[] = question.options.map((option: unknown) => String(option));
+    const match = options.find((option) => normalize(option) === normalize(question.answer));
+
+    if (match !== undefined) {
+        return { ...question, options: shuffle(options), answer: match };
+    }
+
+    const answer = String(question.answer ?? '').trim();
+    if (!answer) return { ...question, options: shuffle(options) };
+
+    options[Math.floor(Math.random() * options.length)] = answer;
+    return { ...question, options: shuffle(options), answer };
+}
+
 export async function POST(request: NextRequest) {
     if (!apiKey || apiKey === 'your_gemini_api_key') {
         return NextResponse.json(
@@ -34,13 +66,22 @@ Generate exactly ${totalCount} questions in total, based ONLY on the provided fl
 Generate the following number of questions per type:
 ${typeInstructions}
 
+How to write the questions:
+- NEVER copy a flashcard's description word for word. Paraphrase it in your own words, using different vocabulary and sentence structure, while keeping the meaning accurate.
+- Vary the angle of the questions instead of always asking "What is <description>?". For example: ask about a characteristic, purpose, example, cause/effect, or how the concept differs from a related one.
+- A student who only memorized the exact wording of the flashcards should still have to understand the concept to answer.
+- Do not add facts that are not supported by the flashcards.
+- For multiple choice, use other terms from the flashcards as plausible wrong options when possible.
+- Pick flashcards from across the whole list, not just the first ones, and do not follow the list order.
+
 Respond ONLY with a valid JSON array of question objects. 
 Do not include code fences or markdown formatting. Just the raw JSON.
 
 Use the following schema for the objects in the array based on their "type":
 
 1. Multiple Choice:
-{"type": "multiple_choice", "question": "...", "options": ["A", "B", "C", "D"], "answer": "The exact string from options"}
+{"type": "multiple_choice", "question": "...", "options": ["<option>", "<option>", "<option>", "<option>"], "answer": "The exact string of the correct option"}
+Place the correct option at a random position; do not always put it first.
 
 2. True/False:
 {"type": "true_false", "question": "...", "answer": true or false}
@@ -55,7 +96,7 @@ Use the following schema for the objects in the array based on their "type":
 {"type": "situational", "scenario": "...", "question": "What should be used?", "answer": "The correct term"}
 
 Flashcards Data:
-${JSON.stringify(cards, null, 2)}`;
+${JSON.stringify(shuffle(cards), null, 2)}`;
 
         let lastError: any = null;
 
@@ -72,8 +113,10 @@ ${JSON.stringify(cards, null, 2)}`;
                     cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
                 }
 
-                const questions = JSON.parse(cleaned);
-                if (!Array.isArray(questions)) throw new Error('Response is not an array');
+                const parsed = JSON.parse(cleaned);
+                if (!Array.isArray(parsed)) throw new Error('Response is not an array');
+                // Mix question types and card order so the quiz doesn't mirror the deck.
+                const questions = shuffle(parsed.map(shuffleMultipleChoice));
 
                 console.log(`[quiz] Success with model: ${modelName} (${questions.length} questions)`);
                 return NextResponse.json({ questions });

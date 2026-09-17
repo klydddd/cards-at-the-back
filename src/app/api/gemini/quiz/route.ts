@@ -36,6 +36,38 @@ function shuffleMultipleChoice(question: any) {
     return { ...question, options: shuffle(options), answer };
 }
 
+function shuffle<T>(items: T[]): T[] {
+    const result = [...items];
+    for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+}
+
+const normalize = (value: unknown) => String(value ?? '').trim().toLowerCase();
+
+// Models tend to list the correct answer first, so randomize option order here
+// and make sure the answer matches one of the options exactly.
+function shuffleMultipleChoice(question: any) {
+    if (question?.type !== 'multiple_choice' || !Array.isArray(question.options) || question.options.length === 0) {
+        return question;
+    }
+
+    const options: string[] = question.options.map((option: unknown) => String(option));
+    const match = options.find((option) => normalize(option) === normalize(question.answer));
+
+    if (match !== undefined) {
+        return { ...question, options: shuffle(options), answer: match };
+    }
+
+    const answer = String(question.answer ?? '').trim();
+    if (!answer) return { ...question, options: shuffle(options) };
+
+    options[Math.floor(Math.random() * options.length)] = answer;
+    return { ...question, options: shuffle(options), answer };
+}
+
 export async function POST(request: NextRequest) {
     if (!apiKey || apiKey === 'your_gemini_api_key') {
         return NextResponse.json(

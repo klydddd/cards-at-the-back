@@ -1,16 +1,24 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { fetchDecks } from '@/lib/supabase';
 import DeckCard from '@/components/DeckCard';
+import Pagination, { pageCount, paginate } from '@/components/Pagination';
 import type { Deck } from '@/types';
 
 export default function Home() {
     const [decks, setDecks] = useState<Deck[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [activeSubject, setActiveSubject] = useState('All');
+    const [activeSubject, setActiveSubjectRaw] = useState('All');
+    const [page, setPage] = useState(1);
+    const listRef = useRef<HTMLElement>(null);
+
+    const setActiveSubject = (subject: string) => {
+        setActiveSubjectRaw(subject);
+        setPage(1);
+    };
 
     useEffect(() => {
         fetchDecks()
@@ -34,6 +42,18 @@ export default function Home() {
         if (activeSubject === 'All') return decks;
         return decks.filter(d => d.subject && d.subject.trim() === activeSubject);
     }, [decks, activeSubject]);
+
+    // Clamp so a shrinking list never leaves us on an empty page
+    const currentPage = Math.min(page, pageCount(filteredDecks.length));
+    const pagedDecks = useMemo(
+        () => paginate(filteredDecks, currentPage),
+        [filteredDecks, currentPage]
+    );
+
+    const goToPage = (next: number) => {
+        setPage(next);
+        listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
 
     const renderFilterTabs = (items, active, setActive) => {
         if (items.length <= 1) return null;
@@ -87,7 +107,7 @@ export default function Home() {
                 </header>
 
                 {/* Deck List */}
-                <section style={{ marginTop: '24px' }}>
+                <section ref={listRef} style={{ marginTop: '24px', scrollMarginTop: '96px' }}>
                     <div className="section-head">
                         <h2>Public decks</h2>
                         {renderFilterTabs(subjects, activeSubject, setActiveSubject)}
@@ -124,11 +144,18 @@ export default function Home() {
                     )}
 
                     {!loading && !error && filteredDecks.length > 0 && (
-                        <div className="deck-grid">
-                            {filteredDecks.map((deck) => (
-                                <DeckCard key={deck.id} deck={deck} />
-                            ))}
-                        </div>
+                        <>
+                            <div className="deck-grid">
+                                {pagedDecks.map((deck) => (
+                                    <DeckCard key={deck.id} deck={deck} />
+                                ))}
+                            </div>
+                            <Pagination
+                                page={currentPage}
+                                totalItems={filteredDecks.length}
+                                onPageChange={goToPage}
+                            />
+                        </>
                     )}
                 </section>
             </div>

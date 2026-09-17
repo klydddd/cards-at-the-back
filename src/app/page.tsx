@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { fetchDecks } from '@/lib/supabase';
 import DeckCard from '@/components/DeckCard';
+import SubjectFilter from '@/components/SubjectFilter';
 import Pagination, { pageCount, paginate } from '@/components/Pagination';
 import type { Deck } from '@/types';
 
@@ -11,12 +12,18 @@ export default function Home() {
     const [decks, setDecks] = useState<Deck[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [activeSubject, setActiveSubjectRaw] = useState('All');
+    const [selectedSubjects, setSelectedSubjectsRaw] = useState<string[]>([]);
+    const [query, setQueryRaw] = useState('');
     const [page, setPage] = useState(1);
     const listRef = useRef<HTMLElement>(null);
 
-    const setActiveSubject = (subject: string) => {
-        setActiveSubjectRaw(subject);
+    // Any change to what's shown starts back at page 1
+    const setSelectedSubjects = (next: string[]) => {
+        setSelectedSubjectsRaw(next);
+        setPage(1);
+    };
+    const setQuery = (value: string) => {
+        setQueryRaw(value);
         setPage(1);
     };
 
@@ -31,17 +38,29 @@ export default function Home() {
 
     // Unique subjects from decks
     const subjects = useMemo(() => {
-        const set = new Set();
+        const set = new Set<string>();
         decks.forEach(d => {
             if (d.subject && d.subject.trim()) set.add(d.subject.trim());
         });
-        return ['All', ...Array.from(set).sort()];
+        return Array.from(set).sort();
     }, [decks]);
 
     const filteredDecks = useMemo(() => {
-        if (activeSubject === 'All') return decks;
-        return decks.filter(d => d.subject && d.subject.trim() === activeSubject);
-    }, [decks, activeSubject]);
+        const chosen = new Set(selectedSubjects);
+        const needle = query.trim().toLowerCase();
+
+        return decks.filter(d => {
+            const subject = d.subject?.trim() || '';
+            if (chosen.size > 0 && !chosen.has(subject)) return false;
+            if (!needle) return true;
+
+            // Card contents are deliberately not searched — this is a browse list
+            const haystack = [d.title, d.description, d.creator_name, subject]
+                .join(' ')
+                .toLowerCase();
+            return haystack.includes(needle);
+        });
+    }, [decks, selectedSubjects, query]);
 
     // Clamp so a shrinking list never leaves us on an empty page
     const currentPage = Math.min(page, pageCount(filteredDecks.length));
@@ -55,23 +74,9 @@ export default function Home() {
         listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
-    const renderFilterTabs = (items, active, setActive) => {
-        if (items.length <= 1) return null;
-        return (
-            <div className="chip-row">
-                {items.map(s => (
-                    <button
-                        key={s}
-                        type="button"
-                        className={`chip ${active === s ? 'is-active' : ''}`}
-                        aria-pressed={active === s}
-                        onClick={() => setActive(s)}
-                    >
-                        {s}
-                    </button>
-                ))}
-            </div>
-        );
+    const clearFilters = () => {
+        setSelectedSubjects([]);
+        setQuery('');
     };
 
     return (
@@ -110,7 +115,29 @@ export default function Home() {
                 <section ref={listRef} style={{ marginTop: 'var(--space-lg)', scrollMarginTop: '96px' }}>
                     <div className="section-head">
                         <h2>Public decks</h2>
-                        {renderFilterTabs(subjects, activeSubject, setActiveSubject)}
+                    </div>
+
+                    <div className="browse-toolbar">
+                        <div className="browse-search">
+                            <label className="sr-only" htmlFor="deck-search">
+                                Search decks
+                            </label>
+                            <input
+                                id="deck-search"
+                                type="search"
+                                className="input"
+                                placeholder="Search by title, creator, or subject"
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
+                            />
+                        </div>
+                        <div className="browse-filter">
+                            <SubjectFilter
+                                subjects={subjects}
+                                selected={selectedSubjects}
+                                onChange={setSelectedSubjects}
+                            />
+                        </div>
                     </div>
 
                     {loading && (
@@ -123,7 +150,7 @@ export default function Home() {
 
                     {!loading && !error && filteredDecks.length === 0 && (
                         <div className="empty-state">
-                            {activeSubject === 'All' ? (
+                            {decks.length === 0 ? (
                                 <>
                                     <h2>No decks yet</h2>
                                     <p>Be the first to create a deck and share it with the world.</p>
@@ -133,10 +160,10 @@ export default function Home() {
                                 </>
                             ) : (
                                 <>
-                                    <h2>No decks in "{activeSubject}"</h2>
-                                    <p>No decks match this subject filter.</p>
-                                    <button className="btn btn-secondary" onClick={() => setActiveSubject('All')}>
-                                        Show All
+                                    <h2>No decks match</h2>
+                                    <p>Nothing fits the current filters.</p>
+                                    <button className="btn btn-secondary" onClick={clearFilters}>
+                                        Clear filters
                                     </button>
                                 </>
                             )}

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { fetchQuizChallenges, fetchChallengeStats } from '@/lib/supabase';
 import { getCompletedChallengeSet } from '@/lib/challengeHistory';
 import ChallengeCard from '@/components/ChallengeCard';
+import SubjectFilter from '@/components/SubjectFilter';
 import Pagination, { pageCount, paginate } from '@/components/Pagination';
 import type { ChallengeListItem, ChallengeSort, ChallengeStats } from '@/types';
 
@@ -21,15 +22,15 @@ export default function ChallengesClient() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const [activeSubject, setActiveSubjectRaw] = useState('All');
+    const [selectedSubjects, setSelectedSubjectsRaw] = useState<string[]>([]);
     const [query, setQueryRaw] = useState('');
     const [sort, setSortRaw] = useState<ChallengeSort>('recent');
     const [page, setPage] = useState(1);
     const listRef = useRef<HTMLDivElement>(null);
 
     // Any change to what's shown starts back at page 1
-    const setActiveSubject = (subject: string) => {
-        setActiveSubjectRaw(subject);
+    const setSelectedSubjects = (next: string[]) => {
+        setSelectedSubjectsRaw(next);
         setPage(1);
     };
     const setQuery = (value: string) => {
@@ -65,21 +66,22 @@ export default function ChallengesClient() {
         c.subject?.trim() || c.decks?.subject?.trim() || '';
 
     // Quizzes rarely carry their own subject, so the deck's is what actually
-    // populates these chips.
+    // populates the filter.
     const subjects = useMemo(() => {
         const set = new Set<string>();
         challenges.forEach((c) => {
             const subject = subjectOf(c);
             if (subject) set.add(subject);
         });
-        return ['All', ...Array.from(set).sort()];
+        return Array.from(set).sort();
     }, [challenges]);
 
     const visible = useMemo(() => {
+        const chosen = new Set(selectedSubjects);
         const needle = query.trim().toLowerCase();
 
         return challenges.filter((c) => {
-            if (activeSubject !== 'All' && subjectOf(c) !== activeSubject) return false;
+            if (chosen.size > 0 && !chosen.has(subjectOf(c))) return false;
             if (!needle) return true;
 
             // Deliberately not searching question text — surfacing answer-adjacent
@@ -95,7 +97,7 @@ export default function ChallengesClient() {
 
             return haystack.includes(needle);
         });
-    }, [challenges, activeSubject, query]);
+    }, [challenges, selectedSubjects, query]);
 
     const sorted = useMemo(() => {
         const byNewest = (a: ChallengeListItem, b: ChallengeListItem) =>
@@ -124,28 +126,9 @@ export default function ChallengesClient() {
     };
 
     const clearFilters = () => {
-        setActiveSubject('All');
+        setSelectedSubjects([]);
         setQuery('');
         setSort('recent');
-    };
-
-    const renderFilterTabs = (items, active, setActive) => {
-        if (items.length <= 1) return null;
-        return (
-            <div className="chip-row">
-                {items.map((s) => (
-                    <button
-                        key={s}
-                        type="button"
-                        className={`chip ${active === s ? 'is-active' : ''}`}
-                        aria-pressed={active === s}
-                        onClick={() => setActive(s)}
-                    >
-                        {s}
-                    </button>
-                ))}
-            </div>
-        );
     };
 
     return (
@@ -153,7 +136,6 @@ export default function ChallengesClient() {
             <div className="container container-wide">
                 <div className="section-head" ref={listRef} style={{ scrollMarginTop: '96px' }}>
                     <h2>Challenges</h2>
-                    {renderFilterTabs(subjects, activeSubject, setActiveSubject)}
                 </div>
 
                 <p className="text-muted" style={{ marginTop: '-12px', marginBottom: 'var(--space-lg)' }}>
@@ -172,6 +154,13 @@ export default function ChallengesClient() {
                             placeholder="Search by deck, creator, or type"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
+                        />
+                    </div>
+                    <div className="browse-filter">
+                        <SubjectFilter
+                            subjects={subjects}
+                            selected={selectedSubjects}
+                            onChange={setSelectedSubjects}
                         />
                     </div>
                     <div className="browse-sort select-wrap">

@@ -1069,12 +1069,15 @@ p {
 
 .browse-search {
   flex: 1 1 220px;
-  max-width: 360px;
 }
 
 .browse-sort {
   flex: 0 0 auto;
   min-width: 180px;
+}
+
+.browse-filter {
+  flex: 0 0 auto;
 }
 
 /* Deliberately not reusing .deck-card: its press reads as "the whole card is
@@ -1200,6 +1203,49 @@ p {
 .menu-item-meta {
   font-size: 0.8125rem;
   color: var(--text-faint);
+}
+
+/* ─── Subject filter ─── */
+/* A checkbox list inside the shared .menu popover. Options scroll; the
+   Clear row stays put underneath so it's reachable however long the list is. */
+.subject-filter-list {
+  left: auto;
+  right: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.subject-filter-options {
+  display: flex;
+  flex-direction: column;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: var(--space-xs);
+}
+
+.subject-filter-option {
+  justify-content: flex-start;
+  gap: var(--space-sm);
+  cursor: pointer;
+  user-select: none;
+}
+
+.subject-filter-option input {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--hue-mint);
+  cursor: pointer;
+}
+
+.subject-filter-footer {
+  padding: var(--space-xs);
+  border-top: var(--border-w) solid var(--ink);
+}
+
+.subject-filter-footer .btn {
+  width: 100%;
 }
 
 /* ─── Study Session (practice / review) ─── */
@@ -2607,7 +2653,10 @@ p {
   .hero-stack { display: none; }
   .section-head h2 { font-size: 2.25rem; }
   .deck-grid { grid-template-columns: minmax(0, 1fr); gap: 18px; }
-  .browse-search, .browse-sort { flex: 1 1 100%; max-width: none; }
+  .browse-search, .browse-filter, .browse-sort { flex: 1 1 100%; }
+  .subject-filter, .subject-filter-toggle { width: 100%; }
+  .subject-filter-toggle { justify-content: space-between; }
+  .subject-filter-list { left: 0; right: 0; min-width: 0; }
 
   /* There is no mobile menu, so let the links wrap onto a second row rather
      than overflow once "Challenges" joins them. */

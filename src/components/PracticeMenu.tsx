@@ -1,30 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { ChevronDownIcon } from './Icons';
+import { useDismiss } from '@/lib/useDismiss';
 
 export default function PracticeMenu({ deckId, dueCount }: { deckId: string, dueCount: number }) {
     const [open, setOpen] = useState(false);
     const rootRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        if (!open) return;
-
-        const handlePointer = (e: MouseEvent) => {
-            if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
-        };
-        const handleKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') setOpen(false);
-        };
-
-        document.addEventListener('mousedown', handlePointer);
-        document.addEventListener('keydown', handleKey);
-        return () => {
-            document.removeEventListener('mousedown', handlePointer);
-            document.removeEventListener('keydown', handleKey);
-        };
-    }, [open]);
+    useDismiss(rootRef, open, () => setOpen(false));
 
     return (
         <div className="menu" ref={rootRef}>

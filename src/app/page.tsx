@@ -93,7 +93,7 @@ export default function Home() {
                             Create, share, and practice flashkards. Drop in your notes and let AI write the deck for you.
                         </p>
                         <div className="flex gap-sm" style={{ flexWrap: 'wrap' }}>
-                            <Link href="/create" className="btn btn-primary btn-lg">
+                            <Link href="/create/deck" className="btn btn-primary btn-lg">
                                 Create Deck
                             </Link>
                             <Link href="/ai-parse" className="btn btn-secondary btn-lg">
@@ -154,7 +154,7 @@ export default function Home() {
                                 <>
                                     <h2>No decks yet</h2>
                                     <p>Be the first to create a deck and share it with the world.</p>
-                                    <Link href="/create" className="btn btn-primary">
+                                    <Link href="/create/deck" className="btn btn-primary">
                                         Create your first deck
                                     </Link>
                                 </>

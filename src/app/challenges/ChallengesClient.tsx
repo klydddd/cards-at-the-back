@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { fetchQuizChallenges, fetchChallengeStats } from '@/lib/supabase';
 import { getCompletedChallengeSet } from '@/lib/challengeHistory';
+import { challengeTitle } from '@/lib/challenges';
 import ChallengeCard from '@/components/ChallengeCard';
 import SubjectFilter from '@/components/SubjectFilter';
 import Pagination, { pageCount, paginate } from '@/components/Pagination';
@@ -87,7 +88,7 @@ export default function ChallengesClient() {
             // Deliberately not searching question text — surfacing answer-adjacent
             // content in a browse list undercuts the point of the page.
             const haystack = [
-                c.decks?.title || '',
+                challengeTitle(c),
                 c.creator_name || '',
                 subjectOf(c),
                 (c.question_types || []).join(' ').replace(/_/g, ' '),
@@ -134,13 +135,27 @@ export default function ChallengesClient() {
     return (
         <div className="page">
             <div className="container container-wide">
-                <div className="section-head" ref={listRef} style={{ scrollMarginTop: '96px' }}>
-                    <h2>Challenges</h2>
-                </div>
+                {/* Hero, like the home page — minus the card-stack illustration */}
+                <header className="hero hero-compact">
+                    <div className="hero-copy">
+                        <span className="eyebrow">Compete</span>
+                        <h1 className="hero-title">
+                            <em>Challenges</em>
+                        </h1>
+                        <p className="hero-lede">
+                            Quizzes published by other students. Pick one and test what you know, or write your own and share the link.
+                        </p>
+                        <div className="flex gap-sm" style={{ flexWrap: 'wrap' }}>
+                            <Link href="/create/challenge" className="btn btn-primary btn-lg">
+                                Create Challenge
+                            </Link>
+                        </div>
+                    </div>
+                </header>
 
-                <p className="text-muted" style={{ marginTop: '-12px', marginBottom: 'var(--space-lg)' }}>
-                    Published quizzes from every deck. Pick one and test what you know.
-                </p>
+                <div className="section-head" ref={listRef} style={{ scrollMarginTop: '96px', marginTop: 'var(--space-lg)' }}>
+                    <h2>All challenges</h2>
+                </div>
 
                 <div className="browse-toolbar">
                     <div className="browse-search">
@@ -151,7 +166,7 @@ export default function ChallengesClient() {
                             id="challenge-search"
                             type="search"
                             className="input"
-                            placeholder="Search by deck, creator, or type"
+                            placeholder="Search by title, creator, or type"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                         />
@@ -196,11 +211,11 @@ export default function ChallengesClient() {
                             <>
                                 <h2>No challenges yet</h2>
                                 <p>
-                                    Challenges are quizzes published from a deck. Open a deck and
-                                    publish one to see it here.
+                                    Write your own multiple-choice challenge, or open a deck and
+                                    publish a quiz from it.
                                 </p>
-                                <Link href="/" className="btn btn-primary">
-                                    Browse decks
+                                <Link href="/create/challenge" className="btn btn-primary">
+                                    Create a challenge
                                 </Link>
                             </>
                         ) : (

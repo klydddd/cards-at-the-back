@@ -17,7 +17,7 @@ export interface Deck {
   cards?: { count: number }[];
 }
 
-export type QuizSourceKind = 'ai' | 'quick';
+export type QuizSourceKind = 'ai' | 'quick' | 'manual';
 export type QuizQuestionType =
   | 'multiple_choice'
   | 'true_false'
@@ -35,7 +35,10 @@ export interface QuizQuestion {
 
 export interface Quiz {
   id: string;
-  deck_id: string;
+  // Null for a manual challenge, which has no deck behind it
+  deck_id: string | null;
+  // Set only on manual challenges; deck-based quizzes borrow the deck's title
+  title?: string | null;
   creator_name: string;
   source_kind: QuizSourceKind;
   questions: QuizQuestion[];
@@ -50,7 +53,8 @@ export interface Quiz {
 // Not `extends Quiz` — the list query omits `answers` and `score` on purpose.
 export interface ChallengeListItem {
   id: string;
-  deck_id: string;
+  deck_id: string | null;
+  title?: string | null;
   creator_name: string;
   source_kind: QuizSourceKind;
   questions: QuizQuestion[];

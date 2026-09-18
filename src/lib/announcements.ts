@@ -20,6 +20,22 @@ export interface Announcement {
 // Newest first
 export const ANNOUNCEMENTS: Announcement[] = [
     {
+        id: '2026-09-manual-challenges',
+        date: '2026-09-18',
+        title: 'Build your own challenge',
+        items: [
+            {
+                title: 'Challenges without a deck',
+                text: 'Write your own multiple-choice questions, publish them, and share the link. No kards needed.',
+            },
+            {
+                title: 'One Create button',
+                text: 'Create in the top bar now asks whether you want a deck or a challenge.',
+            },
+        ],
+        cta: { label: 'Create a challenge', href: '/create/challenge' },
+    },
+    {
         id: '2026-09-whats-new',
         date: '2026-09-17',
         title: 'Challenges, smarter quizzes, and an iOS fix',

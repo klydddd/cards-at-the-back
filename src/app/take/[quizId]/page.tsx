@@ -1,16 +1,19 @@
 import TakeQuizClient from './TakeQuizClient';
 import { fetchQuiz, fetchDeck } from '@/lib/supabase';
+import { challengeKindLabel, challengeTitle } from '@/lib/challenges';
 
 export async function generateMetadata({ params }: { params: Promise<{ quizId: string }> }) {
     const { quizId } = await params;
     try {
         const quiz = await fetchQuiz(quizId);
-        const deck = await fetchDeck(quiz.deck_id);
+        // Manual challenges have no deck; they carry their own title
+        const deck = quiz.deck_id ? await fetchDeck(quiz.deck_id) : null;
+        const title = `${challengeTitle(quiz, deck?.title)} Challenge · gokards`;
         return {
-            title: `${deck.title} Challenge · gokards`,
+            title,
             openGraph: {
-                title: `${deck.title} Challenge · gokards`,
-                description: `${quiz.questions?.length || 0}-question ${quiz.source_kind === 'quick' ? 'quick' : 'AI'} challenge`,
+                title,
+                description: `${quiz.questions?.length || 0} questions · ${challengeKindLabel(quiz.source_kind)}`,
             },
         };
     } catch {

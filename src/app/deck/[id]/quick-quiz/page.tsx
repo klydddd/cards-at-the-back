@@ -9,7 +9,7 @@ import { gradeQuizAttempt, isAnswerCorrect } from '@/lib/quizGrading';
 import { playSound, preloadSounds } from '@/lib/sounds';
 import { ArrowLeftIcon } from '@/components/Icons';
 import QuizQuestionView from '@/components/QuizQuestionView';
-import type { Card, Deck, Quiz, QuizQuestion } from '@/types';
+import type { Card, Deck, Quiz, QuizQuestion, QuizQuestionType } from '@/types';
 
 const QUIZ_TYPES = [
     { id: 'multiple_choice' as const, label: 'Multiple Choice', minCards: 4 },
@@ -113,14 +113,14 @@ export default function MCQuiz() {
         setError(null);
 
         try {
-            const savedQuiz = await saveQuiz(
-                id,
-                creatorName.trim() || 'Anonymous',
+            const savedQuiz = await saveQuiz({
+                deckId: id,
+                creatorName: creatorName.trim() || 'Anonymous',
                 questions,
-                [selectedType],
-                deck?.subject || '',
-                'quick'
-            );
+                questionTypes: [selectedType as QuizQuestionType],
+                subject: deck?.subject || '',
+                sourceKind: 'quick',
+            });
             setPublishedQuiz(savedQuiz);
         } catch (err) {
             setError(err.message);

@@ -75,8 +75,11 @@ ADMIN_PASSWORD=          # required by /api/admin/*
 ```
 decks            — id, title, description, creator_name, subject, created_at
 cards            — id, deck_id, front, back, position
-quizzes          — id, deck_id, creator_name, source_kind ('ai' | 'quick'), questions (jsonb),
-                   question_types, subject, created_at   (answers/score columns are legacy)
+quizzes          — id, deck_id (nullable), title (nullable), creator_name, source_kind ('ai' | 'quick' | 'manual'),
+                   questions (jsonb), question_types, subject, created_at   (answers/score columns are legacy)
+                   A manual challenge has deck_id null and its own title; deck-based quizzes have title null
+                   and borrow the deck's (check constraint quizzes_title_or_deck). Use challengeTitle() in
+                   src/lib/challenges.ts rather than reading either field directly.
 quiz_attempts    — id, quiz_id, player_name, answers, score, question_count, elapsed_ms,
                    started_at, completed_at   (written only by the attempts route; hidden from anon by RLS)
 card_progress    — id, card_id (unique), deck_id, ease_factor, interval, repetitions, due_date, last_reviewed
@@ -85,7 +88,7 @@ onboarding_responses — private, same pattern; written by /api/onboarding. Allo
                    src/lib/onboarding.ts and the table's check constraints
 ```
 
-`supabase/current.sql` is a schema dump for context only (not runnable). The runnable pieces are `supabase/migration.sql`, `supabase/add_missing_columns.sql`, `supabase/contact_messages.sql`, `supabase/onboarding_responses.sql`, and `supabase_migration_card_progress.sql`.
+`supabase/current.sql` is a schema dump for context only (not runnable). The runnable pieces are `supabase/migration.sql`, `supabase/add_missing_columns.sql`, `supabase/contact_messages.sql`, `supabase/onboarding_responses.sql`, `supabase/manual_challenges.sql`, and `supabase_migration_card_progress.sql`.
 
 RLS must stay enabled on every table — without it the public anon key has full read/write access. Several live policies are still too permissive (e.g. `UPDATE USING (true)` on `quizzes`); see `docs/audit/SECURITY.md`.
 
@@ -95,8 +98,9 @@ RLS must stay enabled on every table — without it the public anon key has full
 
 - **AI Parse** (`/ai-parse`): client extracts text (`pdfParser.ts` for PDF, `docParser.ts` for DOCX/PPTX, `ocrParser.ts` for images) → `POST /api/gemini/parse` for text, or `POST /api/gemini/parse-ocr` with `mode: 'mcq' | 'cards'` for OCR output → model fallback → user edits → `createDeck` + `createCards`.
 - **AI Quiz** (`/deck/[id]/quiz`): `POST /api/gemini/quiz` with cards + `questionTypeCounts` → `saveQuiz(..., 'ai')`. Result page at `/deck/[id]/quiz/[quizId]`.
-- **Quick Quiz** (`/deck/[id]/quick-quiz`): `generateQuickQuiz` runs client-side with no network call; "Publish challenge" persists it via `saveQuiz(..., 'quick')`.
-- **Challenges**: `/challenges` lists published quizzes (`fetchQuizChallenges`, play counts from `/api/challenges/stats`). `/take/[quizId]` plays one and `POST`s the attempt for server grading; completed ids are tracked in `src/lib/challengeHistory.ts`.
+- **Quick Quiz** (`/deck/[id]/quick-quiz`): `generateQuickQuiz` runs client-side with no network call; "Publish challenge" persists it via `saveQuiz({ ..., sourceKind: 'quick' })`.
+- **Manual challenge** (`/create/challenge`): hand-written questions with no deck. Draft types and validation live in `src/lib/manualQuiz.ts` (multiple choice only so far; a new question type is a new draft kind there plus a branch in the builder page's `renderQuestion`). Saved with `deckId: null`, `title`, `sourceKind: 'manual'`. `/create` itself is a chooser between `/create/deck` (the deck form) and `/create/challenge`.
+- **Challenges**: `/challenges` lists published quizzes (`fetchQuizChallenges`, play counts from `/api/challenges/stats`). `/take/[quizId]` plays one and `POST`s the attempt for server grading; completed ids are tracked in `src/lib/challengeHistory.ts`. The answer key is `/take/[quizId]/review` (works with or without a deck; `/deck/[id]/quiz/[quizId]` is the deck-scoped twin, both render `QuizReviewView`).
 
 ## Onboarding, legal, announcements
 

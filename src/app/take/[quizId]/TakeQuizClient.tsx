@@ -8,6 +8,7 @@ import { gradeQuizAttempt, isAnswerCorrect } from '@/lib/quizGrading';
 import { playSound, preloadSounds } from '@/lib/sounds';
 import { markChallengeCompleted } from '@/lib/challengeHistory';
 import { ArrowLeftIcon } from '@/components/Icons';
+import { challengeKindLabel, challengeTitle } from '@/lib/challenges';
 import QuizQuestionView, { formatAnswer } from '@/components/QuizQuestionView';
 import type { Deck, Quiz, QuizAttempt, QuizQuestion } from '@/types';
 
@@ -46,7 +47,8 @@ export default function TakeQuiz({ quizId }: { quizId: string }) {
             try {
                 const challenge = await fetchQuiz(quizId);
                 const [deckRecord, attempts] = await Promise.all([
-                    fetchDeck(challenge.deck_id),
+                    // Manual challenges have no deck behind them
+                    challenge.deck_id ? fetchDeck(challenge.deck_id) : Promise.resolve(null),
                     // The board is decorative next to taking the quiz — never block on it
                     fetchQuizAttempts(quizId).catch(() => []),
                 ]);
@@ -121,6 +123,10 @@ export default function TakeQuiz({ quizId }: { quizId: string }) {
         setFeedback({ userAnswer: finalAnswer, isCorrect });
     };
 
+    const title = challengeTitle(quiz, deck?.title);
+    // Where "back" and "study" go: the deck when there is one, else the browse page
+    const homeHref = quiz?.deck_id ? `/deck/${quiz.deck_id}` : '/challenges';
+
     const renderLeaderboard = (caption: string, highlightId?: string) => (
         <div className="board">
             <div className="board-head">
@@ -167,19 +173,19 @@ export default function TakeQuiz({ quizId }: { quizId: string }) {
                 <div className="container">
                     <div className="quiz-shell">
                         <div>
-                            <Link href={`/deck/${quiz?.deck_id}`} className="session-back">
-                                <ArrowLeftIcon size={16} /> Deck
+                            <Link href={homeHref} className="session-back">
+                                <ArrowLeftIcon size={16} /> {quiz?.deck_id ? 'Deck' : 'Challenges'}
                             </Link>
                         </div>
 
                         <div className="index-card">
                             <div className="index-card-head">
-                                <span>{quiz?.source_kind === 'quick' ? 'Quick challenge' : 'AI challenge'}</span>
+                                <span>{challengeKindLabel(quiz?.source_kind)}</span>
                                 <span>{questions.length} questions</span>
                             </div>
                             <div className="index-card-body" style={{ padding: '28px 32px 32px', gap: 'var(--space-md)' }}>
                                 <span className="eyebrow eyebrow-purple">Challenge by {quiz?.creator_name}</span>
-                                <h1 style={{ fontSize: '3rem' }}>{deck?.title}</h1>
+                                <h1 style={{ fontSize: '3rem' }}>{title}</h1>
 
                                 {(quiz?.question_types || []).length > 0 && (
                                     <div className="flex gap-sm" style={{ flexWrap: 'wrap' }}>
@@ -207,7 +213,7 @@ export default function TakeQuiz({ quizId }: { quizId: string }) {
                                     <button className="btn btn-primary btn-lg" onClick={startQuiz}>
                                         Start Challenge
                                     </button>
-                                    <ShareButton url={`/take/${quizId}`} title={`${deck?.title || ''} Challenge`} />
+                                    <ShareButton url={`/take/${quizId}`} title={`${title} Challenge`} />
                                 </div>
                             </div>
                         </div>
@@ -279,8 +285,8 @@ export default function TakeQuiz({ quizId }: { quizId: string }) {
                             <Link href={`/take/${quizId}`} className="btn btn-secondary btn-lg">
                                 Play Again
                             </Link>
-                            <Link href={`/deck/${quiz!.deck_id}`} className="btn btn-primary btn-lg">
-                                Study this deck
+                            <Link href={homeHref} className="btn btn-primary btn-lg">
+                                {quiz?.deck_id ? 'Study this deck' : 'More challenges'}
                             </Link>
                         </div>
                     </div>
@@ -314,7 +320,7 @@ export default function TakeQuiz({ quizId }: { quizId: string }) {
                     onInputChange={setCurrentInput}
                     onSubmit={(answer) => submitAnswer(answer ?? null)}
                     onNext={() => void goNext()}
-                    eyebrow={`${deck?.title ?? ''} · Challenge`}
+                    eyebrow={`${title} · Challenge`}
                     quit={<Link href={`/take/${quizId}`} className="session-back session-quit">Quit</Link>}
                     error={error}
                 />

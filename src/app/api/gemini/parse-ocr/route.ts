@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { AI_MODELS } from '@/lib/aiModels';
+import { generateChunked } from '@/lib/geminiServer';
+import { dedupeBy } from '@/lib/chunking';
 
 const apiKey = process.env.GEMINI_API_KEY;
+
+// Long documents are processed in several model calls (see geminiServer.ts).
+export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
     if (!apiKey || apiKey === 'your_gemini_api_key') {
@@ -20,15 +24,15 @@ export async function POST(request: NextRequest) {
 
         const genAI = new GoogleGenerativeAI(apiKey);
 
-        // Build the prompt based on mode
-        let prompt: string;
+        // Build the prompt for one chunk of the text, based on mode
+        let promptFor: (chunk: string) => string;
 
         if (mode === 'mcq') {
             // The text is either an exam/worksheet that already contains questions
             // (extract them) or study material such as notes, slides or a chapter
             // (generate questions from it). The mode is used for documents as well
             // as OCR output, so the prompt must never return [] for notes.
-            prompt = `You are an expert at turning study material into multiple choice quizzes. The following text was extracted from a document (possibly via OCR, so it may contain artifacts). It is EITHER an exam / worksheet that already contains questions, OR study material such as lecture notes, slides, a chapter or a summary.
+            promptFor = (chunk: string) => `You are an expert at turning study material into multiple choice quizzes. The following text was extracted from a document (possibly via OCR, so it may contain artifacts). It is EITHER an exam / worksheet that already contains questions, OR study material such as lecture notes, slides, a chapter or a summary.
 
 Your task:
 1. First decide which kind of text it is.
@@ -56,10 +60,10 @@ Rules:
 - Do NOT include any markdown formatting, code fences, or extra text. Just the raw JSON array.
 
 Text:
-${content}`;
+${chunk}`;
         } else {
             // Default flashcard extraction (same as parse route)
-            prompt = `You are a flashcard generator. The following text was extracted via OCR from a document. Analyze the content and turn it into a COMPLETE study deck that covers the whole text. Create flashcards where:
+            promptFor = (chunk: string) => `You are a flashcard generator. The following text was extracted via OCR from a document. Analyze the content and turn it into a COMPLETE study deck that covers the whole text. Create flashcards where:
 - The "front" is the DESCRIPTION or DEFINITION of the concept
 - The "back" is the TERM, KEYWORD, or short answer
 
@@ -78,76 +82,54 @@ Example output format:
 [{"front": "The process of converting source code into machine code", "back": "Compilation"}, {"front": "A data structure that follows Last-In-First-Out principle", "back": "Stack"}]
 
 OCR Content:
-${content}`;
+${chunk}`;
         }
 
-        let lastError: any = null;
+        const parsed = await generateChunked(genAI, content, promptFor, 'parse-ocr');
 
-        for (const modelName of AI_MODELS) {
-            try {
-                console.log(`[parse-ocr] Trying model: ${modelName}`);
-                const model = genAI.getGenerativeModel({ model: modelName });
-                const result = await model.generateContent(prompt);
-                const response = await result.response;
-                const text = response.text().trim();
-
-                let cleaned = text;
-                if (cleaned.startsWith('```')) {
-                    cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+        if (mode === 'mcq') {
+            // Sanitize MCQ output
+            const questions = parsed.map((q: any) => {
+                if (q.type === 'multiple_choice') {
+                    return {
+                        type: 'multiple_choice',
+                        question: q.question || '',
+                        options: Array.isArray(q.options) ? q.options : [],
+                        answer: q.answer || '',
+                    };
+                } else if (q.type === 'true_false') {
+                    return {
+                        type: 'true_false',
+                        question: q.question || '',
+                        answer: typeof q.answer === 'boolean' ? q.answer : q.answer === 'true',
+                    };
+                } else if (q.type === 'identification') {
+                    return {
+                        type: 'identification',
+                        question: q.question || '',
+                        answer: q.answer || '',
+                    };
                 }
+                return q;
+            });
 
-                const parsed = JSON.parse(cleaned);
-                if (!Array.isArray(parsed)) throw new Error('Response is not an array');
+            // Adjacent chunks can ask the same question; keep the first.
+            const unique = dedupeBy(questions, (q) => q.question);
+            console.log(`[parse-ocr] Done (${unique.length} questions)`);
+            return NextResponse.json({ questions: unique });
+        } else {
+            // Sanitize flashcard output; the same term can appear in two chunks.
+            const cards = dedupeBy(
+                parsed.map((c: any) => ({
+                    front: c.front || '',
+                    back: c.back || '',
+                })),
+                (c) => c.back,
+            );
 
-                if (mode === 'mcq') {
-                    // Sanitize MCQ output
-                    const questions = parsed.map((q: any) => {
-                        if (q.type === 'multiple_choice') {
-                            return {
-                                type: 'multiple_choice',
-                                question: q.question || '',
-                                options: Array.isArray(q.options) ? q.options : [],
-                                answer: q.answer || '',
-                            };
-                        } else if (q.type === 'true_false') {
-                            return {
-                                type: 'true_false',
-                                question: q.question || '',
-                                answer: typeof q.answer === 'boolean' ? q.answer : q.answer === 'true',
-                            };
-                        } else if (q.type === 'identification') {
-                            return {
-                                type: 'identification',
-                                question: q.question || '',
-                                answer: q.answer || '',
-                            };
-                        }
-                        return q;
-                    });
-
-                    console.log(`[parse-ocr] Success with model: ${modelName} (${questions.length} questions)`);
-                    return NextResponse.json({ questions });
-                } else {
-                    // Sanitize flashcard output
-                    const cards = parsed.map((c: any) => ({
-                        front: c.front || '',
-                        back: c.back || '',
-                    }));
-
-                    console.log(`[parse-ocr] Success with model: ${modelName} (${cards.length} cards)`);
-                    return NextResponse.json({ cards });
-                }
-            } catch (err: any) {
-                console.warn(`[parse-ocr] Model ${modelName} failed:`, err.message);
-                lastError = err;
-            }
+            console.log(`[parse-ocr] Done (${cards.length} cards)`);
+            return NextResponse.json({ cards });
         }
-
-        // All models failed
-        return NextResponse.json(
-            { error: lastError?.message || 'All AI models failed. Please try again.' },
-            { status: 500 }
-        );
     } catch (e: any) {
         console.error('OCR parse error:', e);
         return NextResponse.json(

@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { AI_MODELS } from '@/lib/aiModels';
+import { generateChunked } from '@/lib/geminiServer';
+import { dedupeBy } from '@/lib/chunking';
 
 const apiKey = process.env.GEMINI_API_KEY;
+
+// Long documents are processed in several model calls (see geminiServer.ts).
+export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
     if (!apiKey || apiKey === 'your_gemini_api_key') {
@@ -20,7 +24,7 @@ export async function POST(request: NextRequest) {
 
         const genAI = new GoogleGenerativeAI(apiKey);
 
-        const prompt = `You are a flashcard generator. Analyze the following content and turn it into a COMPLETE study deck that covers the whole document. Create flashcards where:
+        const promptFor = (chunk: string) => `You are a flashcard generator. Analyze the following content and turn it into a COMPLETE study deck that covers the whole document. Create flashcards where:
 - The "front" is the DESCRIPTION or DEFINITION of the concept
 - The "back" is the TERM, KEYWORD, or short answer
 
@@ -37,44 +41,21 @@ Example output format:
 [{"front": "The process of converting source code into machine code", "back": "Compilation"}, {"front": "A data structure that follows Last-In-First-Out principle", "back": "Stack"}]
 
 Content to analyze:
-${content}`;
+${chunk}`;
 
-        let lastError: any = null;
+        const cards = await generateChunked(genAI, content, promptFor, 'parse');
 
-        for (const modelName of AI_MODELS) {
-            try {
-                console.log(`[parse] Trying model: ${modelName}`);
-                const model = genAI.getGenerativeModel({ model: modelName });
-                const result = await model.generateContent(prompt);
-                const response = await result.response;
-                const text = response.text().trim();
-
-                let cleaned = text;
-                if (cleaned.startsWith('```')) {
-                    cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
-                }
-
-                const cards = JSON.parse(cleaned);
-                if (!Array.isArray(cards)) throw new Error('Response is not an array');
-
-                const sanitized = cards.map((c: any) => ({
-                    front: c.front || '',
-                    back: c.back || '',
-                }));
-
-                console.log(`[parse] Success with model: ${modelName} (${sanitized.length} cards)`);
-                return NextResponse.json({ cards: sanitized });
-            } catch (err: any) {
-                console.warn(`[parse] Model ${modelName} failed:`, err.message);
-                lastError = err;
-            }
-        }
-
-        // All models failed
-        return NextResponse.json(
-            { error: lastError?.message || 'All AI models failed. Please try again.' },
-            { status: 500 }
+        // The same term can be defined in two chunks; keep the first card.
+        const sanitized = dedupeBy(
+            cards.map((c: any) => ({
+                front: c.front || '',
+                back: c.back || '',
+            })),
+            (c) => c.back,
         );
+
+        console.log(`[parse] Done (${sanitized.length} cards)`);
+        return NextResponse.json({ cards: sanitized });
     } catch (e: any) {
         console.error('Gemini parse error:', e);
         return NextResponse.json(

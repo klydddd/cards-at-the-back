@@ -28,3 +28,7 @@ dist-ssr
 .worktrees/
 
 .env
+
+# sample docs
+
+/docs/sample_docs

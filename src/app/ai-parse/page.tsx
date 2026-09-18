@@ -123,19 +123,30 @@ export default function AIParse() {
             if (parseMode === 'mcq') {
                 // Extract MCQ questions from text (works for both OCR and documents)
                 const extracted = await parseOCRToQuestions(parsedContent);
+                if (extracted.length === 0) {
+                    throw new Error('The AI could not find or generate any questions from this text. Try a document with more content, or switch to Flashkards.');
+                }
                 setQuestions(extracted);
                 setCards([]);
             } else if (isImageFile) {
                 // Extract flashcards from OCR text
                 const generated = await parseOCRToCards(parsedContent);
+                if (generated.length === 0) {
+                    throw new Error('The AI could not generate any kards from this text. Check the OCR preview above and try again.');
+                }
                 setCards(generated);
                 setQuestions([]);
             } else {
                 // Standard document flow — flashcards
                 const generated = await parseMarkdownToCards(parsedContent);
+                if (generated.length === 0) {
+                    throw new Error('The AI could not generate any kards from this document. Try a document with more content.');
+                }
                 setCards(generated);
                 setQuestions([]);
             }
+            // Only leave the upload step once there is something to show; the
+            // preview blocks render nothing for an empty list.
             setStep('preview');
             autoSetTitle();
         } catch (err) {

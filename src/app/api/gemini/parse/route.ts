@@ -20,9 +20,16 @@ export async function POST(request: NextRequest) {
 
         const genAI = new GoogleGenerativeAI(apiKey);
 
-        const prompt = `You are a flashcard generator. Analyze the following content and extract the most important terms, concepts, and key information. Create flashcards where:
+        const prompt = `You are a flashcard generator. Analyze the following content and turn it into a COMPLETE study deck that covers the whole document. Create flashcards where:
 - The "front" is the DESCRIPTION or DEFINITION of the concept
 - The "back" is the TERM, KEYWORD, or short answer
+
+Coverage rules:
+- Work through the document section by section, in order. Do not skip any section, including the later ones.
+- Make a card for EVERY defined term, bolded keyword, named service, component, or person, and for every key fact, number or rule.
+- For an enumerated list (e.g. "six advantages", "three service models"), make one card per item, not a single card for the whole list.
+- Aim for roughly one card per 100 to 150 words of content. There is no upper limit: a long document should produce a long deck. A short text should produce a short deck; do not pad with trivial or repeated cards.
+- Keep the "back" short (a term or a few words) so it can be used as a quiz answer.
 
 Return ONLY a valid JSON array of objects with "front" and "back" keys. Do not include any markdown formatting, code fences, or extra text. Just the raw JSON array.
 

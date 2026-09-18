@@ -24,13 +24,17 @@ export async function POST(request: NextRequest) {
         let prompt: string;
 
         if (mode === 'mcq') {
-            // Specifically designed to detect and extract MCQ structure from OCR text
-            prompt = `You are an expert at reading OCR-scanned text from exam papers. The following text was extracted via OCR from a scanned document that contains **multiple choice questions**.
+            // The text is either an exam/worksheet that already contains questions
+            // (extract them) or study material such as notes, slides or a chapter
+            // (generate questions from it). The mode is used for documents as well
+            // as OCR output, so the prompt must never return [] for notes.
+            prompt = `You are an expert at turning study material into multiple choice quizzes. The following text was extracted from a document (possibly via OCR, so it may contain artifacts). It is EITHER an exam / worksheet that already contains questions, OR study material such as lecture notes, slides, a chapter or a summary.
 
 Your task:
-1. Identify each question and its corresponding choices (A, B, C, D, etc.).
-2. Determine the correct answer if it is indicated (e.g., circled, underlined, or marked in the text). If the correct answer is NOT indicated, use your knowledge to select the best answer.
-3. Return ONLY a valid JSON array of objects.
+1. First decide which kind of text it is.
+2. If it ALREADY CONTAINS questions: extract every question with its choices (A, B, C, D, etc.). Determine the correct answer if it is indicated (e.g., circled, underlined, or marked in the text). If the correct answer is NOT indicated, use your knowledge to select the best answer.
+3. If it is STUDY MATERIAL with no questions: GENERATE multiple choice questions that test the key facts, definitions and concepts in the material. Cover the whole text, not just the beginning. Write 10 to 25 questions depending on how much content there is. Each question needs exactly 4 options: one correct answer and three plausible, clearly wrong distractors (prefer other terms from the same material). Do not add facts that are not supported by the text.
+4. Return ONLY a valid JSON array of objects. Never return an empty array unless the text has no usable content at all.
 
 Each object must have this exact structure:
 {
@@ -48,15 +52,23 @@ Rules:
   {"type": "true_false", "question": "...", "answer": true or false}
 - If you find identification/short-answer questions, format them as:
   {"type": "identification", "question": "...", "answer": "..."}
+- When generating, keep the "answer" as the exact string of one of the options.
 - Do NOT include any markdown formatting, code fences, or extra text. Just the raw JSON array.
 
-OCR Text:
+Text:
 ${content}`;
         } else {
             // Default flashcard extraction (same as parse route)
-            prompt = `You are a flashcard generator. The following text was extracted via OCR from a document. Analyze the content and extract the most important terms, concepts, and key information. Create flashcards where:
+            prompt = `You are a flashcard generator. The following text was extracted via OCR from a document. Analyze the content and turn it into a COMPLETE study deck that covers the whole text. Create flashcards where:
 - The "front" is the DESCRIPTION or DEFINITION of the concept
 - The "back" is the TERM, KEYWORD, or short answer
+
+Coverage rules:
+- Work through the text section by section, in order. Do not skip any section, including the later ones.
+- Make a card for EVERY defined term, keyword, named service, component, or person, and for every key fact, number or rule.
+- For an enumerated list (e.g. "six advantages", "three service models"), make one card per item, not a single card for the whole list.
+- Aim for roughly one card per 100 to 150 words of content. There is no upper limit: a long text should produce a long deck. A short text should produce a short deck; do not pad with trivial or repeated cards.
+- Keep the "back" short (a term or a few words) so it can be used as a quiz answer.
 
 Clean up any OCR artifacts (random characters, broken words, etc.) to produce readable text.
 

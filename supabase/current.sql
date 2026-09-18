@@ -60,7 +60,8 @@ CREATE TABLE public.quiz_attempts (
 );
 CREATE TABLE public.quizzes (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
-  deck_id uuid NOT NULL,
+  deck_id uuid,
+  title text,
   creator_name text NOT NULL DEFAULT 'Anonymous'::text,
   questions jsonb NOT NULL,
   answers jsonb,
@@ -69,5 +70,6 @@ CREATE TABLE public.quizzes (
   created_at timestamp with time zone DEFAULT now(),
   subject text NOT NULL DEFAULT ''::text,
   CONSTRAINT quizzes_pkey PRIMARY KEY (id),
-  CONSTRAINT quizzes_deck_id_fkey FOREIGN KEY (deck_id) REFERENCES public.decks(id)
+  CONSTRAINT quizzes_deck_id_fkey FOREIGN KEY (deck_id) REFERENCES public.decks(id),
+  CONSTRAINT quizzes_title_or_deck CHECK (deck_id IS NOT NULL OR (title IS NOT NULL AND length(trim(title)) > 0))
 );

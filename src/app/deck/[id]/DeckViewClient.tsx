@@ -10,6 +10,7 @@ import ShareButton from '@/components/ShareButton';
 import PracticeMenu from '@/components/PracticeMenu';
 import Modal from '@/components/Modal';
 import { formatDate } from '@/lib/formatDate';
+import { challengeKindLabel } from '@/lib/challenges';
 import type { Card, CardProgress, Deck, Quiz } from '@/types';
 
 export default function DeckView({ id }: { id: string }) {
@@ -201,7 +202,7 @@ export default function DeckView({ id }: { id: string }) {
                                             </p>
                                             <div className="flex gap-sm" style={{ flexWrap: 'wrap' }}>
                                                 <span className="badge badge-purple">
-                                                    {quiz.source_kind === 'quick' ? 'Quick challenge' : 'AI challenge'}
+                                                    {challengeKindLabel(quiz.source_kind)}
                                                 </span>
                                                 {quiz.question_types.map((type) => (
                                                     <span key={type} className="badge" style={{ fontSize: '0.7rem' }}>

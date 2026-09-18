@@ -2701,3 +2701,63 @@ p {
   .contact-form { padding: 18px 20px 22px; }
   .contact-submit { align-self: stretch; }
 }
+
+/* ─── Challenge builder (/create/challenge) ─── */
+.mcq-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.mcq-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.mcq-option .input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* The letter badge doubles as the "this one is correct" toggle. */
+.mcq-option-pick {
+  padding: 0;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.mcq-option-pick:hover:not(:disabled) {
+  background: var(--hue-yellow);
+  color: var(--text-on-hue);
+}
+
+.mcq-option-pick:focus-visible {
+  outline: var(--border-w-thick) solid var(--ink);
+  outline-offset: 3px;
+}
+
+.mcq-option.is-correct .mcq-option-pick {
+  background: var(--hue-mint);
+  color: var(--text-on-hue);
+}
+
+/* ─── Compact hero (Challenges) ───
+   Same copy block as the home hero, without the card-stack column, so it
+   collapses to one column and takes less vertical room. */
+.hero-compact {
+  grid-template-columns: minmax(0, 1fr);
+  padding-bottom: var(--space-xl);
+}
+
+/* min() instead of breakpoint overrides: this selector outranks the
+   `.hero-title` rules in the media queries below. */
+.hero-compact .hero-title {
+  font-size: min(4.5rem, 13vw);
+}
+
+.hero-compact .hero-lede {
+  max-width: 560px;
+}

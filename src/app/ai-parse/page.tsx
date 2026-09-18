@@ -242,14 +242,14 @@ export default function AIParse() {
 
             // Save the quiz itself
             const questionTypes = [...new Set(questions.map(q => q.type))];
-            await saveQuiz(
-                deck.id,
-                creatorName.trim() || 'Anonymous',
+            await saveQuiz({
+                deckId: deck.id,
+                creatorName: creatorName.trim() || 'Anonymous',
                 questions,
                 questionTypes,
-                subject.trim(),
-                'quick'
-            );
+                subject: subject.trim(),
+                sourceKind: 'quick',
+            });
 
             router.push(`/deck/${deck.id}`);
         } catch (err) {

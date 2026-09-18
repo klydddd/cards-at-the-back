@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { formatDate } from '@/lib/formatDate';
 import { subjectHue } from '@/lib/subjectHue';
+import { challengeKindLabel, challengeTitle } from '@/lib/challenges';
 import type { ChallengeListItem, ChallengeStats } from '@/types';
 
 export default function ChallengeCard({
@@ -20,7 +21,7 @@ export default function ChallengeCard({
     const questionCount = challenge.questions?.length || 0;
     const subject =
         challenge.subject?.trim() || challenge.decks?.subject?.trim() || 'General';
-    const deckTitle = challenge.decks?.title || 'Untitled deck';
+    const title = challengeTitle(challenge);
 
     const copyLink = async () => {
         try {
@@ -42,18 +43,18 @@ export default function ChallengeCard({
     return (
         <div
             className="index-card challenge-card"
-            data-hue={subjectHue(subject === 'General' ? deckTitle : subject)}
+            data-hue={subjectHue(subject === 'General' ? title : subject)}
         >
             <div className="index-card-head">
                 <span>{subject}</span>
                 <span>{questionCount} questions</span>
             </div>
             <div className="index-card-body">
-                <h3>{deckTitle}</h3>
+                <h3>{title}</h3>
 
                 <div className="flex gap-sm" style={{ flexWrap: 'wrap' }}>
                     <span className="badge badge-purple">
-                        {challenge.source_kind === 'quick' ? 'Quick challenge' : 'AI challenge'}
+                        {challengeKindLabel(challenge.source_kind)}
                     </span>
                     {completed && <span className="badge badge-success">Completed</span>}
                     {(challenge.question_types || []).map((type) => (
@@ -76,7 +77,7 @@ export default function ChallengeCard({
                     {/* The answer key is only offered once this browser has finished the challenge */}
                     {completed && (
                         <Link
-                            href={`/deck/${challenge.deck_id}/quiz/${challenge.id}`}
+                            href={`/take/${challenge.id}/review`}
                             className="btn btn-secondary btn-sm"
                         >
                             Review Questions

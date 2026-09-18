@@ -3,26 +3,25 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { fetchQuiz, fetchDeck } from '@/lib/supabase';
+import { fetchQuiz } from '@/lib/supabase';
 import QuizReviewView from '@/components/QuizReviewView';
-import type { Deck, Quiz } from '@/types';
+import type { Quiz } from '@/types';
 
-export default function QuizReview() {
-    const { id: deckId, quizId } = useParams<{ id: string; quizId: string }>();
-    const [deck, setDeck] = useState<Deck | null>(null);
+// Answer key reachable without knowing the deck — the route ChallengeCard
+// links to. Deck-based quizzes get sent back to their deck; manual ones to
+// the browse page.
+export default function TakeQuizReview() {
+    const { quizId } = useParams<{ quizId: string }>();
     const [quiz, setQuiz] = useState<Quiz | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        Promise.all([fetchDeck(deckId), fetchQuiz(quizId)])
-            .then(([d, q]) => {
-                setDeck(d);
-                setQuiz(q);
-            })
+        fetchQuiz(quizId)
+            .then(setQuiz)
             .catch((err) => setError(err.message))
             .finally(() => setLoading(false));
-    }, [deckId, quizId]);
+    }, [quizId]);
 
     if (loading)
         return (
@@ -38,10 +37,13 @@ export default function QuizReview() {
             <div className="page">
                 <div className="container">
                     <div className="error-box">{error || 'Challenge not found.'}</div>
-                    <Link href={`/deck/${deckId}`} className="btn btn-secondary">Go Back</Link>
+                    <Link href="/challenges" className="btn btn-secondary">Go Back</Link>
                 </div>
             </div>
         );
 
-    return <QuizReviewView quiz={quiz} backHref={`/deck/${deckId}`} backLabel={deck?.title || 'Deck'} />;
+    const backHref = quiz.deck_id ? `/deck/${quiz.deck_id}` : '/challenges';
+    const backLabel = quiz.deck_id ? 'Deck' : 'Challenges';
+
+    return <QuizReviewView quiz={quiz} backHref={backHref} backLabel={backLabel} />;
 }

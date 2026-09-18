@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import type { ChallengeListItem, ChallengeStats, QuizAttempt, QuizSourceKind } from '@/types';
+import type { ChallengeListItem, ChallengeStats, QuizAttempt, QuizQuestion, QuizQuestionType, QuizSourceKind } from '@/types';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -83,20 +83,32 @@ export async function createCards(deckId, cards) {
 
 // Quiz operations
 
-export async function saveQuiz(
+// `deckId` is null for a manual challenge, which must then bring its own
+// `title` (the quizzes_title_or_deck check constraint enforces this).
+export async function saveQuiz({
   deckId,
+  title,
   creatorName,
   questions,
   questionTypes,
   subject = '',
-  sourceKind: QuizSourceKind = 'ai'
-) {
+  sourceKind = 'ai',
+}: {
+  deckId: string | null;
+  title?: string;
+  creatorName: string;
+  questions: QuizQuestion[];
+  questionTypes: QuizQuestionType[];
+  subject?: string;
+  sourceKind?: QuizSourceKind;
+}) {
   if (!supabase) throw new Error('Supabase is not configured.');
 
   const { data, error } = await supabase
     .from('quizzes')
     .insert({
       deck_id: deckId,
+      title: title?.trim() || null,
       creator_name: creatorName || 'Anonymous',
       questions,
       question_types: questionTypes,
@@ -138,7 +150,7 @@ export async function fetchQuizChallenges(limit = CHALLENGE_LIST_LIMIT) {
 
   const { data, error } = await supabase
     .from('quizzes')
-    .select('id, deck_id, creator_name, source_kind, question_types, subject, created_at, questions, decks(title, subject)')
+    .select('id, deck_id, title, creator_name, source_kind, question_types, subject, created_at, questions, decks(title, subject)')
     .is('answers', null)
     .is('score', null)
     .order('created_at', { ascending: false })

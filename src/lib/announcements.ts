@@ -20,6 +20,22 @@ export interface Announcement {
 // Newest first
 export const ANNOUNCEMENTS: Announcement[] = [
     {
+        id: '2026-09-ai-parse-coverage',
+        date: '2026-09-18',
+        title: 'AI Parse covers the whole document',
+        items: [
+            {
+                title: 'Bigger decks from big files',
+                text: 'Long PDFs and notes are now read in sections, so a 50-page file gives you a full deck instead of the same 20 kards.',
+            },
+            {
+                title: 'Multiple Choice Quiz from any notes',
+                text: 'The quiz option no longer needs an exam to copy from. Upload lecture notes and it writes the questions for you.',
+            },
+        ],
+        cta: { label: 'Try AI Parse', href: '/ai-parse' },
+    },
+    {
         id: '2026-09-manual-challenges',
         date: '2026-09-18',
         title: 'Build your own challenge',

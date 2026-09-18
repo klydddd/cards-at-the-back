@@ -7,6 +7,7 @@ import { fetchDeck, fetchCards } from '@/lib/supabase';
 import FlipCard from '@/components/FlipCard';
 import { loadSRSProgress, rateCard, getDueCardsList } from '@/lib/tracking';
 import { Rating, formatInterval, previewIntervals } from '@/lib/srs';
+import { playSound, preloadSounds } from '@/lib/sounds';
 import { CheckIcon, XIcon, ArrowLeftIcon } from '@/components/Icons';
 
 export default function Review() {
@@ -30,6 +31,10 @@ export default function Review() {
     const flipCardRef = useRef<any>(null);
 
     useEffect(() => {
+        preloadSounds();
+    }, []);
+
+    useEffect(() => {
         async function load() {
             try {
                 const [d, c] = await Promise.all([fetchDeck(id), fetchCards(id)]);
@@ -51,6 +56,7 @@ export default function Review() {
         if (dueCards.length === 0 || finished) return;
 
         setIsAnimatingOut(true);
+        playSound(rating === Rating.AGAIN ? 'wrong' : 'correct');
         if (rating === Rating.AGAIN) {
             setSwipeAction('learning');
             setSwipeOffset(-500);

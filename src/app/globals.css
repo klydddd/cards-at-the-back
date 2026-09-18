@@ -1906,6 +1906,11 @@ p {
 [data-theme="dark"] .theme-icon-moon { display: none; }
 [data-theme="dark"] .theme-icon-sun { display: block; }
 
+/* Same trick for the sound toggle, off data-sound. */
+.sound-icon-off { display: none; }
+[data-sound="off"] .sound-icon-on { display: none; }
+[data-sound="off"] .sound-icon-off { display: block; }
+
 .navbar-links .divider {
   align-self: center;
   height: 22px;
@@ -2659,9 +2664,14 @@ p {
   .subject-filter-list { left: 0; right: 0; min-width: 0; }
 
   /* There is no mobile menu, so let the links wrap onto a second row rather
-     than overflow once "Challenges" joins them. */
+     than overflow once "Challenges" joins them. With two icon toggles the row
+     is tight at 375px, so compact the buttons and drop the divider instead of
+     letting it spill onto a third row. */
   .navbar-inner { flex-wrap: wrap; row-gap: 8px; }
-  .navbar-links { flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+  .navbar-links { flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
+  .navbar-links .divider { display: none; }
+  .navbar-toggle { min-width: 40px; min-height: 40px; }
+  .navbar-links .btn-sm { padding-left: 10px; padding-right: 10px; }
   .deck-title { font-size: 2.75rem; }
   .term-card-body { grid-template-columns: minmax(0, 1fr); min-height: 0; }
   .term-card-front { padding: 18px 0; }

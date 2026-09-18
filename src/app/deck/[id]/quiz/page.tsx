@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { fetchDeck, fetchCards, saveQuiz } from '@/lib/supabase';
 import { generateQuizFromCards } from '@/lib/quizGenerator';
 import { gradeQuizAttempt, isAnswerCorrect } from '@/lib/quizGrading';
+import { playSound, preloadSounds } from '@/lib/sounds';
 import { ArrowLeftIcon } from '@/components/Icons';
 import QuizQuestionView, { formatAnswer } from '@/components/QuizQuestionView';
 import type { Card, Deck, Quiz, QuizQuestion } from '@/types';
@@ -45,6 +46,10 @@ export default function Quiz() {
     const [currentInput, setCurrentInput] = useState('');
     const [feedback, setFeedback] = useState<{ userAnswer: string | boolean | string[]; isCorrect: boolean } | null>(null);
     const [showResults, setShowResults] = useState(false);
+
+    useEffect(() => {
+        preloadSounds();
+    }, []);
 
     useEffect(() => {
         Promise.all([fetchDeck(id), fetchCards(id)])
@@ -126,6 +131,7 @@ export default function Quiz() {
     const submitAnswer = (overrideAnswer: string | boolean | string[] | null = null) => {
         const finalAnswer = overrideAnswer !== null ? overrideAnswer : currentInput;
         const isCorrect = isAnswerCorrect(questions[currentQ], finalAnswer);
+        playSound(isCorrect ? 'correct' : 'wrong');
         const nextAnswers = { ...answers, [currentQ]: finalAnswer };
         setAnswers(nextAnswers);
         setCurrentInput('');

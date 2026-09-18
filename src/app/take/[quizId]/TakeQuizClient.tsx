@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { fetchQuiz, fetchDeck, fetchQuizAttempts, submitQuizAttempt, type SubmittedQuizAttempt } from '@/lib/supabase';
 import ShareButton from '@/components/ShareButton';
 import { gradeQuizAttempt, isAnswerCorrect } from '@/lib/quizGrading';
+import { playSound, preloadSounds } from '@/lib/sounds';
 import { markChallengeCompleted } from '@/lib/challengeHistory';
 import { ArrowLeftIcon } from '@/components/Icons';
 import QuizQuestionView, { formatAnswer } from '@/components/QuizQuestionView';
@@ -35,6 +36,10 @@ export default function TakeQuiz({ quizId }: { quizId: string }) {
     const [submitting, setSubmitting] = useState(false);
     const [attemptStartedAt, setAttemptStartedAt] = useState<string | null>(null);
     const [submission, setSubmission] = useState<SubmittedQuizAttempt | null>(null);
+
+    useEffect(() => {
+        preloadSounds();
+    }, []);
 
     useEffect(() => {
         async function loadChallenge() {
@@ -109,6 +114,7 @@ export default function TakeQuiz({ quizId }: { quizId: string }) {
     const submitAnswer = (overrideAnswer: string | boolean | string[] | null = null) => {
         const finalAnswer = overrideAnswer !== null ? overrideAnswer : currentInput;
         const isCorrect = isAnswerCorrect(question, finalAnswer);
+        playSound(isCorrect ? 'correct' : 'wrong');
         const nextAnswers = { ...answers, [currentQ]: finalAnswer };
         setAnswers(nextAnswers);
         setCurrentInput('');

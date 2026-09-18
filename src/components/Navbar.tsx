@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { toggleTheme } from '@/lib/theme';
-import { MoonIcon, SunIcon } from './Icons';
+import { toggleSound } from '@/lib/sounds';
+import { MoonIcon, SunIcon, VolumeIcon, VolumeOffIcon } from './Icons';
 
 export default function Navbar() {
     // No theme state here on purpose. The blocking script in app/layout.tsx
@@ -13,8 +14,13 @@ export default function Navbar() {
     // which wrote localStorage unconditionally and so froze an implicit OS
     // preference into an explicit stored one: a user on OS-dark who never
     // touched this button could never follow their OS back to light.
+    // The sound toggle follows the same pattern via data-sound.
     const handleToggle = () => {
         toggleTheme();
+    };
+
+    const handleSoundToggle = () => {
+        toggleSound();
     };
 
     return (
@@ -33,6 +39,16 @@ export default function Navbar() {
                     >
                         <MoonIcon size={18} className="theme-icon theme-icon-moon" />
                         <SunIcon size={18} className="theme-icon theme-icon-sun" />
+                    </button>
+                    <button
+                        type="button"
+                        className="navbar-toggle"
+                        onClick={handleSoundToggle}
+                        aria-label="Toggle sound effects"
+                        title="Toggle sound effects"
+                    >
+                        <VolumeIcon size={18} className="sound-icon sound-icon-on" />
+                        <VolumeOffIcon size={18} className="sound-icon sound-icon-off" />
                     </button>
                     <div className="divider" />
                     <Link href="/challenges" className="btn btn-ghost btn-sm">

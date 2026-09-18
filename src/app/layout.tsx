@@ -25,10 +25,11 @@ export const metadata = {
   description: 'AI-generated flashkards and spaced repetition learning',
 };
 
-// Stamps data-theme before first paint. Without this the attribute is only set
-// in Navbar's effect after hydration, so dark-mode users see a full cream page
-// flash on every load. Must mirror getInitialTheme() in src/lib/theme.ts.
-const themeScript = `(function(){try{var t=localStorage.getItem('cards_theme');if(!t){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`;
+// Stamps data-theme and data-sound before first paint. Without this the
+// attributes are only set after hydration, so dark-mode users see a full cream
+// page flash on every load and the navbar icons flip. Must mirror
+// getInitialTheme() in src/lib/theme.ts and isSoundEnabled() in src/lib/sounds.ts.
+const themeScript = `(function(){try{var t=localStorage.getItem('cards_theme');if(!t){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.setAttribute('data-theme',t);var s=localStorage.getItem('cards_sound');document.documentElement.setAttribute('data-sound',s==='off'?'off':'on');}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

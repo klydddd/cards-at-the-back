@@ -47,7 +47,7 @@ ADMIN_PASSWORD=          # required by /api/admin/*
 
 **Rendering.** Almost every page is `"use client"`. Three routes are async Server Components purely so they can export `generateMetadata` (OG tags for sharing) and then delegate to a sibling `*Client.tsx`: `deck/[id]`, `take/[quizId]`, `challenges`. Follow that pattern when a page needs dynamic metadata.
 
-**Root layout** (`src/app/layout.tsx`) mounts fonts (Bricolage Grotesque + Onest via `next/font`), `Navbar`, `Footer`, `WelcomeGate`, `WhatsNew`, Analytics, and a blocking inline script that stamps `data-theme` on `<html>` before first paint. That script must mirror `getInitialTheme()` in `src/lib/theme.ts`; `Navbar` holds no theme state.
+**Root layout** (`src/app/layout.tsx`) mounts fonts (Bricolage Grotesque + Onest via `next/font`), `Navbar`, `Footer`, `WelcomeGate`, `WhatsNew`, Analytics, and a blocking inline script that stamps `data-theme` and `data-sound` on `<html>` before first paint. That script must mirror `getInitialTheme()` in `src/lib/theme.ts` and `isSoundEnabled()` in `src/lib/sounds.ts`; `Navbar` holds no theme or sound state (CSS picks the icons off the attributes).
 
 **No authentication.** Every route is public and browser code writes to Supabase with the anon key. Two things run server-side with the service-role client (`createServiceRoleSupabaseClient()` in `src/lib/supabaseAdmin.ts`):
 
@@ -63,11 +63,12 @@ ADMIN_PASSWORD=          # required by /api/admin/*
 - `src/lib/quizGrading.ts` — the single grading implementation (enumeration answers are order-insensitive). Used by the client quiz pages and the attempts route.
 - `src/lib/mcqGenerator.ts` — client-side Quick Quiz generator, no AI. `src/lib/ocrParser.ts` — tesseract.js image OCR plus a regex MCQ extractor.
 - `src/lib/subjectHue.ts` — subject → hue name, applied as `data-hue` attributes that `globals.css` styles.
+- `src/lib/sounds.ts` — correct/wrong sound effects (`playSound`, `preloadSounds`) and the mute preference (`cards_sound`, stamped as `data-sound` on `<html>` by the layout script, same pattern as theme). Files are served from `public/sounds/`.
 - `src/components/Modal.tsx` — shared by `WelcomeGate` and `WhatsNew`.
 
 ### localStorage keys
 
-`cards_theme` · `gokards_terms_accepted` · `gokards_onboarding_id` · `gokards_seen_announcements` · `gokards_completed_challenges` · `srs_progress_<deckId>` · `cards_tracking_<deckId>`
+`cards_theme` · `cards_sound` · `gokards_terms_accepted` · `gokards_onboarding_id` · `gokards_seen_announcements` · `gokards_completed_challenges` · `srs_progress_<deckId>` · `cards_tracking_<deckId>`
 
 ## Supabase schema
 

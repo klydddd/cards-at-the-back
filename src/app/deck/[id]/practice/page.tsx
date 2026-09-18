@@ -7,6 +7,7 @@ import { fetchDeck, fetchCards } from '@/lib/supabase';
 import FlipCard from '@/components/FlipCard';
 import { getLearnedCardIds, markCardAsLearned, markCardAsLearning, rateCard, loadSRSProgress } from '@/lib/tracking';
 import { Rating } from '@/lib/srs';
+import { playSound, preloadSounds } from '@/lib/sounds';
 import { ShuffleIcon, SparklesIcon, CheckIcon, XIcon, ArrowLeftIcon } from '@/components/Icons';
 import type { Deck, Card } from '@/types';
 
@@ -57,6 +58,10 @@ export default function Practice() {
     const touchStartX = useRef<number | null>(null);
     const touchStartY = useRef<number | null>(null);
     const isHorizontalSwipe = useRef<boolean | null>(null);
+
+    useEffect(() => {
+        preloadSounds();
+    }, []);
 
     useEffect(() => {
         async function load() {
@@ -124,6 +129,7 @@ export default function Practice() {
         setSwipeAction('learned');
         setSwipeOffset(500); // swipe right
         setSessionLearned((n) => n + 1);
+        playSound('correct');
 
         const newLearned = markCardAsLearned(id, cards[current].id);
         setLearnedIds(new Set(newLearned));
@@ -140,6 +146,7 @@ export default function Practice() {
         setSwipeAction('learning');
         setSwipeOffset(-500); // swipe left
         setSessionLearning((n) => n + 1);
+        playSound('wrong');
 
         const newLearned = markCardAsLearning(id, cards[current].id);
         setLearnedIds(new Set(newLearned));

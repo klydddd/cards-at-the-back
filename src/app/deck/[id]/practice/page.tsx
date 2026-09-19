@@ -52,6 +52,9 @@ export default function Practice() {
     const [checkInCount, setCheckInCount] = useState(0);
     const [lastFeeling, setLastFeeling] = useState<string | null>(null);
     const reviewInsertedRef = useRef<Set<number>>(new Set()); // track which check-in rounds already inserted reviews
+    // True from a rating until the next screen is shown, so key auto-repeat or a
+    // double tap can't rate the same card twice (BUG-01).
+    const advancingRef = useRef(false);
 
     const flipCardRef = useRef<{ toggle: () => void } | null>(null);
     const swipeAreaRef = useRef<HTMLDivElement>(null);
@@ -92,6 +95,7 @@ export default function Practice() {
     const goTo = useCallback(
         (index) => {
             // Jump to center instantly, prepare for fade-in
+            advancingRef.current = false;
             setSwipeOffset(0);
             setSwipeAction(null);
             setIsAnimatingOut(false);
@@ -114,17 +118,24 @@ export default function Practice() {
         if (current < cards.length - 1) {
             // Check if we've hit 15 cards since last check-in
             if (nextSeen >= CHECK_IN_INTERVAL) {
-                setTimeout(() => setShowCheckIn(true), 300);
+                setTimeout(() => {
+                    advancingRef.current = false;
+                    setShowCheckIn(true);
+                }, 300);
             } else {
                 setTimeout(() => goTo(current + 1), 300);
             }
         } else {
-            setTimeout(() => setFinished(true), 300);
+            setTimeout(() => {
+                advancingRef.current = false;
+                setFinished(true);
+            }, 300);
         }
     }, [cards.length, current, cardsSeenSinceCheckIn, goTo]);
 
     const handleMarkLearned = useCallback(() => {
-        if (cards.length === 0 || showCheckIn) return;
+        if (cards.length === 0 || showCheckIn || advancingRef.current) return;
+        advancingRef.current = true;
         setIsAnimatingOut(true);
         setSwipeAction('learned');
         setSwipeOffset(500); // swipe right
@@ -141,7 +152,8 @@ export default function Practice() {
     }, [cards, current, id, advanceCard, showCheckIn]);
 
     const handleMarkLearning = useCallback(() => {
-        if (cards.length === 0 || showCheckIn) return;
+        if (cards.length === 0 || showCheckIn || advancingRef.current) return;
+        advancingRef.current = true;
         setIsAnimatingOut(true);
         setSwipeAction('learning');
         setSwipeOffset(-500); // swipe left
@@ -213,7 +225,7 @@ export default function Practice() {
     // Keyboard navigation
     useEffect(() => {
         const handleKey = (e) => {
-            if (finished || showCheckIn) return;
+            if (finished || showCheckIn || e.repeat) return;
             if (e.key === ' ' || e.key === 'Spacebar') {
                 e.preventDefault();
                 flipCardRef.current?.toggle();

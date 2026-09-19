@@ -29,6 +29,9 @@ export default function Review() {
     const [isAnimatingIn, setIsAnimatingIn] = useState(false);
 
     const flipCardRef = useRef<any>(null);
+    // True from a rating until the next card is shown, so key auto-repeat or a
+    // double tap can't rate the same card twice (BUG-01).
+    const advancingRef = useRef(false);
 
     useEffect(() => {
         preloadSounds();
@@ -52,8 +55,9 @@ export default function Review() {
         load();
     }, [id]);
 
-    const handleRate = useCallback(async (rating) => {
-        if (dueCards.length === 0 || finished) return;
+    const handleRate = useCallback((rating) => {
+        if (dueCards.length === 0 || finished || advancingRef.current) return;
+        advancingRef.current = true;
 
         setIsAnimatingOut(true);
         playSound(rating === Rating.AGAIN ? 'wrong' : 'correct');
@@ -69,8 +73,12 @@ export default function Review() {
         const statKey = rating === Rating.AGAIN ? 'again' : 'good';
         setSessionStats(prev => ({ ...prev, [statKey]: prev[statKey] + 1 }));
 
-        const updated = await rateCard(id, card.id, rating);
-        setProgressMap(prev => ({ ...prev, [card.id]: updated }));
+        // Persist in the background; the card must not stay hidden while the
+        // Supabase upsert runs. rateCard writes localStorage synchronously
+        // before its first await, so the local schedule is already updated.
+        rateCard(id, card.id, rating).then(updated => {
+            setProgressMap(prev => ({ ...prev, [card.id]: updated }));
+        });
 
         // If "Again", re-queue this card at the end
         if (rating === Rating.AGAIN) {
@@ -79,6 +87,7 @@ export default function Review() {
 
         if (current < dueCards.length - 1 || rating === Rating.AGAIN) {
             setTimeout(() => {
+                advancingRef.current = false;
                 setSwipeOffset(0);
                 setSwipeAction(null);
                 setIsAnimatingOut(false);
@@ -88,14 +97,17 @@ export default function Review() {
                 setTimeout(() => setIsAnimatingIn(false), 50);
             }, 300);
         } else {
-            setTimeout(() => setFinished(true), 300);
+            setTimeout(() => {
+                advancingRef.current = false;
+                setFinished(true);
+            }, 300);
         }
     }, [dueCards, current, finished, id]);
 
     // Keyboard shortcuts
     useEffect(() => {
         const handleKey = (e) => {
-            if (finished) return;
+            if (finished || e.repeat) return;
             if (e.key === ' ' || e.key === 'Spacebar') {
                 e.preventDefault();
                 flipCardRef.current?.toggle();

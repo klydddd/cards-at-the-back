@@ -1,4 +1,4 @@
-# Cards at the Back: Full Application Audit
+# Gokards: Full Application Audit
 
 **Date:** 2026-09-15 · **Commit:** `20ff255` (main) · **Auditor:** Claude (Opus 5)
 **Supersedes:** `.claude/AUDIT.md` and `.claude/TASKS.md` (2026-04-08). Their status is summarized below.

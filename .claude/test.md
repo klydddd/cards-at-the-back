@@ -1,0 +1,220 @@
+{
+  "title": "CSE20 — AWS Cloud Practitioner Practice Quiz (Modules 1–5)",
+  "modules": [
+    {
+      "module": 1,
+      "title": "Module 1 — Cloud Concepts Overview",
+      "concept": "Cloud Concepts",
+      "questions": [
+        {
+          "question": "Which of the following is a key advantage of cloud computing over traditional on-premises infrastructure?",
+          "options": ["Large upfront capital expenditure", "Trade capital expense for variable expense", "Guessing your capacity needs far in advance", "Owning and maintaining your own data centers"],
+          "answer": "Trade capital expense for variable expense",
+          "explanation": "In the cloud you pay only for what you consume instead of investing upfront in hardware."
+        },
+        {
+          "question": "A company wants to stop guessing about capacity and instead scale resources up or down to match demand. Which cloud benefit is this?",
+          "options": ["Economies of scale", "Elasticity (scale on demand)", "Higher upfront cost", "Manual server provisioning"],
+          "answer": "Elasticity (scale on demand)",
+          "explanation": "Elasticity means provisioning resources to match demand, avoiding over- or under-provisioning."
+        },
+        {
+          "question": "Which cloud deployment model runs some resources on-premises and connects them to resources in the cloud?",
+          "options": ["All-in cloud", "On-premises only", "Hybrid", "Edge-only"],
+          "answer": "Hybrid",
+          "explanation": "A hybrid model combines cloud resources with existing on-premises infrastructure."
+        },
+        {
+          "question": "What does the cloud benefit 'economies of scale' mean for AWS customers?",
+          "options": ["A fixed monthly fee regardless of usage", "Aggregated usage from many customers leads to lower pay-as-you-go prices", "You must reserve capacity for three years", "Costs rise as more customers join"],
+          "answer": "Aggregated usage from many customers leads to lower pay-as-you-go prices",
+          "explanation": "AWS aggregates usage across customers, achieving scale and passing the savings on."
+        },
+        {
+          "question": "Which cloud service model provides the fundamental building blocks — compute, storage, and networking — that the customer configures and manages?",
+          "options": ["Software as a Service (SaaS)", "Platform as a Service (PaaS)", "Infrastructure as a Service (IaaS)", "Function as a Service"],
+          "answer": "Infrastructure as a Service (IaaS)",
+          "explanation": "IaaS gives you the basic infrastructure (like virtual servers) that you manage yourself."
+        },
+        {
+          "question": "Which of the following is an example of Software as a Service (SaaS)?",
+          "options": ["Amazon EC2", "A web-based email application", "A raw virtual server", "A managed Kubernetes cluster"],
+          "answer": "A web-based email application",
+          "explanation": "SaaS delivers a finished application over the internet; web email is a classic example."
+        }
+      ]
+    },
+    {
+      "module": 2,
+      "title": "Module 2 — Cloud Economics and Billing",
+      "concept": "Economics & Billing",
+      "questions": [
+        {
+          "question": "Which AWS tool lets you estimate the monthly cost of a planned architecture BEFORE you build it?",
+          "options": ["AWS Cost Explorer", "AWS Pricing Calculator", "AWS Budgets", "AWS Trusted Advisor"],
+          "answer": "AWS Pricing Calculator",
+          "explanation": "The AWS Pricing Calculator estimates costs for workloads you are planning."
+        },
+        {
+          "question": "A company wants an alert when its monthly spend is forecast to exceed a set threshold. Which service fits best?",
+          "options": ["AWS Budgets", "AWS Cost Explorer", "AWS Organizations", "AWS Config"],
+          "answer": "AWS Budgets",
+          "explanation": "AWS Budgets lets you set custom cost/usage limits and receive alerts."
+        },
+        {
+          "question": "Which Amazon EC2 purchasing option offers the deepest discount but can be interrupted by AWS with little notice?",
+          "options": ["On-Demand Instances", "Reserved Instances", "Spot Instances", "Dedicated Hosts"],
+          "answer": "Spot Instances",
+          "explanation": "Spot uses spare AWS capacity at large discounts, but the capacity can be reclaimed."
+        },
+        {
+          "question": "Which pricing model lets you pay for compute by the second/hour with no long-term commitment or upfront payment?",
+          "options": ["Reserved Instances", "On-Demand", "Savings Plans", "Spot Instances"],
+          "answer": "On-Demand",
+          "explanation": "On-Demand charges for what you use with no commitment — ideal for short or unpredictable workloads."
+        },
+        {
+          "question": "Which AWS Support plan provides a designated Technical Account Manager (TAM)?",
+          "options": ["Basic", "Developer", "Business", "Enterprise"],
+          "answer": "Enterprise",
+          "explanation": "A designated TAM is a feature of Enterprise Support; Basic and Developer do not include one."
+        },
+        {
+          "question": "Which service inspects your environment and gives real-time best-practice checks for cost, performance, security, fault tolerance, and service limits?",
+          "options": ["AWS Trusted Advisor", "AWS CloudTrail", "AWS Config", "Amazon Inspector"],
+          "answer": "AWS Trusted Advisor",
+          "explanation": "Trusted Advisor evaluates your account against best practices across those five categories."
+        }
+      ]
+    },
+    {
+      "module": 3,
+      "title": "Module 3 — AWS Global Infrastructure Overview",
+      "concept": "Global Infrastructure",
+      "questions": [
+        {
+          "question": "What best describes an AWS Availability Zone (AZ)?",
+          "options": ["A single data center", "One or more discrete data centers with redundant power and networking inside a Region", "A global network of content caches", "A billing boundary"],
+          "answer": "One or more discrete data centers with redundant power and networking inside a Region",
+          "explanation": "An AZ is one or more physically separate data centers within a Region."
+        },
+        {
+          "question": "To make an application highly available, where should you deploy its resources?",
+          "options": ["In a single AZ", "Across multiple Availability Zones", "In one edge location", "On a single large instance"],
+          "answer": "Across multiple Availability Zones",
+          "explanation": "Spreading across multiple AZs protects the app from a single data-center failure."
+        },
+        {
+          "question": "Which part of the AWS global infrastructure caches content close to users and is used by Amazon CloudFront?",
+          "options": ["Availability Zone", "Region", "Edge location", "Local Zone"],
+          "answer": "Edge location",
+          "explanation": "Edge locations serve cached content near users to reduce latency."
+        },
+        {
+          "question": "What is an AWS Region?",
+          "options": ["A single building", "A geographic area made up of multiple, isolated Availability Zones", "A content delivery cache", "An IAM permission boundary"],
+          "answer": "A geographic area made up of multiple, isolated Availability Zones",
+          "explanation": "A Region is a physical geographic location containing multiple AZs."
+        },
+        {
+          "question": "A company must keep its data inside a specific country for legal reasons. Which factor should MOST influence its Region choice?",
+          "options": ["Number of edge locations", "Data sovereignty and compliance requirements", "The Region with the newest instance types", "Alphabetical order of Region names"],
+          "answer": "Data sovereignty and compliance requirements",
+          "explanation": "Legal, compliance, and data-residency rules are primary drivers of Region selection."
+        },
+        {
+          "question": "Which feature extends an AWS Region to place compute and storage nearer to end users for very low latency?",
+          "options": ["Edge location", "AWS Local Zones", "Availability Zone", "Content Delivery Network"],
+          "answer": "AWS Local Zones",
+          "explanation": "Local Zones place select services close to large population centers as an extension of a Region."
+        }
+      ]
+    },
+    {
+      "module": 4,
+      "title": "Module 4 — AWS Cloud Security",
+      "concept": "Cloud Security & IAM",
+      "questions": [
+        {
+          "question": "Under the AWS shared responsibility model, which item is AWS responsible for?",
+          "options": ["Security OF the cloud — the physical infrastructure", "Classifying the customer's data", "Configuring security groups", "Managing IAM user passwords"],
+          "answer": "Security OF the cloud — the physical infrastructure",
+          "explanation": "AWS secures the underlying infrastructure; the customer secures what they put in the cloud."
+        },
+        {
+          "question": "Under the shared responsibility model, which task is the CUSTOMER responsible for?",
+          "options": ["Physical security of data centers", "Patching the hypervisor", "Configuring IAM permissions and security groups", "Disposing of failed storage hardware"],
+          "answer": "Configuring IAM permissions and security groups",
+          "explanation": "Customers manage their data, access control, and resource configuration ('in the cloud')."
+        },
+        {
+          "question": "What is the AWS best practice for the account root user?",
+          "options": ["Use it for daily administrative work", "Share it with the admin team", "Enable MFA on it and avoid using it for everyday tasks", "Delete the root user"],
+          "answer": "Enable MFA on it and avoid using it for everyday tasks",
+          "explanation": "Protect the root user with MFA and use IAM users/roles for day-to-day work."
+        },
+        {
+          "question": "An application on an EC2 instance needs temporary permission to read from Amazon S3. What should it use?",
+          "options": ["The root user's access keys", "An IAM role", "A hard-coded IAM user password", "A security group"],
+          "answer": "An IAM role",
+          "explanation": "IAM roles grant temporary credentials to instances/services without embedding long-term keys."
+        },
+        {
+          "question": "Which AWS service protects web applications from common exploits such as SQL injection and cross-site scripting?",
+          "options": ["AWS WAF", "Amazon Inspector", "AWS Config", "Amazon Macie"],
+          "answer": "AWS WAF",
+          "explanation": "AWS WAF (Web Application Firewall) filters malicious web requests using rules."
+        },
+        {
+          "question": "Which service provides managed DDoS protection, with a Standard tier enabled automatically for all AWS customers at no extra cost?",
+          "options": ["Amazon GuardDuty", "AWS Shield", "AWS WAF", "AWS CloudTrail"],
+          "answer": "AWS Shield",
+          "explanation": "AWS Shield Standard gives automatic DDoS protection to all customers for free."
+        }
+      ]
+    },
+    {
+      "module": 5,
+      "title": "Module 5 — Networking and Content Delivery",
+      "concept": "Networking & CDN",
+      "questions": [
+        {
+          "question": "What does Amazon VPC let you do?",
+          "options": ["Cache content at edge locations", "Provision a logically isolated virtual network in the AWS Cloud", "Register domain names only", "Automatically block all DDoS attacks"],
+          "answer": "Provision a logically isolated virtual network in the AWS Cloud",
+          "explanation": "A VPC is your own isolated virtual network where you launch AWS resources."
+        },
+        {
+          "question": "Which statement about security groups is correct?",
+          "options": ["They are stateless", "They act as a virtual firewall at the instance level and are stateful", "They operate at the subnet level", "They can only deny traffic"],
+          "answer": "They act as a virtual firewall at the instance level and are stateful",
+          "explanation": "Security groups are stateful, instance-level firewalls; return traffic is allowed automatically."
+        },
+        {
+          "question": "Which AWS service is a scalable DNS web service that also offers domain registration and health checks?",
+          "options": ["Amazon CloudFront", "Amazon Route 53", "AWS Direct Connect", "Elastic Load Balancing"],
+          "answer": "Amazon Route 53",
+          "explanation": "Route 53 provides DNS resolution, domain registration, and routing/health checks."
+        },
+        {
+          "question": "A company wants to deliver videos and static files to global users with low latency by caching at edge locations. Which service should it use?",
+          "options": ["Amazon Route 53", "Amazon CloudFront", "AWS Direct Connect", "Amazon VPC"],
+          "answer": "Amazon CloudFront",
+          "explanation": "CloudFront is AWS's content delivery network (CDN) that caches content at edge locations."
+        },
+        {
+          "question": "Which service provides a dedicated, private network connection from an on-premises data center to AWS that does not travel over the public internet?",
+          "options": ["AWS Site-to-Site VPN", "AWS Direct Connect", "Amazon CloudFront", "Internet Gateway"],
+          "answer": "AWS Direct Connect",
+          "explanation": "Direct Connect creates a dedicated private link between your premises and AWS."
+        },
+        {
+          "question": "Which best describes the difference between a security group and a network ACL (NACL)?",
+          "options": ["A security group is stateless; a NACL is stateful", "A security group is instance-level and stateful; a NACL is subnet-level and stateless", "Both operate only at the subnet level", "NACLs can only allow traffic, never deny it"],
+          "answer": "A security group is instance-level and stateful; a NACL is subnet-level and stateless",
+          "explanation": "Security groups guard instances (stateful); NACLs guard subnets (stateless, allow AND deny rules)."
+        }
+      ]
+    }
+  ]
+}
